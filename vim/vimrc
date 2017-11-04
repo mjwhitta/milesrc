@@ -1,0 +1,875 @@
+" {{{ Settings
+if exists('&background')
+    set background=dark
+endif
+
+" Minimal GUI for gvim
+if exists('&guioptions')
+    set guioptions=a
+endif
+
+" Generic stuff
+if exists('&compatible')
+    set nocompatible
+endif
+if exists(':syntax')
+    " Hide error thrown if syntax file doesn't exist
+    silent! syntax enable
+endif
+if exists(':filetype')
+    filetype on
+    filetype plugin on
+endif
+
+" No default message when opening vim with no args and abbrev messages
+if exists('&shortmess')
+    set shortmess+=aI
+endif
+
+" Show current mode
+if exists('&showmode')
+    set showmode
+endif
+
+" Split more intuitively
+if exists('&splitbelow')
+    set splitbelow
+endif
+if exists('&splitright')
+    set splitright
+endif
+
+" Folding
+" if exists('&foldopen')
+"     set foldopen=all " Unfold automatically when entering fold
+" endif
+" if exists('&foldclose')
+"     set foldclose=all " Fold automatically when leaving fold
+" endif
+if exists('&foldnestmax')
+    set foldnestmax=2 " Don't fold more than 2 layers
+endif
+if exists('&foldlevelstart')
+    " set foldlevelstart=0 " Fold by default
+    set foldlevelstart=2
+endif
+
+" Mouse support
+if exists('&mouse')
+    set mouse=a
+endif
+
+" Colorscheme
+if exists(':colorscheme')
+    colorscheme milesrc
+    " colorscheme grayscale
+endif
+
+" Fold text
+if exists('&foldtext') && exists(':function')
+    set foldtext=NeatFoldText()
+endif
+
+" Netrw
+if exists(':let')
+    " Hide netrw banner
+    let g:netrw_banner = 0
+
+    " Don't actually keep history
+    let g:netrw_dirhistmax = 0
+
+    " Sort case-insensitive, by name, long-list stlye
+    let g:netrw_liststyle = 1
+    let g:netrw_sort_options = 'i'
+    let g:netrw_sort_sequence = ''
+
+    " Hide .gitignore stuff and files I won't open in vim
+    let g:netrw_list_hide = ''
+    silent! let g:netrw_list_hide .= netrw_gitignore#Hide()
+    let g:netrw_list_hide .= ',.*\.\(class\|jar\|jpg\|png\|pyc\|so\)'
+    let g:netrw_list_hide .= ',.*\.\(git[/-]\|swp\),tags,.*\.DS_Store'
+
+    " NERDTree-like
+    " let g:netrw_liststyle = 3
+    " let g:netrw_browse_split = 4
+    " let g:netrw_altv = 1
+    " let g:netrw_winsize = 25
+endif
+
+" Allows show atleast 5 lines above/below the cursor
+if exists('&scrolloff')
+    set scrolloff=5
+endif
+
+" Wildignore
+if exists('&wildignore')
+    set wildignore+=*/*.class
+    set wildignore+=*/*.jar
+    set wildignore+=*/*.jpg
+    set wildignore+=*/*.png
+    set wildignore+=*/*.pyc
+    set wildignore+=*/*.so
+    set wildignore+=*/*.swp
+    set wildignore+=*/*.vim
+endif
+
+" Backspace
+if exists('&backspace')
+    set backspace=indent,eol,start
+endif
+
+" Grep options
+if exists('&grepprg')
+    if executable('ag')
+        set grepprg=ag\ -S\ --column
+    elseif executable('ack')
+        set grepprg=ack\ -H\ --smart-case\ --column
+    elseif executable('ack-grep')
+        set grepprg=ack-grep\ -H\ --smart-case\ --column
+    else
+        set grepprg=grep\ -EHIinRs\
+            \ --exclude-dir=\.bzr\
+            \ --exclude-dir=\.git\
+            \ --exclude-dir=\.git-crypt\
+            \ --exclude-dir=\.svn\
+            \ $*
+    endif
+endif
+if exists('&grepformat') && &grepformat !~# '%c'
+    set grepformat^=%f:%l:%c:%m
+endif
+
+" Status line incase Airline isn't used
+if exists('&statusline')
+    set statusline=%r%m%y\ %.30F%=%c%V,%l/%L\ %02p%%\ [%02B]
+endif
+if exists('&ttimeoutlen')
+    set ttimeoutlen=50
+endif
+if exists('&laststatus')
+    set laststatus=2
+endif
+if exists('&encoding')
+    set encoding=utf-8
+endif
+
+" Spaces instead of tab
+if exists('&expandtab')
+    set expandtab
+endif
+if exists('&shiftwidth')
+    set shiftwidth=4
+endif
+if exists('&softtabstop')
+    set softtabstop=4
+endif
+if exists('&tabstop')
+    set tabstop=4
+endif
+if exists('&smarttab')
+    set smarttab
+endif
+
+" Indentation for C/C++ header files
+if exists('&cinoptions')
+    set cinoptions=g0
+endif
+
+" Break indent
+if exists('&breakindent')
+    set breakindent
+endif
+
+" Shows command
+if exists('&showcmd')
+    set showcmd
+endif
+
+" Tab completion
+if exists('&path')
+    set path+=**
+endif
+if exists('&wildmenu')
+    set wildmenu
+endif
+if exists('&wildmode')
+    set wildmode=list:longest,full
+endif
+
+" Relative line numbers
+" if exists('&relativenumber')
+"     set relativenumber
+" endif
+
+" Line numbers
+if exists('&number')
+    set number
+endif
+
+" Use only 1 space after '.' when joining lines
+if exists('&joinspaces')
+    set nojoinspaces
+endif
+
+" Optimize for fast terminals
+if exists('&ttyfast')
+    set ttyfast
+endif
+
+" Ignore case
+if exists('&ignorecase')
+    set ignorecase
+endif
+
+" AI
+if exists('&smartcase')
+    set smartcase
+endif
+
+" Incremental search
+if exists('&incsearch')
+    set incsearch
+endif
+
+" Highlight search
+if exists('&hlsearch')
+    set hlsearch
+endif
+
+" Line wrap
+if exists('&wrap')
+    set wrap
+endif
+if exists('&linebreak')
+    set linebreak
+endif
+if exists('&list')
+    set nolist
+endif
+
+" Set textwidth for wrapping
+if exists('&tw')
+    set tw=70
+endif
+
+" Highlight column 71
+if exists('&colorcolumn')
+    set colorcolumn=71
+endif
+
+" Highlight current line
+if exists('&cul')
+    set cul
+endif
+
+" Needed for Airline and colorscheme
+if exists('&t_Co')
+    set t_Co=256
+endif
+if exists('&t_ut') && &term =~ '256color'
+    set t_ut=
+endif
+
+" Highlight matching brackets
+if exists('&showmatch')
+    set showmatch
+endif
+
+" File type stuff
+if exists('&fileformats')
+    set fileformats=unix
+endif
+if exists('&ff')
+    set ff=unix
+endif
+
+" Current position
+if exists('&ruler')
+    set ruler
+endif
+
+" Trailing whitespace
+if exists(':highlight') && exists(':syntax')
+    highlight ExtraWhitespace ctermbg=red guibg=#FF0000
+    syntax clear ExtraWhitespace | match ExtraWhitespace /\s\+$/
+endif
+
+" Don't make backups
+if exists('&backup')
+    set nobackup
+endif
+if exists('&writebackup')
+    set nowritebackup
+endif
+
+" Don't use swp files, but if I have to, put them in home directory
+if exists('&swapfile')
+    set noswapfile
+else
+    if exists('&directory')
+        if !isdirectory($HOME . '/.swp')
+            silent! call mkdir($HOME . '/.swp', 'p')
+        endif
+        set directory=~/.swp//,.
+    endif
+endif
+" }}}
+
+" {{{ Key-bindings
+" Leader
+if exists(':let')
+    let mapleader = ','
+endif
+
+" Swap : and ; for convenience
+nnoremap ; :
+vnoremap ; :
+nnoremap : ;
+vnoremap : ;
+
+" Remap jk and kj to ESC
+inoremap jk <esc>l
+inoremap jK <esc>l
+inoremap Jk <esc>l
+inoremap JK <esc>l
+inoremap kj <esc>l
+inoremap kJ <esc>l
+inoremap Kj <esc>l
+inoremap KJ <esc>l
+inoremap k;j <esc>l:
+inoremap k;w <esc>l:w
+
+" Help for word under the cursor
+nnoremap <leader><leader>h :help <C-r><C-w><cr>
+
+" Show number of matches immediately after search
+if exists(':function')
+    cmap <expr> <cr> getcmdtype() =~ '[/?]' ?
+        \ "\<cr>\<plug>CountMatches" : "\<cr>"
+endif
+
+" Omni-completion
+if exists('&completeopt')
+    set completeopt=menu,menuone,preview
+    silent! set completeopt+=noselect
+    if exists('&complete')
+        set complete-=i
+        if &completeopt =~ 'noselect'
+            set complete+=k
+        endif
+    endif
+endif
+if exists('&dictionary') && filereadable('/usr/share/dict/words')
+    set dictionary+=/usr/share/dict/words
+endif
+
+" Why does the next line not work right? FIXME
+" inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<cr>"
+inoremap <expr> <space> pumvisible() ? "\<C-y> " : " "
+inoremap <expr> <tab>
+    \ strpart(getline('.'), 0, col('.') - 1) =~ '^\s*$' ?
+    \ "\<tab>" : "\<C-n>"
+inoremap <expr> <S-tab> pumvisible() ? "\<C-p>" : "\<S-tab>"
+
+" Hexmode
+nnoremap <leader>h :%!xxd<cr>
+nnoremap <leader>rh :%!xxd -r<cr>
+nnoremap <leader>hp :%!xxd -p<cr>
+nnoremap <leader>rhp :%!xxd -p -r<cr>
+
+" Open quickfix or location list
+nnoremap <leader>q :copen<cr>
+nnoremap <leader>l :lopen<cr>
+
+" Vim file explorer
+nnoremap <silent> f :Explore<cr>
+" or more NERDTree-like
+" nnoremap <silent> f :Vexplore<cr>
+
+" Search using normal regex mode
+nnoremap / /\v
+nnoremap ? ?\v
+
+" Find / Replace
+nnoremap // :%s///gc<left><left><left>
+
+" Clear search highlight
+nnoremap <C-l> :set spelllang=<cr>:noh<cr><C-l>
+inoremap <C-l> <esc>l:set spelllang=<cr>:noh<cr><C-l>i
+
+" Search, center and show number of matches
+if exists(':function')
+    nnoremap n nzz:call CountMatches()<cr>
+    nnoremap N Nzz:call CountMatches()<cr>
+    nnoremap gd gdzz:call CountMatches()<cr>
+    nnoremap gh *Nzz:call CountMatches()<cr>
+    nnoremap gc xu/<C-r>-<cr>Nzz:call CountMatches()<cr>
+else
+    nnoremap n nzz
+    nnoremap N Nzz
+    nnoremap gd gdzz
+    nnoremap gh *Nzz
+    nnoremap gc xu/<C-r>-<cr>Nzz
+endif
+
+" Grep
+nnoremap <silent> <leader>g :grep <C-r><C-w><cr>:copen<cr>
+nnoremap <silent> <leader><leader>g :grep <C-r>/<cr>:copen<cr>
+
+" Toggle fold
+" Actually <C-/>
+nnoremap <C-_> za
+inoremap <C-_> <esc>za
+
+" Move lines up and down
+" Doesn't work at top/bottom of file
+nnoremap - ddp
+nnoremap = ddkkp
+
+" Make Y behave more like D and C
+nnoremap Y y$
+
+" Close buffer
+nnoremap <silent> qq :bd<cr>
+
+" Show buffers
+nnoremap <silent> <leader>b :buffers<cr>:buffer<space>
+
+" Next buffer
+nnoremap <silent> <C-j> :bnext<cr>
+
+" Prev buffer
+nnoremap <silent> <C-k> :bprevious<cr>
+
+" Save file
+nnoremap <silent> <C-s> :w<cr>
+
+" Select all
+nnoremap <silent> <C-a> ggVG
+
+" Format all
+nnoremap <silent> <C-f> ggVG=
+
+" Open vimrc in new tab
+nnoremap <silent> <leader>ev :e ~/.vimrc<cr>
+
+" Source vimrc
+nnoremap <silent> <leader>sv :source ~/.vimrc<cr>
+
+" Wrap word with quotes or parens
+nnoremap <leader>" viw<esc>bi"<esc>ea"<esc>l
+nnoremap <leader>' viw<esc>bi'<esc>ea'<esc>l
+nnoremap <leader>( viw<esc>bi(<esc>ea)<esc>l
+nnoremap <leader>[ viw<esc>bi[<esc>ea]<esc>l
+nnoremap <leader>{ viw<esc>bi{<esc>ea}<esc>l
+nnoremap <leader>< viw<esc>bi<<esc>ea><esc>l
+
+" Wrap line at textwidth
+nnoremap <leader>w vipgq{j
+
+" For pasting lines of text from system clipboard
+nnoremap <leader>v :call ClipboardPaste("+", "l")<cr>
+
+" For pasting characters of text from system clipboard
+nnoremap <leader>V :call ClipboardPaste("+", "c")<cr>
+" }}}
+
+" {{{ Autocmds
+if exists(':augroup')
+    augroup autocomplete
+        autocmd!
+        if exists('&completeopt') && &completeopt =~ 'noselect'
+            autocmd InsertCharPre * call AutoComplete()
+        endif
+    augroup END
+
+    augroup foldmethod
+        autocmd!
+        if exists('&foldmethod')
+            autocmd FileType c,cpp,h,java,python,ruby,sh setlocal
+                \ foldmethod=syntax
+            autocmd FileType vim setlocal foldmethod=marker
+
+            autocmd BufReadPost .bashrc setlocal foldmethod=marker
+            autocmd BufReadPost bashrc setlocal foldmethod=marker
+            autocmd BufReadPost .milesrc.* setlocal foldmethod=marker
+            autocmd BufReadPost milesrc setlocal foldmethod=marker
+            autocmd BufReadPost milesrc.* setlocal foldmethod=marker
+            autocmd BufReadPost tmux.* setlocal foldmethod=marker
+            autocmd BufReadPost .tmux.* setlocal foldmethod=marker
+            autocmd BufReadPost .zshrc setlocal foldmethod=marker
+            autocmd BufReadPost zshrc setlocal foldmethod=marker
+        endif
+    augroup END
+
+    augroup ghmarkdown
+        autocmd!
+        if exists('&filetype')
+            autocmd BufNewFile,BufRead *.md,*.markdown setlocal
+                \ filetype=ghmarkdown
+        endif
+    augroup END
+
+    " Close QuickFix if only window left
+    augroup QFClose
+        autocmd!
+        autocmd WinEnter * if winnr('$') == 1 &&
+            \ getbufvar(
+                \ winbufnr(winnr()),
+                \ '&buftype'
+            \ ) == 'quickfix' | q | endif
+    augroup END
+
+    augroup spellcheck
+        autocmd!
+        if exists('&filetype')
+            autocmd BufRead,BufNewFile *mutt-* set filetype=mail
+        endif
+        if exists('&spell')
+            autocmd BufWritePost *.txt,*.md,*.markdown setlocal
+                \ spell spelllang=en_us
+            autocmd FileType mail setlocal spell spelllang=en_us
+        endif
+    augroup END
+
+    " vimrc on-the-fly changes
+    augroup vimrc
+        autocmd!
+        autocmd BufWritePost .vimrc source ~/.vimrc
+        autocmd BufWritePost vimrc source ~/.vimrc
+    augroup END
+endif
+" }}}
+
+" {{{ Abbreviations
+if has('diff') && &diff
+    cabbrev q qall
+endif
+
+iabbrev adn and
+iabbrev borken broken
+iabbrev hte the
+iabbrev teh the
+iabbrev tehn then
+iabbrev waht what
+" }}}
+
+" {{{ Functions
+if exists(':function')
+    function! AutoComplete()
+        if !pumvisible() && v:char =~ '\K'
+            \ && getline('.')[col('.') - 7] !~ '\K'
+            \ && getline('.')[col('.') - 6] =~ '\K'
+            \ && getline('.')[col('.') - 5] =~ '\K'
+            \ && getline('.')[col('.') - 4] =~ '\K'
+            \ && getline('.')[col('.') - 3] =~ '\K'
+            \ && getline('.')[col('.') - 2] =~ '\K' " last typed char
+            \ && getline('.')[col('.') - 1] !~ '\K'
+            call feedkeys("\<C-n>", 'n')
+        endif
+    endfunction
+
+    function! ClipboardPaste(regname, pasteType)
+        let l:reg_type = getregtype(a:regname)
+
+        call setreg(a:regname, getreg(a:regname), a:pasteType)
+        set paste
+
+        if a:pasteType == "c" || a:pasteType == "v"
+            silent! execute 'normal "' . a:regname . "P"
+        elseif a:pasteType == "l" || a:pasteType == "V"
+            silent! execute 'normal "' . a:regname . "p"
+        endif
+
+        set nopaste
+        call setreg(a:regname, getreg(a:regname), l:reg_type)
+    endfunction
+
+    function! CountMatches()
+        " Save the current search and cursor position
+        let l:s = @/
+        let l:l = line('.')
+        let l:c = col('.')
+
+        " Get current match
+        let l:output = ''
+        redir => l:output
+            silent! execute '0,' . l:l . 's///eng'
+        redir END
+        let l:cur = str2nr(matchstr(l:output, '\d\+'))
+
+        " TODO fix count for lines with multiple matches
+        " let l:output = ''
+        " redir => l:output
+        "     silent! execute l:l . 's///eng'
+        " redir END
+        " let l:line_matches = str2nr(matchstr(l:output, '\d\+'))
+
+        " Get total matches
+        let l:output = ''
+        redir => l:output
+            silent! execute '%s///eng'
+        redir END
+        let l:tot = str2nr(matchstr(l:output, '\d\+'))
+
+        echo '(' . l:cur . ' of ' . l:tot . ')'
+        ". ':' . getline('.')
+
+        " Restore the saved search and cursor position
+        let @/ = l:s
+        call cursor(l:l, l:c)
+    endfunction
+    nnoremap <silent> <plug>CountMatches :call CountMatches()<cr>
+
+    function! FormatXML()
+        silent! execute '%s/\v\</\</g'
+        silent! execute '%s/\v\>/\>/g'
+        call StripWhitespace()
+        silent! execute 'g/\v^$/d'
+        silent! execute 'normal ggVG='
+    endfunction
+    if exists(':command')
+        command! FormatXML call FormatXML()
+    endif
+
+    function! GHMarkdownPreview()
+        let l:preview_file = '/tmp/ghmarkdown_preview.html'
+
+        " CSS sha256
+        let l:frameworks = '77c3b874f32e71b14cded5a120f42f5c7288fa52e0a37f2d5919fbd8bcfca63c'
+        let l:github = 'ea4be5a794cc0b4c4519e2d56d6fd702ba42852e24e4830a8091d6b1ca54c426'
+
+        " Header
+        let l:header = '' .
+            \ '<html lang="en"><head><meta charset="utf-8"/>' .
+            \ '<link rel="stylesheet" type="text/css" href="' .
+            \ 'https://assets-cdn.github.com/assets/frameworks-' . l:frameworks . '.css">' .
+            \ '<link rel="stylesheet" type="text/css" href="' .
+            \ 'https://assets-cdn.github.com/assets/github-' . l:github . '.css">' .
+            \ '</head><body><div class="page">' .
+            \ '<div id="preview-page" class="preview-page" data-autorefresh-url="">' .
+            \ '<div role="main" class="main-content">' .
+            \ '<div class="container new-discussion-timeline experiment-repo-nav">' .
+            \ '<div class="repository-content">' .
+            \ '<div id="readme" class="readme boxed-group clearfix announce instapaper_body md">' .
+            \ '<h3><span class="octicon octicon-book"></span>' . bufname('') . '</h3>' .
+            \ '<article class="markdown-body entry-content" itemprop="text">'
+
+        " Footer
+        let l:footer = '</article></div></div></div></div></div></body></html>'
+
+        if exists("g:gh_token")
+            " Use GitHub to render file as html
+            let l:cmd = '' .
+                \ 'curl --data-binary @' . bufname('') .
+                \ ' -H "Content-Type: text/plain"' .
+                \ ' -H "Authorization: token ' . g:gh_token . '"' .
+                \ ' -kLs' .
+                \ ' "https://' . g:gh_site . '/api/v3/markdown/raw"'
+            call system(l:cmd . ' >' . l:preview_file)
+            let l:html = join(readfile(l:preview_file), '')
+
+            " Create preview file
+            let l:preview = [l:header, l:html, l:footer]
+            call writefile(l:preview, l:preview_file)
+
+            " Open preview file
+            let l:uname = system('uname -s')
+            if l:uname =~ 'Darwin'
+                call system('open ' . l:preview_file)
+            else
+                call system('xdg-open ' . l:preview_file)
+            endif
+        else
+            echo 'You need to provide g:gh_token'
+        endif
+    endfunction
+    if exists(':command')
+        command! GHMarkdownPreview call GHMarkdownPreview()
+    endif
+    nnoremap <silent> <leader>gh :call GHMarkdownPreview()<cr>
+
+    function! NeatFoldText()
+        " let l:mywidth = winwidth(0)
+        let l:mywidth = 70
+        let l:line = ' ' .
+            \ substitute(
+                \ getline(v:foldstart),
+                \ '^\s*["#]\?\s*\|\s*["#]\?\s*{{' . '{\d*\s*',
+                \ '',
+                \ 'g'
+            \ ) . ' '
+        let l:lines_count = v:foldend - v:foldstart + 1
+        let l:lines_count_text = '| ' .
+            \ printf(
+                \ '%10s',
+                \ l:lines_count . ' lines'
+            \ ) . ' |'
+        let l:foldchar = matchstr(&fillchars, 'fold:\zs.')
+        let l:foldtextstart = strpart(
+            \ '+' .
+            \ repeat(
+                \ l:foldchar,
+                \ v:foldlevel * 2
+            \ ) .
+            \ l:line,
+            \ 0,
+            \ (l:mywidth - 15)
+        \ )
+        let l:foldtextend = l:lines_count_text
+        " . repeat(l:foldchar, 8)
+        let l:foldtextlength = strlen(
+            \ substitute(
+                \ l:foldtextstart . l:foldtextend,
+                \ '.',
+                \ 'x',
+                \ 'g'
+            \ )
+        \ ) + &foldcolumn
+        return l:foldtextstart . repeat(
+            \ l:foldchar,
+            \ l:mywidth - l:foldtextlength
+        \ ) . l:foldtextend
+    endfunction
+
+    function! StripWhitespace()
+        " Save the current search and cursor position
+        let l:s = @/
+        let l:l = line('.')
+        let l:c = col('.')
+
+        " Strip the whitespace
+        silent! execute ':%s/\s\+$//eg'
+
+        " Restore the saved search and cursor position
+        let @/ = l:s
+        call cursor(l:l, l:c)
+    endfunction
+    if exists(':command')
+        command! StripWhitespace call StripWhitespace()
+    endif
+endif
+
+if exists(':command')
+    command! JQ .w !jq -C '.' | less
+    command! MakeTags call system('ctags -R .')
+endif
+" }}}
+
+" {{{ Local vimrc
+if exists(':let')
+    let g:gh_site = 'github.com'
+    let g:syntastic_off = 0
+    let g:syntastic_on_start = 1
+endif
+if filereadable(glob('~/.vimrc.local'))
+    source ~/.vimrc.local
+endif
+" }}}
+
+" {{{ Vim Plugins
+if exists(':function') && exists(':let')
+    silent! call plug#begin('~/.vim/plugs')
+    if exists(':Plug')
+        let g:plug_window = 'topleft new'
+
+        " Install or update vim plugins
+        Plug 'ctrlpvim/ctrlp.vim'
+        Plug 'Yggdroot/indentLine'
+        " Plug 'katono/rogue.vim', { 'on': 'Rogue' }
+        Plug 'scrooloose/syntastic'
+        " Plug 'majutsushi/tagbar'
+        " Plug 'shougo/unite.vim'
+        Plug 'tpope/vim-abolish' ", { 'on': 'S' }
+        Plug 'tpope/vim-commentary'
+        Plug 'junegunn/vim-easy-align' ", { 'on': '<plug>(EasyAlign)' }
+        " Plug 'Lokaltog/vim-easymotion'
+        Plug 'tpope/vim-endwise'
+        Plug 'jtratner/vim-flavored-markdown'
+        if executable('git')
+            Plug 'tpope/vim-fugitive'
+            Plug 'airblade/vim-gitgutter'
+        endif
+        " Plug 'vim-ruby/vim-ruby', { 'for': 'ruby' }
+        Plug 'tmux-plugins/vim-tmux'
+
+        " Abolish
+        nnoremap /// :%S///gc<left><left><left><left>
+
+        " Commentary
+        nmap <leader>c <plug>CommentaryLine
+
+        " CtrlP
+        if executable('ag')
+            let g:ctrlp_user_command = 'ag -f -g ".*" --hidden ' .
+                \ '--ignore ".bzr" ' .
+                \ '--ignore ".git" ' .
+                \ '--ignore ".git-crypt" ' .
+                \ '--ignore ".hg" ' .
+                \ '--ignore ".svn" ' .
+                \ '--nocolor --silent %s'
+        endif
+        if executable('rg')
+            let g:ctrlp_user_command = 'rg --color never --files ' .
+                \ '--hidden ' .
+                \ '--iglob "!.bzr" ' .
+                \ '--iglob "!.git" ' .
+                \ '--iglob "!.git-crypt" ' .
+                \ '--iglob "!.hg" ' .
+                \ '--iglob "!.svn" ' .
+                \ '-L --no-messages %s'
+        endif
+        let g:ctrlp_map = '<leader>f'
+        let g:ctrlp_cmd = 'CtrlPCurWD'
+        let g:ctrlp_match_window = 'bottom,order:btt,max:30'
+        nnoremap <leader>t :CtrlPTag<cr>
+
+        " Easy align
+        vmap <cr> <plug>(EasyAlign)
+
+        " Easymotion
+        " let g:EasyMotion_do_mapping = 0 " Disable default mappings
+        " let g:EasyMotion_smartcase = 1
+        " let g:EasyMotion_use_smartsign_us = 1
+        " nmap <leader>s <plug>(easymotion-s2)
+        " nmap <leader>j <plug>(easymotion-j)
+        " nmap <leader>k <plug>(easymotion-k)
+
+        " Git gutter
+        if exists('&updatetime')
+            set updatetime=1000
+        endif
+
+        " indentLine
+        let g:indentLine_char = '|'
+
+        " Python-mode
+        if exists(':filetype')
+            filetype plugin indent on
+        endif
+
+        " Syntastic
+        if g:syntastic_off == 0
+            if exists('&statusline')
+                if exists(':SyntasticStatuslineFlag')
+                    set statusline+=%#warningmsg#
+                    set statusline+=%{SyntasticStatuslineFlag()}
+                    set statusline+=%*
+                endif
+            endif
+            let g:syntastic_always_populate_loc_list = 1
+            let g:syntastic_auto_loc_list = 1
+            if g:syntastic_on_start == 1
+                let g:syntastic_check_on_open = 1
+            endif
+            let g:syntastic_check_on_wq = 0
+        endif
+
+        " Tagbar
+        "let g:tagbar_left = 1
+        "let g:tagbar_autoclose = 1
+        "nnoremap <leader><leader>t :TagbarToggle<cr><C-w>h
+    endif
+    silent! call plug#end()
+endif
+" }}}

@@ -1,0 +1,124 @@
+#!/usr/bin/env bash
+# A script for fixing file permissions automatically.
+# by Miles Whittaker <mjwhitta@gmail.com>
+#
+# --------------------------------------------------------------------
+# The MIT License (MIT)
+#
+# Copyright (c) 2017 Miles Whittaker
+#
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation files
+# (the "Software"), to deal in the Software without restriction,
+# including without limitation the rights to use, copy, modify, merge,
+# publish, distribute, sublicense, and/or sell copies of the Software,
+# and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+# BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+# ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+# --------------------------------------------------------------------
+
+function perms() {
+    perms_cleanup() {
+        unset args dir dirs fix group
+        unset -f perms_cleanup
+        unset -f perms_fix_file
+        unset -f perms_fix_files
+        unset -f perms_usage
+    }
+
+    perms_fix_file() {
+        if [[ -n $(file -b "$1" | \grep -o executable) ]]; then
+            [[ -n $group ]] || chmod u+x "$1"
+            [[ -z $group ]] || chmod ug+x "$1"
+        else
+            [[ -n $group ]] || chmod u-x "$1"
+            [[ -z $group ]] || chmod ug-x "$1"
+        fi
+    }
+
+    perms_fix_files() {
+        if [[ -f $1 ]]; then
+            perms_fix_file "$1"
+        elif [[ -d $1 ]]; then
+            while read line; do
+                perms_fix_file "$line"
+            done < <(find $dir -type f)
+        fi
+    }
+
+    perms_usage() {
+        echo "Usage: perms [OPTIONS] [file/dir]"
+        echo
+        echo "Automatically fix file permissions"
+        echo
+        echo "Options:"
+        echo "    -f, --fix"
+        echo "        Fix the executable permissions"
+        echo
+        echo "    -g, --group"
+        echo "        Open up group permissions"
+        echo
+        echo "    -h, --help"
+        echo "        Display this help message"
+        echo
+        perms_cleanup
+    }
+
+    declare -a args
+    unset fix group
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            "--") shift && args+=("$@") && break ;;
+            "-f"|"--fix")
+                if [[ -n $(command -v file) ]]; then
+                    fix="true"
+                else
+                    echo "You need the file command to use this flag!"
+                    return 1
+                fi
+                ;;
+            "-g"|"--group") group="true" ;;
+            "-h"|"--help") perms_usage; return 0 ;;
+            *) args+=("$1") ;;
+        esac
+        shift
+    done
+    [[ -z ${args[@]} ]] || set -- "${args[@]}"
+
+    [[ $# -eq 0 ]] || dirs=($@)
+    [[ $# -gt 0 ]] || dirs=($(pwd))
+
+    for dir in "${dirs[@]}"; do
+        [[ ! -e $dir ]] && echo "$dir does not exist!" && continue
+
+        [[ -n $group ]] || chmod -R u+rwX,go-rwx $dir
+        [[ -z $group ]] || chmod -R ug+rwX,o-rwx $dir
+        [[ -z $fix ]] || perms_fix_files $dir
+    done
+
+    # Always fix some home directory things
+    [[ ! -d $HOME/.ssh/ ]] || chmod -R u+rwX,go-rwx $HOME/.ssh
+    [[ ! -d $HOME/.gnupg/ ]] || chmod -R u+rwX,go-rwx $HOME/.gnupg
+    chmod go-w $HOME
+
+    perms_cleanup
+}
+
+if [[ -n ${BASH_SOURCE[0]} ]]; then
+    case "$0" in
+        *"bash") ;;
+        *) perms "$@" ;;
+    esac
+fi

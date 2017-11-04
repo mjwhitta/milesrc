@@ -1,0 +1,1327 @@
+# If not running interactively, don't do anything
+[[ $- == *i* ]] || return
+
+# {{{ Helper utils
+function installed() {
+    type -a $1 2>&1 | \grep -Em 1 "$1 is /" | \
+        awk '{print $3}' 2>/dev/null
+}
+
+export MILESRC_SHELL="$(installed zsh)"
+[[ -z $BASH ]] || export MILESRC_SHELL="$BASH"
+# }}}
+
+case "$MILESRC_SHELL" in
+    *"bash")
+        # {{{ Bash setup
+        BASHV="$(
+            bash --version | \grep -Eo "[0-9]+\.[0-9]+" | head -n 1
+        )"
+
+        # History settings
+        HISTFILE="$HOME/.histfile.bash"
+        HISTSIZE="1000"
+        HISTFILESIZE="2000"
+        HISTCONTROL="ignoreboth"
+        shopt -s histappend histverify
+
+        # Don't need to type cd
+        shopt -s autocd
+
+        # Fix common typos when cd'ing
+        shopt -s cdspell
+        shopt -s dirspell
+
+        # Multi-line command history
+        shopt -s cmdhist
+
+        # Enable programmable completion features (you don't need to
+        # enable this, if it's already enabled in /etc/bash.bashrc and
+        # /etc/profile sources /etc/bash.bashrc).
+        # Don't use [] around shopt command
+        if [[ -f /etc/bash_completion ]] && ! shopt -oq posix; then
+            . /etc/bash_completion
+        fi
+
+        # Super globs
+        shopt -s globstar extglob nocasematch
+
+        # Check the window size after each command and, if necessary,
+        # update the values of LINES and COLUMNS.
+        shopt -s checkwinsize
+
+        # vi keybindings
+        set -o vi
+
+        # Bind jk/kj to escape or vi-movement-mode
+        bind -m vi-insert '"jk":vi-movement-mode'
+        bind -m vi-insert '"kj":vi-movement-mode'
+
+        # Fix some vi keybindings
+        bind '"^?":backward-delete-char'
+        bind '"^H":backward-delete-char'
+        bind '"":clear-screen'
+        bind '"^U":kill-line'
+        bind '"^W":backward-kill-word'
+
+        if [[ -n $(bind -P | \grep "history-substring-searc") ]]; then
+            bind -m vi-move '"k":history-substring-search-backward'
+            bind -m vi-move '"j":history-substring-search-forward'
+        else
+            bind -m vi-move '"k":history-search-backward'
+            bind -m vi-move '"j":history-search-forward'
+        fi
+
+        # Fix ^S
+        [[ -z $(installed stty) ]] || stty stop ""
+        # }}}
+        ;;
+    *"zsh")
+        # {{{ Zsh setup
+        ZSHV="$(
+            zsh --version | \grep -Eo "[0-9]+\.[0-9]+" | head -n 1
+        )"
+
+        # History settings
+        HISTFILE="$HOME/.histfile.zsh"
+        HISTSIZE="1000"
+        SAVEHIST="$HISTSIZE"
+        setopt incappendhistory histexpiredupsfirst histignorealldups
+        setopt histreduceblanks sharehistory
+
+        # Completion style
+        zstyle ":completion:*" menu select
+        zstyle ":completion:*" rehash true
+        zstyle ":completion:*" verbose yes
+        zstyle ":completion:*:descriptions" format "%B%d%b"
+        zstyle ":completion:*:messages" format "%d"
+        zstyle ":completion:*:warnings" format "No matches for: %d"
+        zstyle ":completion:*:corrections" format "%B%d (err: %e)%b"
+        zstyle ":completion:*" group-name ""
+        # Tab completion should be case-insensitive
+        zstyle ":completion:*" matcher-list "m:{a-zA-Z}={A-Za-z}"
+        # Better completion for killall
+        zstyle ":completion:*:killall:*" command \
+            "\ps -u $USER -o comm | \grep -v \"COMMAND\""
+
+        zstyle :compinstall filename "$HOME/.zshrc"
+
+        # Don't need to type cd
+        setopt autocd notify
+
+        # Don't beep
+        unsetopt beep
+        setopt nobeep
+
+        # Make cd push the old directory onto the stack
+        setopt autopushd
+
+        # vi keybindings
+        bindkey -v
+
+        # Bind jk/kj to escape
+        bindkey -M viins "jk" vi-cmd-mode
+        bindkey -M viins "kj" vi-cmd-mode
+
+        # Fix some vi keybindings
+        bindkey "^?" backward-delete-char
+        bindkey "^H" backward-delete-char
+        bindkey "^L" clear-screen
+        bindkey "^U" kill-line
+        bindkey "^W" backward-kill-word
+
+        # Turn off terminal driver flow control (CTRL+S/CTRL+Q)
+        setopt noflowcontrol
+        [[ -z $(installed stty) ]] || stty -ixon -ixoff
+
+        # Do not kill background processes when closing the shell
+        setopt nohup
+
+        # Tab completion enhancements
+        setopt automenu
+        unsetopt menucomplete
+        setopt completealiases
+
+        # Tab completion from anywhere in word
+        setopt completeinword
+
+        # Change the definition of "word", e.g. with ^W
+        autoload select-word-style
+        select-word-style shell
+
+        # Super globs
+        setopt extendedglob
+        unsetopt caseglob
+
+        # Pound sign in interactive prompt
+        setopt interactivecomments
+
+        # Speed up file completion for git
+        function __git_files() {
+            _wanted files expl "local files" _files
+        }
+
+        # Syntax highlighting
+        typeset -A ZSH_HIGHLIGHT_STYLES
+        ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
+        ZSH_HIGHLIGHT_STYLES[alias]="fg=white"
+        ZSH_HIGHLIGHT_STYLES[suffix-alias]="fg=white,underline"
+        ZSH_HIGHLIGHT_STYLES[builtin]="fg=white"
+        ZSH_HIGHLIGHT_STYLES[function]="fg=white"
+        ZSH_HIGHLIGHT_STYLES[command]="fg=white"
+        ZSH_HIGHLIGHT_STYLES[precommand]="fg=white,underline"
+        ZSH_HIGHLIGHT_STYLES[hashed-command]="fg=white"
+        for dir in \
+            $HOME/.config/zsh/plugins/zsh-syntax-highlighting \
+            /usr/share/zsh/plugins/zsh-syntax-highlighting
+        do
+            [[ ! -d $dir ]] || . $dir/zsh-syntax-highlighting.zsh
+            [[ ! -d $dir ]] || break
+        done; unset dir
+
+        # History substring search
+        autoload up-line-or-beginning-search
+        autoload down-line-or-beginning-search
+        zle -N up-line-or-beginning-search
+        zle -N down-line-or-beginning-search
+        bindkey -M vicmd "k" up-line-or-beginning-search
+        bindkey -M vicmd "j" down-line-or-beginning-search
+
+        for dir in \
+            $HOME/.config/zsh/plugins/zsh-history-substring-search \
+            /usr/share/zsh/plugins/zsh-history-substring-search
+        do
+            if [[ -d $dir ]]; then
+                . $dir/zsh-history-substring-search.zsh
+                bindkey -M vicmd "k" history-substring-search-up
+                bindkey -M vicmd "j" history-substring-search-down
+                break
+            fi
+        done; unset dir
+
+        HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND="bg=007,fg=008"
+        export HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND
+        # }}}
+        ;;
+esac
+
+# {{{ Env Vars
+# Java
+export JAVA_HOME="$(
+    find /usr/lib/jvm -maxdepth 1 \
+    -iregex ".*java-[0-9]+-openjdk.*" -print -quit 2>/dev/null
+)"
+
+# Editor of choice
+export EDITOR="vim"
+
+# GPG
+export GPG_TTY="$(tty)"
+
+# Let's make an educated guess
+for dir in code projs projects src; do
+    [[ -d $HOME/$dir ]] && export PROJS="$HOME/$dir" && break
+done; unset dir
+
+# Secure perms
+[[ -n $(id | \grep "uid=0") ]] || umask 077
+
+# Less
+export PAGER="less"
+export LESS="-cisMR"
+if [[ -f $HOME/.config/less/lessfilter ]]; then
+    export LESSOPEN="|$HOME/.config/less/lessfilter %s"
+fi
+
+# Make less more friendly for non-text input files, see lesspipe(1)
+if [[ -n $(installed lesspipe) ]]; then
+    export LESSOPEN="| lesspipe %s"
+    export LESSCLOSE="lesspipe %s %s"
+fi
+
+# Command args
+
+## ack
+export ACK_ARGS="--smart-case"
+export ACK_COLOR_FILENAME="green"
+export ACK_COLOR_LINENO="white"
+export ACK_COLOR_MATCH="black on_white"
+
+## ag
+export AG_ARGS="-S --color-match=\"47;1;30\" \
+    --color-line-number=\"0;37\" --color-path=\"0;32\""
+
+## grep
+if [[ -n $(\grep --help 2>&1 | \grep -Eis "color") ]]; then
+    export GREP_CLR="--color=always"
+fi
+export GREP_ARGS="$GREP_CLR -EHIinrs --exclude-dir=.bzr \
+    --exclude-dir=.git --exclude-dir=.git-crypt --exclude-dir=.svn"
+export GREP_COLORS="fn=1;32:ln=0;37:ms=47;1;30:mc=47;1;30"
+export GREP_COLORS="${GREP_COLORS}:sl=:cx=:bn=:se="
+
+## ls
+export LS_ARGS="-F --color"
+
+## ps
+export PS_ARGS="-o pid,user,%cpu,cmd --sort=-%cpu"
+
+## rg
+export RG_ARGS="-S --colors \"line:fg:white\" \
+    --colors \"match:bg:white\" --colors \"match:fg:black\" \
+    --colors \"path:fg:green\""
+
+# macOS
+case "$(uname -s)" in
+    "Darwin")
+        if [[ -f /usr/libexec/java_home ]]; then
+            export JAVA_HOME="$(/usr/libexec/java_home 2>/dev/null)"
+        fi
+        export LS_ARGS="-F -G"
+        export NANO_ARGS="-m"
+        export PS_ARGS="-o pid,user,%cpu,command -r"
+        ;;
+esac
+
+# Ruby
+export GEM_HOME="$HOME/.gem/ruby"
+export GEM_PATH="$GEM_HOME/gems"
+[[ -z $(installed ruby) ]] || mkdir -p $GEM_HOME/bin $GEM_HOME/gems
+if [[ -d $HOME/.gem ]] && [[ ! -f $HOME/.gemrc ]]; then
+    echo "gem: --no-user-install" >$HOME/.gemrc
+fi
+
+# Go
+export GOPATH="$HOME/.go"
+[[ -z $(installed go) ]] || mkdir -p $GOPATH/bin
+
+# Display
+if [[ -z $DISPLAY ]] &&
+   [[ -d /tmp/.X11-unix ]] &&
+   [[ -n $(\ls /tmp/.X11-unix) ]]
+then
+    for x in /tmp/.X11-unix/X*; do
+        export DISPLAY=":${x#/tmp/.X11-unix/X}" && break
+    done; unset x
+fi
+# }}}
+
+# {{{ PATH
+# Find dirs that should be in PATH
+unset PTH
+for dir in \
+    $HOME/bin \
+    $HOME/scripts/bin \
+    $HOME/.local/bin \
+    $GEM_HOME/bin \
+    $GOPATH \
+    $GOPATH/bin \
+    /usr/local/bin \
+    /usr/local/sbin \
+    /usr/bin \
+    /usr/sbin \
+    /bin \
+    /sbin \
+    $HOME/Android/Sdk/platform-tools \
+    $HOME/Android/Sdk/tools \
+    $HOME/Android/Sdk/tools/bin \
+    $HOME/Android/Ndk \
+    $HOME/.rvm/bin
+do
+    [[ ! -d $dir ]] || PTH="$PTH:$dir"
+done; unset dir
+
+# Find missing from PATH
+for dir in $(echo "$PATH" | sed "s|:| |g"); do
+    [[ -n $(echo "$PTH" | \grep "$dir") ]] || PTH="$PTH:$dir"
+done; unset dir
+
+# Set PATH
+[[ -z $PTH ]] || export PATH="${PTH/:/}"
+unset PTH
+# }}}
+
+# {{{ Prompt
+case "$MILESRC_SHELL" in
+    *"bash")
+        # Set colors
+        blue="\\[\e[37m\e[44m\\]"
+        green="\\[\e[37m\e[42m\\]"
+        light_black="\\[\e[37m\e[100m\\]"
+        reset="\\[\e[0m\\]"
+        red="\\[\e[37m\e[41m\\]"
+        white="\\[\e[90m\e[47m\\]"
+
+        # Right prompt stuff
+        export VI_CMD="$(echo -n "$blue    NORMAL    $reset")"
+        export VI_INS="$(echo -n "$green -- INSERT -- $reset")"
+        # set vi-cmd-mode-string "    NORMAL    "
+        # set vi-ins-mode-string " -- INSERT -- "
+        # set show-mode-in-prompt on
+        ;;
+    *"zsh")
+        # Set colors
+        blue="%{\e[37m\e[44m%}"
+        green="%{\e[37m\e[42m%}"
+        light_black="%{\e[37m\e[100m%}"
+        reset="%{\e[0m%}"
+        red="%{\e[37m\e[41m%}"
+        white="%{\e[90m\e[47m%}"
+
+        # Right prompt stuff
+        export VI_CMD="$(echo -n "$blue    NORMAL    $reset")"
+        export VI_INS="$(echo -n "$green -- INSERT -- $reset")"
+
+        function zle-keymap-select() {
+            local last_status="$?"
+            if [[ -n $MILESRC_THEME_PROMPT ]]; then
+                case "$KEYMAP" in
+                    "main"|"viins") MILESRC_MODE="$VI_INS" ;;
+                    "vicmd") MILESRC_MODE="$VI_CMD" ;;
+                esac
+                export PROMPT="$(__prompt_ps1 $last_status)"
+            fi
+            zle reset-prompt
+        }
+        zle -N zle-keymap-select
+
+        function zle-line-finish() {
+            local last_status="$?"
+            if [[ -n $MILESRC_THEME_PROMPT ]]; then
+                export MILESRC_MODE="$VI_INS"
+                export PROMPT="$(__prompt_ps1 $last_status)"
+            fi
+        }
+        zle -N zle-line-finish
+        ;;
+esac
+
+# Current working directory
+function __cwd() {
+    local cwd="$(
+        pwd | sed -r -e "s#$HOME#\~#" -e "s#/# / #g" -e "s/^ //"
+    )"
+    local length="$(echo -n "$cwd" | wc -m)"
+    local offset
+    local width="$1"
+
+    if [[ $length -le $width ]]; then
+        let "offset = $width - $length - 1"
+        echo -n "$cwd"
+        local i; for i in $(seq 0 $offset); do echo -n " "; done
+    else
+        let "offset = $length - $width"
+        echo -n "${cwd:$offset:$width}" | sed -r "s/^.... ?/\.\.\. /"
+    fi
+}
+
+# Exit status
+function __exit_status() {
+    [[ $# -eq 1 ]] || return
+
+    local status_symbol="$1"
+    local rand="$(__rand $1)"
+
+    case "$MILESRC_PROMPT_EMOTICONS" in
+        "") [[ $status_symbol -gt 0 ]] || status_symbol="" ;;
+        "unsupported")
+            if [[ $status_symbol -eq 0 ]]; then
+                case "$rand" in
+                    "0") status_symbol="(^‿^)" ;;
+                    "1") status_symbol="(ツ)" ;;
+                    *) status_symbol="¯\_(ツ)_/¯" ;;
+                esac
+            else
+                case "$rand" in
+                    "0") status_symbol="┻━┻ ︵ヽ(°□°)ﾉ︵ ┻━┻ " ;;
+                    "1") status_symbol="(╯°□°)╯︵┻━┻ " ;;
+                    "2") status_symbol="(ಠ_ಠ)" ;;
+                    "3") status_symbol="(ಠ╭╮ಠ)" ;;
+                    "4") status_symbol="(ಥ_ಥ)" ;;
+                    *) status_symbol="(ง'̀-'́)ง" ;;
+                esac
+            fi
+            ;;
+        *)
+            case "$status_symbol" in
+                "0") status_symbol="(^‿^)" ;;
+                *) status_symbol="┻━┻ ︵ヽ(°□°)ﾉ︵ ┻━┻ " ;;
+            esac
+            ;;
+    esac
+
+    echo -n "$status_symbol"
+}
+
+# Git info
+function __git_status() {
+    [[ -n $(installed git) ]] || return
+    [[ -n $(installed perl) ]] || return
+
+    local git_dir="$(git rev-parse --show-toplevel 2>/dev/null)"
+    [[ -n $git_dir ]] || return
+    [[ -z $(\grep -s "$git_dir" $HOME/.git.nostatus) ]] || return
+
+    local ignore="--ignore-submodules=dirty"
+    local git_status="$(git status -b --porcelain $ignore)"
+
+    local branch_name="$(
+        echo "$git_status" | \
+        perl -lne '/^##(.*\s+on)?\s+([^.]+)/ && print $2'
+    )"
+    [[ -n $branch_name ]] || return
+    local git="$branch_name"
+
+    local ahead="$(
+        echo "$git_status" | \
+        perl -lne '/ahead ([0-9]+)/ && print $1'
+    )"
+    [[ -z $ahead ]] || git="$git ↑$ahead"
+
+    local behind="$(
+        echo "$git_status" | \
+        perl -lne '/behind ([0-9]+)/ && print $1'
+    )"
+    [[ -z $behind ]] || git="$git ↓$behind"
+
+    local num_diffs="$(
+        echo "$git_status" | \grep -cEv "^ *(##|\?\?|st)"
+    )"
+    local untracked="$(echo "$git_status" | \grep -cE "^ *(\?\?|st)")"
+    case "$num_diffs" in
+        "0") ;;
+        *) git="$git +$num_diffs" ;;
+    esac
+
+    [[ $untracked -eq 0 ]] || git="$git ..."
+    if [[ $num_diffs -eq 0 ]] &&
+       [[ $untracked -eq 0 ]] &&
+       [[ -z $ahead$behind ]]
+    then
+        git="$git ✓"
+    fi
+
+    echo -n "$git"
+}
+
+# Prompt
+__prompt_ps1() {
+    [[ $# -eq 1 ]] || return
+
+    local last_status="$1"
+
+    # Exit status
+    local exit="$(__exit_status $last_status)"
+
+    # Host
+    local host="$USER@$(uname -n | awk -F "." '{print $1}')"
+
+    # Git
+    local git="$(__git_status)"
+
+    # CWD
+    local width="$COLUMNS"
+    [[ -z $exit ]] || let "width -= $(echo -n " $exit " | wc -m)"
+    [[ -z $host ]] || let "width -= $(echo -n " $host " | wc -m)"
+    [[ -z $git ]] || let "width -= $(echo -n " $git " | wc -m)"
+    case "$MILESRC_SHELL" in
+        *"bash") let "width -= 3" ;;
+        *"zsh") let "width -= 17" ;;
+    esac
+    [[ $width -ge 0 ]] || let "width = 0"
+    local cwd="$(__cwd $width)"
+
+    # Prompt symbol
+    local prompt="\$"
+    [[ -z $(id | \grep "uid=0") ]] || prompt="#"
+
+    # Put it all together
+    case "$last_status" in
+        "0") [[ -z $exit ]] || echo -n "$green $exit $reset" ;;
+        *) echo -n "$red $exit $reset" ;;
+    esac
+    echo -n "$blue $host $reset"
+    [[ -z $git ]] || echo -n "$white $git $reset"
+    echo -n "$light_black $cwd $reset"
+    case "$MILESRC_SHELL" in
+        *"bash") echo ;;
+        *"zsh") echo "$MILESRC_MODE" ;;
+    esac
+    echo -n "$light_black$prompt $reset "
+}
+
+function __prompt() {
+    local last_status="$?"
+    if [[ -n $MILESRC_THEME_PROMPT ]]; then
+        case "$MILESRC_SHELL" in
+            *"bash")
+                if [[ -z $MILESRC_OLD_PROMPT ]]; then
+                    export MILESRC_OLD_PROMPT="$PS1"
+                fi
+                export PS1="$(__prompt_ps1 $last_status)"
+                ;;
+            *"zsh")
+                if [[ -z $MILESRC_OLD_PROMPT ]]; then
+                    export MILESRC_OLD_PROMPT="$PROMPT"
+                fi
+                export MILESRC_MODE="$VI_INS"
+                export PROMPT="$(__prompt_ps1 $last_status)"
+                ;;
+        esac
+    else
+        case "$MILESRC_SHELL" in
+            *"bash")
+                if [[ -n $MILESRC_OLD_PROMPT ]]; then
+                    export PS1="$MILESRC_OLD_PROMPT"
+                    unset MILESRC_OLD_PROMPT
+                fi
+                ;;
+            *"zsh")
+                if [[ -n $MILESRC_OLD_PROMPT ]]; then
+                    export PROMPT="$MILESRC_OLD_PROMPT"
+                    unset MILESRC_OLD_PROMPT
+                fi
+                ;;
+        esac
+    fi
+}
+
+function __rand() {
+    local rand
+    case "$1" in
+        "0") let "rand = RANDOM % 3" ;;
+        *) let "rand = RANDOM % 6" ;;
+    esac
+    echo -n "$rand"
+}
+
+case "$MILESRC_SHELL" in
+    *"bash")
+        if [[ $PROMPT_COMMAND != *__prompt* ]]; then
+            PROMPT_COMMAND="__prompt;"$'\n'"$PROMPT_COMMAND"
+        fi
+        ;;
+    *"zsh")
+        if [[ ${precmd_functions[(r)__prompt]} != __prompt ]]; then
+            precmd_functions+=(__prompt)
+        fi
+        ;;
+esac
+# }}}
+
+# {{{ Aliases
+if [[ -n $(installed ack-grep) ]]; then
+    alias ack="\ack-grep $ACK_ARGS"
+elif [[ -n $(installed ack) ]]; then
+    alias ack="\ack $ACK_ARGS"
+fi
+[[ -z $(installed ag) ]] || alias ag="\ag $AG_ARGS"
+alias c="mycd"
+alias cd="mycd"
+alias cp="\cp -i"
+alias emacs="emacs -nw"
+alias envg="env | \grep $GREP_CLR -Eis"
+alias f="sudo"
+[[ -z $(installed gdb) ]] || alias gdb="gdb -q"
+[[ -z $(installed grep) ]] || alias grep="\grep $GREP_ARGS"
+alias j="\cd \$(cat $HOME/.proj 2>/dev/null)"
+[[ -z $(installed less) ]] || alias l="\less"
+[[ -n $(installed less) ]] || alias l="\more"
+alias la="\ls $LS_ARGS -A"
+alias lag="\ls $LS_ARGS -A | \grep $GREP_CLR -Eis"
+alias ll="\ls $LS_ARGS -lh"
+alias lla="\ls $LS_ARGS -lhA"
+alias llag="\ls $LS_ARGS -lhA | \grep $GREP_CLR -Eis"
+alias llg="\ls $LS_ARGS -lh | \grep $GREP_CLR -Eis"
+alias ls="\ls $LS_ARGS"
+alias lsg="\ls $LS_ARGS | \grep $GREP_CLR -Eis"
+alias mv="\mv -i"
+alias off="sudo shutdown -h now"
+alias ps="\ps $PS_ARGS"
+alias psf="\ps $PS_ARGS -e --forest"
+alias psg="\ps $PS_ARGS -e | \grep -v \"grep\" | \grep $GREP_CLR -Eis"
+alias psme="\ps $PS_ARGS -u $USER"
+alias psmef="\ps $PS_ARGS -u $USER --forest"
+alias q="exit"
+alias r="\reset"
+[[ -z $(installed rg) ]] || alias rg="\rg $RG_ARGS"
+alias save="pwd >$HOME/.proj"
+case "$MILESRC_SHELL" in
+    *"bash") alias srcmilesrc=". $HOME/.bashrc" ;;
+    *"zsh") alias srcmilesrc=". $HOME/.zshrc" ;;
+esac
+if [[ -f /opt/sublime_text/sublime_text ]]; then
+    alias sublime="/opt/sublime_text/sublime_text"
+fi
+[[ -z $(installed sudo) ]] || alias sume="sudo -Es"
+if [[ -n $(installed htop) ]]; then
+    alias t="\htop -d 10"
+    alias tu="\htop -d 10 -u $USER"
+else
+    alias t="\top -d 10"
+    alias tu="\top -d 10 -u $USER"
+fi
+[[ -z $(installed w3m) ]] || alias w3m="\w3m -cookie"
+alias which="command -v"
+
+# Git aliases
+if [[ -n $(installed git) ]]; then
+    alias diff="\git diff -b --color-words=. --ignore-blank-lines --minimal"
+    alias gd="\git diff -b --color-words=. --ignore-blank-lines --minimal"
+    alias gl="\git log --date=relative --graph --pretty=format:\"%C(bold red)%h%Creset %s %C(bold green)%cd %C(bold blue)%an\""
+    alias gld="\git log --date=local --graph --pretty=format:\"%C(bold red)%h%Creset %s %C(bold green)%cd %C(bold blue)%an\""
+    alias gls="\git log --color=never --date=relative --graph --pretty=format:\"%h %s (%cd) %an\""
+    alias gp="\git pull -r origin master"
+    alias gs="\git status -b -s"
+    alias gsh="\git show -b --color-words=. --ignore-blank-lines --minimal"
+fi
+
+if [[ -z $(installed z | \grep "gem") ]]; then
+    if [[ -n $(installed rg) ]]; then
+        alias z="\rg $RG_ARGS"
+    elif [[ -n $(installed ag) ]]; then
+        alias z="\ag $AG_ARGS"
+    elif [[ -n $(installed ack-grep) ]]; then
+        alias z="\ack-grep $ACK_ARGS"
+    elif [[ -n $(installed ack) ]]; then
+        alias z="\ack $ACK_ARGS"
+    else
+        alias z="\grep $GREP_ARGS"
+    fi
+    alias zf="find . -iname"
+fi
+
+# Typos
+alias claer="clear"
+alias clea="clear"
+alias clae="clear"
+alias gimpe="gimp"
+alias got="git"
+alias vm="\mv -i"
+
+case "$(uname -s)" in
+    "Darwin")
+        alias md5sum="md5"
+        alias sha1sum="shasum -a 1"
+        alias sha256sum="shasum -a 256"
+        alias sha384sum="shasum -a 384"
+        alias sha512sum="shasum -a 512"
+        ;;
+esac
+# }}}
+
+# {{{ Functions
+if [[ -d $HOME/.milesrc/shell/functions ]]; then
+    for f in $(find $HOME/.milesrc/shell/functions -type f); do
+        . $f
+    done; unset f
+fi
+
+function cpan5() {
+    [[ ! -w /usr/local ]] || (umask 022 && cpan $@)
+    [[ -w /usr/local ]] || (umask 022 && sudo cpan $@)
+}
+
+function ipa() {
+    if [[ -n $(installed ip) ]]; then
+        if ip 2>&1 | \grep -Eq "c.olor"; then
+            ip -c -o $@ a | \grep -v "mtu" | awk '{print $2,$4}'
+        else
+            ip -o $@ a | \grep -v "mtu" | awk '{print $2,$4}'
+        fi
+    else
+        local device
+        local inet
+        while read line; do
+            case "$line" in
+                *encap*|*flags*)
+                    device="$(echo "$line" | awk '{print $1}')"
+                    ;;
+                *inet6*addr:*)
+                    inet="$(echo "$line" | awk '{print $3}')"
+                    ;;
+                *inet*) inet="$(echo "$line" | awk '{print $2}')"
+                    ;;
+                *) unset inet
+                    ;;
+            esac
+            [[ -z $inet ]] || echo "$device $inet" | sed "s/addr://"
+        done < <(ifconfig)
+    fi
+}
+
+function ipr() {
+    if [[ -n $(installed ip) ]]; then
+        if ip 2>&1 | \grep -Eq "c.olor"; then
+            ip -c -o $@ r
+        else
+            ip -o $@ r
+        fi
+    else
+        (
+            echo "Route Gateway Interface"
+            echo "----- ------- ---------"
+            netstat -nr | awk '!/Routing|Internet|Destination/ {
+                if (NF == 4) {
+                    print $1,$2,$4
+                } else if (NF == 7) {
+                    print $1,$2,$6
+                }
+            }'
+        ) | column -t
+    fi
+}
+
+function iso2usb() {
+    local usage="Usage: ${0/*\//} [-h|--help] <iso> <dev>"
+
+    [[ $# -ne 2 ]] && echo $usage && return 1
+    [[ ! -f $1 ]] && echo $usage && return 2
+    [[ ! -b $2 ]] && echo $usage && return 3
+
+    (umask 022 && sudo dd if="$1" of="$2" bs="4M")
+}
+
+function lsp() {
+    [[ -d $PROJS ]] || return 0
+
+    local count=0
+
+    # lists directories in PROJS and allows quick cd'ing to them
+    declare -a dirs
+    dirs=($(
+        find -L $PROJS -maxdepth 3 -mindepth 1 -name ".git" \
+        -exec dirname {} + 2>/dev/null | sort -u
+    ))
+
+    local dir
+    for dir in "${dirs[@]}"; do
+        [[ -z $(echo $dir | \grep "archived" ) ]] || continue
+        let "count += 1"
+        if [[ $# -ne 1 ]]; then
+            printf "%03d %s\n" $count ${dir/$PROJS\//}
+        elif [[ $count -eq $1 ]]; then
+            \cd $dir
+        fi
+    done
+}
+
+function milesrc() {
+    echo "Configuration via files"
+    echo "    ~/.git.nostatus"
+    echo "        Prompt will not show any git status for paths in"
+    echo "        this file. One path per line."
+    echo "    ~/.milesrc.local"
+    echo "        Sourced last. Put your custom bash/zsh settings"
+    echo "        here."
+    echo "    ~/.proj"
+    echo "        Created by save alias. Stores a directory to be"
+    echo "        used by j alias."
+    echo "    ~/.ssh-agent"
+    echo "        If it exists, milesrc will automatically create and"
+    echo "        handle your ssh-agent."
+    echo
+    echo "Configuration via ENV vars"
+    echo "    MILESRC_ACKNOWLEDGE_MACOS_IS_DUMB"
+    echo "        If set, hide warnings about missing gnu utilities"
+    echo "        on macOS"
+    echo "    MILESRC_LS_AFTER_CD"
+    echo "        If set, ls will be automatically run after each cd."
+    echo "        You likely don't want this if you're looking at"
+    echo "        large directory trees with numerous files in each"
+    echo "        directory."
+    echo "    MILESRC_PROMPT_EMOTICONS"
+    echo "        If set, the prompt will use emoticons to show exit"
+    echo "        status of the last command. If set to"
+    echo "        \"unsupported\" the prompt will use more emoticons"
+    echo "        to show exit status of the last command. However,"
+    echo "        they don't all work unless you properly configure"
+    echo "        your locales."
+    echo "    MILESRC_THEME_PROMPT"
+    echo "        If set, will theme the prompt. Unsetting should"
+    echo "        immediately untheme the prompt."
+}
+
+function mycd() {
+    if [[ $# -eq 0 ]] || [[ -d "$@" ]] || [[ $@ == "-" ]]; then
+        \cd "$@" >/dev/null
+        if [[ $? -eq 0 ]] && [[ -n $MILESRC_LS_AFTER_CD ]]; then
+            eval \ls $LS_ARGS
+        fi
+    elif [[ -d $(echo "$PWD/$@" | sed -r "s|[^/]+/\.\.||g") ]]; then
+        \cd "$@" >/dev/null
+        if [[ $? -eq 0 ]] && [[ -n $MILESRC_LS_AFTER_CD ]]; then
+            eval \ls $LS_ARGS
+        fi
+    else
+        echo "Directory doesn't exist: $@"
+        local in="$(dirname "$@")"
+        local seek="$(basename "$@")"
+        local possible="$(
+            find -L $in -maxdepth 1 -type d -iname "${seek}*" \
+            2>/dev/null | sort | head -n 1
+        )"
+        if [[ -n $possible ]] && [[ -d "$possible" ]]; then
+            echo "Guessing you meant: $possible"
+            echo
+            \cd $possible >/dev/null
+            if [[ $? -eq 0 ]] && [[ -n $MILESRC_LS_AFTER_CD ]]; then
+                eval \ls $LS_ARGS
+            fi
+        fi
+    fi
+    return 0
+}
+
+if [[ -n $(installed xdg-mime) ]]; then
+    function open() {
+        [[ $# -ne 0 ]] || return 0
+
+        if [[ -f $1 ]]; then
+            type="$(xdg-mime query filetype $1)"
+        elif [[ -n $(echo "$1" | \grep -E "https?:\/\/") ]]; then
+            type="text/html"
+        fi
+        [[ -n $type ]] || return 1
+
+        exe="$(xdg-mime query default $type | sed "s/.desktop//g")"
+        [[ -n $exe ]] || return 2
+
+        $exe "$@"
+        unset exe type
+    }
+fi
+
+function pip2() {
+    [[ ! -w /usr/local ]] || (umask 022 && python2 -m pip $@)
+    [[ -w /usr/local ]] || (umask 022 && sudo python2 -m pip $@)
+}
+
+function pip3() {
+    [[ ! -w /usr/local ]] || (umask 022 && python3 -m pip $@)
+    [[ -w /usr/local ]] || (umask 022 && sudo python3 -m pip $@)
+}
+
+function remove_spaces_in_names() {
+    local dir
+    for dir in "$@"; do
+        if [[ ! -d $dir ]]; then
+            echo "$dir does not exist"
+            return
+        fi
+    done
+
+    local look_in="."
+    [[ $# -eq 0 ]] || look_in="$@"
+
+    # Determine rename command
+    local rnm="$(installed rename)"
+    if [[ -e /usr/bin/site_perl/rename ]]; then
+        rnm="/usr/bin/site_perl/rename"
+    fi
+
+    # May need to cpan install File::Rename
+    if [[ -z $rnm ]] || [[ -z $($rnm -h | \grep "perl") ]]; then
+        echo "Please run \"(umask 022 && sudo cpan File::Rename)\""
+        return
+    fi
+
+    find $look_in -depth -name "* *" -execdir $rnm -v "s/ /_/g" "{}" +
+}
+
+case "$MILESRC_SHELL" in
+    *"bash")
+        function reset_completions() {
+            [[ -d $HOME/.config/bash/complete ]] || return
+            for i in $(\ls $HOME/.config/bash/complete); do
+                . $HOME/.config/bash/complete/$i
+            done
+        }
+        ;;
+    *"zsh")
+        function reset_completions() {
+            local f=($HOME/.config/zsh/complete/_*)
+            unfunction $f:t 2>/dev/null
+            autoload -U $f:t
+        }
+        ;;
+esac
+
+function simplehttp() {
+    case "$1" in
+        "busybox")
+            if [[ -n $(installed busybox) ]]; then
+                busybox httpd -f -p ${2:-8080}
+            else
+                echo "busybox not installed"
+            fi
+            ;;
+        "perl")
+            if [[ -n $(installed plackup) ]]; then
+                plackup -MPlack::App::Directory \
+                    -e 'Plack::App::Directory->new(root=>".");' \
+                    -p ${2:-8080}
+            else
+                echo "Please run:"
+                echo " umask 022 && cpan Plack"
+            fi
+            ;;
+        "php")
+            if [[ -n $(installed php) ]]; then
+                php -S 127.0.0.1:${2:-8080}
+            else
+                echo "php not installed"
+            fi
+            ;;
+        "python2")
+            if [[ -n $(installed python2) ]]; then
+                python2 -m SimpleHTTPServer ${2:-8080}
+            else
+                echo "python2 not installed"
+            fi
+            ;;
+        "python3")
+            if [[ -n $(installed python3) ]]; then
+                python3 -m http.server ${2:-8080}
+            else
+                echo "python3 not installed"
+            fi
+            ;;
+        "ruby")
+            if [[ -n $(installed ruby) ]]; then
+                ruby -r un -e httpd . -p ${2:-8080}
+            else
+                echo "ruby not installed"
+            fi
+            ;;
+        "twisted")
+            if [[ -n $(installed twistd) ]]; then
+                twistd -n web -p ${2:-8080} --path .
+            else
+                echo "Please run:"
+                echo " umask 022 && python2 -m pip install twisted"
+            fi
+            ;;
+        *)
+            echo "Usage: simplehttp <lang> [port]"
+            echo
+            echo "Port defaults to 8080."
+            echo
+            echo "Languages:"
+            [[ -z $(installed busybox) ]] || echo "    busybox"
+            [[ -z $(installed perl) ]] || echo "    perl"
+            [[ -z $(installed php) ]] || echo "    php"
+            [[ -z $(installed python2) ]] || echo "    python2"
+            [[ -z $(installed python3) ]] || echo "    python3"
+            [[ -z $(installed ruby) ]] || echo "    ruby"
+            [[ -z $(installed python2) ]] || echo "    twisted"
+            ;;
+    esac
+}
+
+function sudo() {
+    local sudo="$(installed sudo)"
+    [[ -z $sudo ]] && $@ && return $?
+    umask 022
+    $sudo $@
+    local ret="$?"
+    [[ -n $(id | \grep "uid=0") ]] || umask 077
+    return $ret
+}
+
+function tdump() {
+    if [[ -z $(installed tcpdump) ]]; then
+        echo "tcpdump is not installed"
+        return
+    fi
+
+    local cap="$(echo "$@" | \grep -Eo "[^ ]+\.pcap")"
+    sudo tcpdump -n -vvv $@
+    [[ -z $(id | \grep "uid=0") ]] || return 0
+    [[ -z $cap ]] || [[ ! -f $cap ]] || sudo chown $USER:$USER $cap
+}
+
+function update_repos() {
+    [[ -z $(installed git) ]] && echo "git is not installed" && return
+
+    declare -a dirs
+    dirs=($(find -L $PROJS -type d -name ".git" 2>/dev/null))
+    for dir in "${dirs[@]}"; do
+        if [[ -z $(echo "$dir" | \grep "archived") ]]; then
+            (
+                \cd $(dirname $dir)
+                if [[ -d .git ]] &&
+                   [[ -n $(git config remote.origin.url) ]]
+                then
+                    echo -e "\e[36m$(basename $(dirname $dir))\e[0m"
+                    git pull --all
+                    echo
+                fi
+            )
+        fi
+    done; unset dir
+    unset dirs
+}
+
+function x() {
+    case "$1" in
+        *.7z)
+            if [[ -z $(installed 7z) ]]; then
+                echo "Install p7zip!"
+            else
+                7z x $@
+            fi
+            ;;
+        *.bz2)
+            if [[ -z $(installed bzip2) ]]; then
+                echo "Install bzip2!"
+            else
+                bzip2 -dk $@
+            fi
+            ;;
+        *.jar)
+            if [[ -z $(installed jar) ]]; then
+                echo "Install java!"
+            else
+                jar -xf $@
+            fi
+            ;;
+        *.rar)
+            if [[ -z $(installed unrar) ]]; then
+                echo "Install unrar!"
+            else
+                unrar x $@
+            fi
+            ;;
+        *.rpm)
+            if [[ -z $(installed rpm2cpio) ]]; then
+                echo "Install rpm2cpio!"
+            elif [[ -z $(installed cpio) ]]; then
+                echo "Install rpm2cpio!"
+            else
+                rpm2cpio $@ | cpio -idmv
+            fi
+            ;;
+        *.tar.gz|*.tgz)
+            if [[ -z $(installed tar) ]]; then
+                echo "Install tar!"
+            else
+                tar -xzf $@
+            fi
+            ;;
+        *.gz)
+            if [[ -z $(installed gzip) ]]; then
+                echo "Install gzip!"
+            else
+                gzip -dk $@
+            fi
+            ;;
+        *.tar)
+            if [[ -z $(installed tar) ]]; then
+                echo "Install tar!"
+            else
+                tar -xf $@
+            fi
+            ;;
+        *.xz)
+            if [[ -z $(installed xz) ]]; then
+                echo "Install xz!"
+            else
+                xz -dk $@
+            fi
+            ;;
+        *.zip)
+            if [[ -z $(installed unzip) ]]; then
+                echo "Install unzip!"
+            else
+                unzip $@
+            fi
+            ;;
+        *)
+            if [[ -n $(installed aunpack) ]]; then
+                aunpack $@
+            else
+                echo "Unknown archive format!"
+            fi
+            ;;
+    esac
+}
+# }}}
+
+case "$MILESRC_SHELL" in
+    *"bash")
+        # {{{ Bash completions
+        if [[ -d $HOME/.config/bash/complete ]]; then
+            for i in $(\ls $HOME/.config/bash/complete); do
+                . $HOME/.config/bash/complete/$i
+            done
+        fi
+
+        # Complete gimme alias
+        if [[ -n $(installed apt-get) ]]; then
+            function _apt_install_complete() {
+                mapfile -t COMPREPLY < <(
+                    apt-cache --no-generate pkgnames "$2"
+                )
+            }
+            complete -F _apt_install_complete gimme
+        elif [[ -n $(installed pacman) ]]; then
+            if [[ -n $(installed ruaur) ]]; then
+                function _ruaur_install_complete() {
+                    mapfile -t COMPREPLY < <(
+                        ruaur -Ss "$2" --names-only | \
+                        \grep -E "^$2" | sort -u
+                    )
+                }
+                complete -F _ruaur_install_complete gimme
+            else
+                function _pacman_install_complete() {
+                    mapfile -t COMPREPLY < <(
+                        pacman --color=never -Ss "$2" | perl -lne \
+                        '/^[^\/]+\/('$2'[^\s]+)/ && print $1' | \
+                        sort -u
+                    )
+                }
+                if [[ -n $(installed perl) ]]; then
+                    complete -F _pacman_install_complete gimme
+                fi
+            fi
+        elif [[ -n $(installed brew) ]]; then
+            function _brew_install_complete() {
+                mapfile -t COMPREPLY < <(brew search "$2")
+            }
+            complete -F _brew_install_complete gimme
+        elif [[ -n $(installed crew) ]]; then
+            function _crew_install_complete() {
+                mapfile -t COMPREPLY < <(
+                    crew search "$2" | awk '{print $1}'
+                )
+            }
+            complete -F _crew_install_complete gimme
+        fi
+        # }}}
+        ;;
+    *"zsh")
+        # {{{ Zsh completions
+        if [[ -d $HOME/.config/zsh/complete ]]; then
+            fpath=($HOME/.config/zsh/complete $fpath)
+        fi
+
+        for dir in \
+            $HOME/.config/zsh/plugins/zsh-completions/src \
+            /usr/share/zsh/plugins/zsh-completions/src \
+            /usr/share/zsh/site-functions
+        do
+            [[ ! -d $dir ]] || fpath=($dir $fpath)
+        done; unset dir
+
+        if [[ $ZSHV -gt 4.2 ]]; then
+            if [[ -z $(command -v compdef) ]]; then
+                autoload -Uz compinit && compinit -u
+            fi
+        fi
+
+        compdef _gnu_generic z zc zf zg zl zr
+
+        # Complete gimme alias
+        if [[ -n $(installed apt-get) ]]; then
+            function _apt_install_complete() {
+                reply=($(apt-cache --no-generate pkgnames "$1"))
+            }
+            compctl -K _apt_install_complete gimme
+        elif [[ -n $(installed pacman) ]]; then
+            if [[ -n $(installed ruaur) ]]; then
+                compdef _gnu_generic ruaur
+                function _ruaur_install_complete() {
+                    reply=($(ruaur -Ss "$1" --names-only))
+                }
+                compctl -K _ruaur_install_complete gimme
+            else
+                function _pacman_install_complete() {
+                    reply=($(
+                        pacman --color=never -Ss "$1" | \
+                        perl -lne '/^[^\/]+\/([^\s]+)/ && print $1'
+                    ))
+                }
+                if [[ -n $(installed perl) ]]; then
+                    compctl -K _pacman_install_complete gimme
+                fi
+            fi
+        elif [[ -n $(installed brew) ]]; then
+            function _brew_install_complete() {
+                reply=($(brew search "$1"))
+            }
+            compctl -K _brew_install_complete gimme
+        elif [[ -n $(installed crew) ]]; then
+            function _crew_install_complete() {
+                reply=($(crew search "$1" | awk '{print $1}'))
+            }
+            compctl -K _crew_install_complete gimme
+        fi
+        # }}}
+        ;;
+esac
+
+# {{{ Wrap-up
+# Xterm
+if [[ -n $(installed xrdb) ]] && [[ -f $HOME/.Xresources ]]; then
+    xrdb -merge $HOME/.Xresources 2>/dev/null
+fi
+
+# Local stuff
+[[ ! -f $HOME/.milesrc.local ]] || . $HOME/.milesrc.local
+# }}}
+
+# {{{ Fix Mac stuff
+case "$(uname -s)" in
+    "Darwin")
+        local gfind="ignore"
+        local ggrep="ignore"
+        local gobjdump="ignore"
+        local gsed="ignore"
+
+        # Check for missing (sane) utilities
+        if [[ -z $MILESRC_ACKNOWLEDGE_MACOS_IS_DUMB ]]; then
+            gfind="$(which gfind)"
+            ggrep="$(which ggrep)"
+            gobjdump="$(which gobjdump)"
+            gsed="$(which gsed)"
+        fi
+
+        if [[ -z $gfind ]] ||
+           [[ -z $ggrep ]] ||
+           [[ -z $gobjdump ]] ||
+           [[ -z $gsed ]]
+        then
+            echo "*** WARNING ***"
+            echo "macOS is dumb! The following may be required:"
+            echo
+            [[ -n $gfind ]] || echo "    brew install findutils"
+            [[ -n $ggrep ]] || echo "    brew install grep"
+            [[ -n $gobjdump ]] || echo "    brew install binutils"
+            [[ -n $gsed ]] || echo "    brew install gnu-sed"
+            echo
+            echo "You'll then want to symlink the following into"
+            echo "$HOME/bin:"
+            echo
+            if [[ -z $gfind ]]; then
+                echo "  ln -s \$(which gfind) find"
+                echo "  ln -s \$(which glocate) locate"
+                echo "  ln -s \$(which gupdatedb) updatedb"
+                echo "  ln -s \$(which gxargs) xargs"
+            fi
+            [[ -n $ggrep ]] || echo "    ln -s \$(which ggrep) grep"
+            if [[ -z $gobjdump ]]; then
+                echo "    ln -s \$(which gobjdump) objdump"
+            fi
+            [[ -n $gsed ]] || echo "    ln -s \$(which gsed) sed"
+            echo
+            echo "Add the following to $HOME/.milesrc.local to hide"
+            echo "these warnings:"
+            echo
+            echo "  export MILESRC_ACKNOWLEDGE_MACOS_IS_DUMB=\"true\""
+            echo
+        fi
+        ;;
+esac
+# }}}

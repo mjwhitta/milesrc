@@ -1,0 +1,183 @@
+#!/usr/bin/env bash
+
+link() {
+    echo "[+] Linking directories and files..."
+    for entry in "${files[@]}"; do
+        from="$milesrc/${entry/:*/}"
+        to="${entry/*:/}"
+
+        if [[ ! -e $from ]]; then
+            echo "[-] $from does not exist"
+            continue
+        fi
+
+        if [[ -L $to ]]; then
+            already_from="$(\ls -hl $to | awk '{print $NF}')"
+            [[ $already_from != $from ]] || continue
+            echo "[+] Removing symlink $to"
+            rm $to
+        elif [[ -e $to ]] && [[ -z $force ]]; then
+            echo "[+] Moving $to to $to.milesrc.bak"
+            mv $to $to.milesrc.bak
+        elif [[ -d $to ]]; then
+            echo "[+] Removing directory $to"
+            rm -rf $to
+        elif [[ -f $to ]]; then
+            echo "[+] Removing file $to"
+            rm -f $to
+        else
+            echo "[+] Ensuring $(dirname $to) exists"
+            mkdir -p $(dirname $to)
+        fi
+
+        echo "[+] Symlinking $from to $to"
+        ln -s $from $to
+    done; unset entry
+    echo "[+] done"
+
+    if [[ -d $milesrc/vim/plugs ]] && [[ -n $(command -v git) ]]; then
+        echo "[+] Installing vim plugins..."
+        vim_plugins
+        echo "[+] done"
+    elif [[ ! -d $milesrc/vim/plugs ]]; then
+        echo "[-] There are no vim configs to link"
+    else
+        echo "[!] Can not install vim plugins without git"
+    fi
+
+    echo "[+] Successfully linked milesrc"
+}
+
+link_status() {
+    for entry in "${files[@]}"; do
+        from="$milesrc/${entry/:*/}"
+        to="${entry/*:/}"
+
+        if [[ ! -e $from ]]; then
+            echo "[-] $from does not exist"
+            continue
+        fi
+
+        if [[ -L $to ]]; then
+            already_from="$(\ls -hl $to | awk '{print $NF}')"
+            if [[ $already_from == $from ]]; then
+                echo "[+] $to is linked"
+            else
+                echo "[-] $to is not linked to the milesrc"
+            fi
+        else
+            echo "[-] $to is not a symlink"
+        fi
+    done; unset entry
+
+    if [[ -d $milesrc/vim ]]; then
+        mkdir -p $milesrc/vim/plugs
+        if [[ -n $(ls $milesrc/vim/plugs) ]]; then
+            echo "[+] vim plugins are installed"
+        else
+            echo "[-] vim plugins are not installed"
+        fi
+    fi
+}
+
+unlink() {
+    for entry in "${files[@]}"; do
+        from="$milesrc/${entry/:*/}"
+        to="${entry/*:/}"
+
+        if [[ -L $to ]]; then
+            already_from="$(\ls -hl $to | awk '{print $NF}')"
+            if [[ $already_from == $from ]]; then
+                echo "[+] Removing symlink for $to"
+                rm $to
+            else
+                echo "[!] Did not unlink $to as it was not linked"
+            fi
+        fi
+
+        if [[ ! -e $to ]] && [[ -e $to.milesrc.bak ]]; then
+            echo "[+] Restoring $to.milesrc.bak to $to"
+            mv $to.milesrc.bak $to
+        elif [[ -e $to ]] && [[ ! -L $to ]]; then
+            echo "[!] Could not unlink $to as it was not a symlink"
+        fi
+
+        if [[ -e $to.milesrc.bak ]]; then
+            echo "[!] Did not restore backup of $to"
+        fi
+
+        [[ ! -f $from ]] || touch $to
+        [[ ! -d $from ]] || mkdir -p $to
+
+        if [[ -d $milesrc/vim ]]; then
+            echo "[+] Removing vim plugins"
+            rm -rf $milesrc/vim/plugs/*
+        fi
+    done; unset entry
+
+    echo "[+] Successfully unlinked milesrc"
+}
+
+usage() {
+    echo "Usage: ${0/*\//} [OPTIONS] <action>"
+    echo "Options:"
+    echo "    -f, --force"
+    echo "        Do not make backups"
+    echo "    -h, --help"
+    echo "        Display this help message"
+    echo
+    echo "Actions:"
+    echo "    link"
+    echo "        Back up existing configs and symlink milesrc"
+    echo "    unlink"
+    echo "        Remove symlinks and restore old configs"
+    echo
+    exit $1
+}
+
+vim_plugins() {
+    mkdir -p $milesrc/vim/plugs
+    vim -c :PlugUpgrade -c :q
+    [[ $? -eq 0 ]] || exit $?
+    rm -f $milesrc/vim/autoload/plug.vim.old
+    vim -c :PlugUpdate -c ":sleep 1" -c :q -c :q
+    [[ $? -eq 0 ]] || exit $?
+}
+
+declare -a args
+unset force
+milesrc="$(pwd)"
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        "--") shift && args+=("$@") && break ;;
+        "-f"|"--force") force="true" ;;
+        "-h"|"--help") usage 0 ;;
+        *) args+=("$1") ;;
+    esac
+    shift
+done
+[[ -z ${args[@]} ]] || set -- "${args[@]}"
+
+[[ $# -eq 1 ]] || usage 1
+
+declare -a files
+files=(
+    "shell/bash_zsh_profile:$HOME/.bash_profile"
+    "shell/bash_zsh_rc:$HOME/.bashrc"
+    "shell/complete/bash:$HOME/.config/bash/complete"
+    "shell/bash_zsh_profile:$HOME/.zprofile"
+    "shell/bash_zsh_rc:$HOME/.zshrc"
+    "shell/complete/zsh:$HOME/.config/zsh/complete"
+    "tmux:$HOME/.tmux"
+    "tmux/tmux.conf:$HOME/.tmux.conf"
+    "vim:$HOME/.vim"
+    "vim/vimrc:$HOME/.vimrc"
+)
+
+case "$1" in
+    "link") link ;;
+    "status") link_status ;;
+    "unlink") unlink ;;
+    *) usage 2 ;;
+esac

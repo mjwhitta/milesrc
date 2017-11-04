@@ -1,0 +1,11 @@
+# If not running interactively, don't do anything
+[[ $- == *i* ]] || return
+
+[[ -z $BASH ]] || [[ ! -f $HOME/.bashrc ]] || . $HOME/.bashrc
+
+if [[ -n $(command -v xrdb) ]] && [[ -f $HOME/.Xresources ]]; then
+    xrdb -merge $HOME/.Xresources 2>/dev/null
+fi
+
+# Load RVM into a shell session *as a function*
+[[ ! -f $HOME/.rvm/scripts/rvm ]] || . $HOME/.rvm/scripts/rvm

@@ -1,0 +1,153 @@
+#!/usr/bin/env bash
+# A script for making some iptables commands easier.
+# by Miles Whittaker <mjwhitta@gmail.com>
+#
+# --------------------------------------------------------------------
+# The MIT License (MIT)
+#
+# Copyright (c) 2017 Miles Whittaker
+#
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation files
+# (the "Software"), to deal in the Software without restriction,
+# including without limitation the rights to use, copy, modify, merge,
+# publish, distribute, sublicense, and/or sell copies of the Software,
+# and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+# BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+# ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+# --------------------------------------------------------------------
+
+function fw() {
+    fw_cleanup() {
+        unset action args chain
+        unset -f fw_cleanup
+        unset -f fw_clear
+        unset -f fw_close
+        unset -f fw_list
+        unset -f fw_open
+        unset -f fw_reset
+        unset -f fw_usage
+    }
+
+    fw_clear() {
+        while read chain; do
+            sudo iptables -P $chain ACCEPT
+        done < <(sudo iptables -S | awk '/-P/ {print $2}')
+        sudo iptables -F
+        while read chain; do
+            sudo iptables -X $chain
+        done < <(sudo iptables -S | awk '/-N/ {print $2}')
+
+        while read chain; do
+            sudo iptables -t nat -P $chain ACCEPT
+        done < <(sudo iptables -S -t nat | awk '/-P/ {print $2}')
+        sudo iptables -t nat -F
+        while read chain; do
+            sudo iptables -t nat -X $chain
+        done < <(sudo iptables -S -t nat | awk '/-N/ {print $2}')
+    }
+
+    fw_close() {
+        sudo iptables -D INPUT -p tcp --dport $1 -j ACCEPT
+        sudo iptables -D INPUT -p udp --dport $1 -j ACCEPT
+    }
+
+    fw_list() {
+        sudo iptables $@ -S
+    }
+
+    fw_open() {
+        sudo iptables -I INPUT -p tcp --dport $1 -j ACCEPT
+        sudo iptables -I INPUT -p udp --dport $1 -j ACCEPT
+    }
+
+    fw_reset() {
+        if [[ -f /etc/iptables/iptables.rules ]]; then
+            sudo iptables-restore </etc/iptables/iptables.rules
+        fi
+    }
+
+    fw_usage() {
+        echo "Usage: fw [OPTIONS]"
+        echo
+        echo "Makes some iptables commands easier"
+        echo
+        echo "Options:"
+        echo "    -h, --help"
+        echo "        Display this help message"
+        echo
+        echo "    -c, --close=PORT"
+        echo "        Close a previously opened port"
+        echo
+        echo "    --clear"
+        echo "        Clear iptables rules"
+        echo
+        echo "    -l, --list"
+        echo "        List iptables rules (default behavior)"
+        echo
+        echo "    -o, --open=PORT"
+        echo "        Open a port"
+        echo
+        echo "    -r, --reset"
+        echo "        Restore default iptables rules"
+        echo
+        fw_cleanup
+    }
+
+    declare -a args
+    action="list"
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            "--") shift && args+=("$@") && break ;;
+            "-c"|"--close")
+                shift; [[ $# -eq 0 ]] && fw_usage && return 1
+                action="close"
+                port="$1"
+                ;;
+            "--clear") action="clear" ;;
+            "-h"|"--help") fw_usage; return 0 ;;
+            "-l"|"--list") action="list" ;;
+            "-o"|"--open")
+                shift; [[ $# -eq 0 ]] && fw_usage && return 1
+                action="open"
+                port="$1"
+                ;;
+            "-r"|"--reset") action="reset" ;;
+            *) args+=("$1") ;;
+        esac
+        shift
+    done
+    [[ -z ${args[@]} ]] || set -- "${args[@]}"
+
+    [[ $# -gt 0 ]] && fw_usage && return 2
+    [[ -z $(command -v iptables) ]] && fw_usage && return 3
+
+    case "$action" in
+        "close") fw_close $port ;;
+        "clear") fw_clear ;;
+        "list") fw_list; fw_list -t nat ;;
+        "open") fw_open $port ;;
+        "reset") fw_reset ;;
+    esac
+
+    fw_cleanup
+}
+
+if [[ -n ${BASH_SOURCE[0]} ]]; then
+    case "$0" in
+        *"bash") ;;
+        *) fw "$@" ;;
+    esac
+fi

@@ -1,0 +1,185 @@
+#!/usr/bin/env bash
+# A wrapper script for many unix package managers.
+# by Miles Whittaker <mjwhitta@gmail.com>
+#
+# --------------------------------------------------------------------
+# The MIT License (MIT)
+#
+# Copyright (c) 2017 Miles Whittaker
+#
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation files
+# (the "Software"), to deal in the Software without restriction,
+# including without limitation the rights to use, copy, modify, merge,
+# publish, distribute, sublicense, and/or sell copies of the Software,
+# and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+# BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+# ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+# --------------------------------------------------------------------
+
+function gimme() {
+    gimme_cleanup() {
+        unset action args cask cmd nosave old_umask
+        unset -f gimme_cleanup
+        unset -f gimme_usage
+    }
+
+    gimme_usage() {
+        echo "Usage: gimme [OPTIONS] [pkg]..."
+        echo
+        echo "Automatically uses the correct package manager"
+        echo
+        echo "Options:"
+        echo "    -h, --help"
+        echo "        Display this help message"
+        echo
+        echo "    -n, --nosave"
+        echo "        Used with --remove to also remove configs"
+        echo
+        echo "    -R, --remove"
+        echo "        Remove package(s)"
+        echo
+        echo "    -s, --search"
+        echo "        Search for matching packages"
+        echo
+        echo "    -u, --update"
+        echo "        Update installed packages"
+        echo
+        gimme_cleanup
+    }
+
+    declare -a args
+    action="install"
+    unset nosave
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            "--") shift && args+=("$@") && break ;;
+            "-h"|"--help") gimme_usage; return 0 ;;
+            "-n"|"--nosave") nosave="true" ;;
+            "-R"|"--remove") action="remove" ;;
+            "-Rn") action="remove"; nosave="true" ;;
+            "-s"|"--search") action="search" ;;
+            "-u"|"--update") action="update" ;;
+            *) args+=("$1") ;;
+        esac
+        shift
+    done
+    [[ -z ${args[@]} ]] || set -- "${args[@]}"
+
+    case "$action" in
+        "install") [[ $# -eq 0 ]] && gimme_usage && return 1 ;;
+        "remove") [[ $# -eq 0 ]] && gimme_usage && return 2 ;;
+        "search") [[ $# -eq 0 ]] && gimme_usage && return 3 ;;
+        "update") [[ $# -ne 0 ]] && gimme_usage && return 4 ;;
+    esac
+
+    old_umask="$(umask)"
+    umask 022
+
+    if [[ -n $(command -v apt-get) ]]; then
+        case "$action" in
+            "install") sudo apt-get install -y "$@" ;;
+            "remove")
+                [[ -n $nosave ]] || sudo apt-get remove "$@"
+                [[ -z $nosave ]] || sudo apt-get purge "$@"
+                ;;
+            "search") apt-cache search "$@" ;;
+            "update")
+                for cmd in \
+                    update dist-upgrade autoremove autoclean \
+                ; do
+                    sudo apt-get $cmd -y
+                done
+                ;;
+        esac
+    elif [[ -n $(command -v brew) ]]; then
+        case "$action" in
+            "install") brew install "$@" ;;
+            "remove") brew remove "$@" ;;
+            "search") brew search "$@" ;;
+            "update")
+                for cmd in update upgrade cleanup; do
+                    brew $cmd
+                done
+                for cask in $(brew cask list); do
+                    brew cask install $cask
+                done
+                brew cask cleanup
+                ;;
+        esac
+    elif [[ -n $(command -v crew) ]]; then
+        case "$action" in
+            "install") yes | crew install "$@" ;;
+            "remove") crew remove "$@" ;;
+            "search") crew search "$@" ;;
+            "update") crew update && yes | crew upgrade ;;
+        esac
+    elif [[ -n $(command -v dnf) ]]; then
+        case "$action" in
+            "install") sudo dnf install -y "$@" ;;
+            "remove") sudo dnf remove "$@" ;;
+            "search") dnf search -q "$@" ;;
+            "update") sudo dnf upgrade -y ;;
+        esac
+    elif [[ -n $(command -v pacman) ]]; then
+        if [[ -n $(command -v ruaur) ]]; then
+            case "$action" in
+                "install") ruaur -S "$@" --noconfirm ;;
+                "remove")
+                    [[ -n $nosave ]] || ruaur -R "$@"
+                    [[ -z $nosave ]] || ruaur -Rn "$@"
+                    ;;
+                "search") ruaur -Ss "$@" ;;
+                "update")
+                    ruaur -Su --noconfirm
+                    ruaur -Sc --noconfirm
+                    ;;
+            esac
+        else
+            case "$action" in
+                "install") sudo pacman -S "$@" --noconfirm ;;
+                "remove")
+                    [[ -n $nosave ]] || sudo pacman -R "$@"
+                    [[ -z $nosave ]] || sudo pacman -Rn "$@"
+                    ;;
+                "search") pacman -Ss "$@" ;;
+                "update")
+                    sudo pacman -Syyu --noconfirm
+                    sudo pacman -Sc --noconfirm
+                    ;;
+            esac
+        fi
+    elif [[ -n $(command -v yum) ]]; then
+        case "$action" in
+            "install") sudo yum install -y "$@" ;;
+            "remove") sudo yum remove "$@" ;;
+            "search") yum search "$@" ;;
+            "update") sudo yum update -y ;;
+        esac
+    else
+        echo "Unsupported package manager!"
+    fi
+
+    [[ -n $(id | \grep "uid=0") ]] || umask $old_umask
+
+    gimme_cleanup
+}
+
+if [[ -n ${BASH_SOURCE[0]} ]]; then
+    case "$0" in
+        *"bash") ;;
+        *) gimme "$@" ;;
+    esac
+fi

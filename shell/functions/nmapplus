@@ -1,0 +1,192 @@
+#!/usr/bin/env bash
+# A wrapper script for nmap that organizes scan output.
+# by Miles Whittaker <mjwhitta@gmail.com>
+#
+# --------------------------------------------------------------------
+# The MIT License (MIT)
+#
+# Copyright (c) 2017 Miles Whittaker
+#
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation files
+# (the "Software"), to deal in the Software without restriction,
+# including without limitation the rights to use, copy, modify, merge,
+# publish, distribute, sublicense, and/or sell copies of the Software,
+# and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+# BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+# ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+# --------------------------------------------------------------------
+
+function nmapplus() {
+    nmapplus_cleanup() {
+        unset arg args dir force host hosts iface ipv6 os ports prot
+        unset services technique timeout udp
+        unset -f nmapplus_cleanup
+        unset -f nmapplus_usage
+    }
+
+    nmapplus_scan_host() {
+        host="$1"
+
+        echo "Scanning $host"
+
+        case "$host" in
+            *[^0-9.]*) dir="${host/.*/}" ;;
+            *) dir="$host" ;;
+        esac
+
+        mkdir -p nmap_scans/$dir
+        (
+            cd nmap_scans/$dir
+            if [[ -f ${prot}.nmap ]] && [[ -z $force ]]; then
+                echo "Already done, skipping"
+            else
+                echo nmap $ipv6 $os $iface $timeout -oA $prot $ports \
+                    $force $technique $services $udp $host
+
+                # Ugh, have to use eval
+                eval nmap $ipv6 $os $iface $timeout -oA $prot $ports \
+                    $force $technique $services $udp $host
+            fi
+        )
+        echo
+    }
+
+    nmapplus_scan_hosts() {
+        echo "Reading hosts from $1..."
+        for host in $(cat $1 | awk '{print $1}'); do
+            nmapplus_scan_host $host
+        done
+    }
+
+    nmapplus_usage() {
+        echo "Usage: nmapplus [OPTIONS] [host1]...[hostN]"
+        echo
+        echo "Organizes your nmap scans"
+        echo
+        echo "Options:"
+        echo "    -6"
+        echo "        Enable IPv6 scanning"
+        echo
+        echo "    -f, --force"
+        echo "        Force scan"
+        echo
+        echo "    -h, --help"
+        echo "        Display this help message"
+        echo
+        echo "    --hosts=FILE"
+        echo "        Use hosts from file (split on whitespace and"
+        echo "        use first token from each line)"
+        echo
+        echo "    -i, --iface=IFACE"
+        echo "        Use the specified interface for scanning"
+        echo
+        echo "    -n, --topn=NUM"
+        echo "        Only scan the top N ports"
+        echo
+        echo "    -o, --os"
+        echo "        Enable OS detection"
+        echo
+        echo "    -p, --ports=PORTS"
+        echo "        Only scan specified ports (default: all ports)"
+        echo
+        echo "    -s, --services"
+        echo "        Enable service identification"
+        echo
+        echo "    -t, --technique=TECHNIQUE"
+        echo "        Scan technique: syn, connect, ack, window,"
+        echo "        maimon, null, fin, xmas"
+        echo
+        echo "    --timeout=TIMEOUT"
+        echo "        Give up on host after specified time (e.g. 15m)"
+        echo
+        echo "    -u, --udp"
+        echo "        UDP scan"
+        echo
+        nmapplus_cleanup
+    }
+
+    declare -a args hosts
+    unset force iface ipv6 os services technique timeout udp
+    prot="tcp"
+    ports="-p 1-65535"
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            "--") shift && args+=("$@") && break ;;
+            "-6") ipv6="-6" ;;
+            "-f"|"--force") force="-Pn" ;;
+            "-h"|"--help") nmapplus_usage; return 0 ;;
+            "--hosts")
+                shift; [[ $# -eq 0 ]] && nmapplus_usage && return 1
+                hosts+=("$1")
+                ;;
+            "-i"|"--iface")
+                shift; [[ $# -eq 0 ]] && nmapplus_usage && return 1
+                iface="-e $1"
+                ;;
+            "-n"|"--topn")
+                shift; [[ $# -eq 0 ]] && nmapplus_usage && return 1
+                ports="--top-ports $1"
+                ;;
+            "-o"|"--os") os="-A" ;;
+            "-p"|"--ports")
+                shift; [[ $# -eq 0 ]] && nmapplus_usage && return 1
+                ports="-p $1"
+                ;;
+            "-s"|"--services") services="-sV" ;;
+            "-t"|"--technique")
+                shift; [[ $# -eq 0 ]] && nmapplus_usage && return 1
+                case "$1" in
+                    "syn") technique="-sS" ;;
+                    "connect") technique="-sT" ;;
+                    "ack") technique="-sA" ;;
+                    "window") technique="-sW" ;;
+                    "maimon") technique="-sM" ;;
+                    "null") technique="-sN" ;;
+                    "fin") technique="-sF" ;;
+                    "xmas") technique="-sX" ;;
+                    *) usage 1 ;;
+                esac
+                ;;
+            "--timeout")
+                shift; [[ $# -eq 0 ]] && nmapplus_usage && return 1
+                timeout="--host-timeout $1"
+                ;;
+            "-u"|"--udp") udp="-sU" && prot="udp" ;;
+            *) args+=("$1") ;;
+        esac
+        shift
+    done
+    [[ -z ${args[@]} ]] || set -- "${args[@]}"
+
+    [[ $# -eq 0 ]] || hosts+=($@)
+    [[ -z $ipv6 ]] || prot="${prot}6"
+
+    [[ ${#hosts[@]} -eq 0 ]] && nmapplus_usage && return 2
+
+    for arg in "${hosts[@]}"; do
+        [[ ! -f $arg ]] || nmapplus_scan_hosts $arg
+        [[ -f $arg ]] || nmapplus_scan_host $arg
+    done
+
+    nmapplus_cleanup
+}
+
+if [[ -n ${BASH_SOURCE[0]} ]]; then
+    case "$0" in
+        *"bash") ;;
+        *) nmapplus "$@" ;;
+    esac
+fi

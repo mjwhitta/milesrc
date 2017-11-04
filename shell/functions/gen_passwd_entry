@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+# A script for generating /etc/passwd entries.
+# by Miles Whittaker <mjwhitta@gmail.com>
+#
+# --------------------------------------------------------------------
+# The MIT License (MIT)
+#
+# Copyright (c) 2017 Miles Whittaker
+#
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation files
+# (the "Software"), to deal in the Software without restriction,
+# including without limitation the rights to use, copy, modify, merge,
+# publish, distribute, sublicense, and/or sell copies of the Software,
+# and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+# BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+# ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+# --------------------------------------------------------------------
+
+function gen_passwd_entry() {
+    gen_passwd_entry_cleanup() {
+        unset args noblock passwd
+        unset -f gen_passwd_entry_cleanup
+        unset -f gen_passwd_entry_usage
+    }
+
+    gen_passwd_entry_usage() {
+        echo "Usage: gen_passwd_entry [OPTIONS] <username>"
+        echo
+        echo "Generate /etc/passwd entries"
+        echo
+        echo "Options:"
+        echo "    -h, --help"
+        echo "        Display this help message"
+        echo
+        echo "    -n, --noblock"
+        echo "        Don't use blocking random"
+        echo
+        echo "    -p, --passwd=PASSWD"
+        echo "        Use specified password"
+        echo
+        gen_passwd_entry_cleanup
+    }
+
+    declare -a args
+    unset noblock passwd
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            "--") shift && args+=("$@") && break ;;
+            "-h"|"--help") gen_passwd_entry_usage; return 0 ;;
+            "-n"|"--noblock") noblock="true" ;;
+            "-p"|"--passwd")
+                shift
+                [[ $# -eq 0 ]] && gen_passwd_entry_usage && return 1
+                passwd="$1"
+                ;;
+            *) args+=("$1") ;;
+        esac
+        shift
+    done
+    [[ -z ${args[@]} ]] || set -- "${args[@]}"
+
+    if [[ -z $(command -v makepasswd) ]]; then
+        echo "You need to install makepasswd!"
+        gen_passwd_entry_cleanup
+        return 2
+    fi
+
+    [[ $# -ne 1 ]] && gen_passwd_entry_usage && return 3
+    [[ -n $passwd ]] || passwd="$1"
+
+    echo -n "$1"
+    if [[ -z $noblock ]];  then
+        makepasswd --clearfrom=<(echo "$passwd") --crypt-md5 | \
+            awk '{print ":"$2":0:0:::"}'
+    else
+        makepasswd --clearfrom=<(echo "$passwd") --crypt-md5 \
+            --randomseed 1 | awk '{print ":"$2":0:0:::"}'
+    fi
+
+    gen_passwd_entry_cleanup
+}
+
+if [[ -n ${BASH_SOURCE[0]} ]]; then
+    case "$0" in
+        *"bash") ;;
+        *) gen_passwd_entry "$@" ;;
+    esac
+fi

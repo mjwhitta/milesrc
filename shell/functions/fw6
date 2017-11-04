@@ -1,0 +1,153 @@
+#!/usr/bin/env bash
+# A script for making some ip6tables commands easier.
+# by Miles Whittaker <mjwhitta@gmail.com>
+#
+# --------------------------------------------------------------------
+# The MIT License (MIT)
+#
+# Copyright (c) 2017 Miles Whittaker
+#
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation files
+# (the "Software"), to deal in the Software without restriction,
+# including without limitation the rights to use, copy, modify, merge,
+# publish, distribute, sublicense, and/or sell copies of the Software,
+# and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+# BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+# ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+# --------------------------------------------------------------------
+
+function fw6() {
+    fw6_cleanup() {
+        unset action args chain
+        unset -f fw6_cleanup
+        unset -f fw6_clear
+        unset -f fw6_close
+        unset -f fw6_list
+        unset -f fw6_open
+        unset -f fw6_reset
+        unset -f fw6_usage
+    }
+
+    fw6_clear() {
+        while read chain; do
+            sudo ip6tables -P $chain ACCEPT
+        done < <(sudo ip6tables -S | awk '/-P/ {print $2}')
+        sudo ip6tables -F
+        while read chain; do
+            sudo ip6tables -X $chain
+        done < <(sudo ip6tables -S | awk '/-N/ {print $2}')
+
+        while read chain; do
+            sudo ip6tables -t nat -P $chain ACCEPT
+        done < <(sudo ip6tables -S -t nat | awk '/-P/ {print $2}')
+        sudo ip6tables -t nat -F
+        while read chain; do
+            sudo ip6tables -t nat -X $chain
+        done < <(sudo ip6tables -S -t nat | awk '/-N/ {print $2}')
+    }
+
+    fw6_close() {
+        sudo ip6tables -D INPUT -p tcp --dport $1 -j ACCEPT
+        sudo ip6tables -D INPUT -p udp --dport $1 -j ACCEPT
+    }
+
+    fw6_list() {
+        sudo ip6tables $@ -S
+    }
+
+    fw6_open() {
+        sudo ip6tables -I INPUT -p tcp --dport $1 -j ACCEPT
+        sudo ip6tables -I INPUT -p udp --dport $1 -j ACCEPT
+    }
+
+    fw6_reset() {
+        if [[ -f /etc/iptables/ip6tables.rules ]]; then
+            sudo ip6tables-restore </etc/iptables/ip6tables.rules
+        fi
+    }
+
+    fw6_usage() {
+        echo "Usage: fw6 [OPTIONS]"
+        echo
+        echo "Makes some ip6tables commands easier"
+        echo
+        echo "Options:"
+        echo "    -h, --help"
+        echo "        Display this help message"
+        echo
+        echo "    -c, --close=PORT"
+        echo "        Close a previously opened port"
+        echo
+        echo "    --clear"
+        echo "        Clear ip6tables rules"
+        echo
+        echo "    -l, --list"
+        echo "        List ip6tables rules (default behavior)"
+        echo
+        echo "    -o, --open=PORT"
+        echo "        Open a port"
+        echo
+        echo "    -r, --reset"
+        echo "        Restore default ip6tables rules"
+        echo
+        fw6_cleanup
+    }
+
+    declare -a args
+    action="list"
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            "--") shift && args+=("$@") && break ;;
+            "-c"|"--close")
+                shift; [[ $# -eq 0 ]] && fw6_usage && return 1
+                action="close"
+                port="$1"
+                ;;
+            "--clear") action="clear" ;;
+            "-h"|"--help") fw6_usage; return 0 ;;
+            "-l"|"--list") action="list" ;;
+            "-o"|"--open")
+                shift; [[ $# -eq 0 ]] && fw6_usage && return 1
+                action="open"
+                port="$1"
+                ;;
+            "-r"|"--reset") action="reset" ;;
+            *) args+=("$1") ;;
+        esac
+        shift
+    done
+    [[ -z ${args[@]} ]] || set -- "${args[@]}"
+
+    [[ $# -gt 0 ]] && fw6_usage && return 2
+    [[ -z $(command -v ip6tables) ]] && fw6_usage && return 3
+
+    case "$action" in
+        "close") fw6_close $port ;;
+        "clear") fw6_clear ;;
+        "list") fw6_list; fw6_list -t nat ;;
+        "open") fw6_open $port ;;
+        "reset") fw6_reset ;;
+    esac
+
+    fw6_cleanup
+}
+
+if [[ -n ${BASH_SOURCE[0]} ]]; then
+    case "$0" in
+        *"bash") ;;
+        *) fw6 "$@" ;;
+    esac
+fi

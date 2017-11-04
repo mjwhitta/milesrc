@@ -1,0 +1,337 @@
+#!/usr/bin/env bash
+
+[[ $(tmux -V | awk '{print $2}' | tr -d ".") -ge 24 ]] || exit
+
+# {{{ Default values
+tmux set -g @battery_bar_size "5"
+tmux set -g @battery_bar_spacer ""
+tmux set -g @battery_bar_surround "[]"
+tmux set -g @battery_charging "⚡️"
+tmux set -g @battery_empty "□"
+tmux set -g @battery_filled "■"
+# tmux set -g @battery_empty "♡"
+# tmux set -g @battery_filled "❤"
+tmux set -g @log_all "tmux-log_%Y-%m-%d-%H%M%S.log"
+tmux set -g @log_path "#{pane_current_path}"
+tmux set -g @log_screen "tmux-screenshot_%Y-%m-%d-%H%M%S.log"
+tmux set -g @prefix "C-a"
+tmux set -g @resize "5"
+tmux set -g @shell "$SHELL"
+tmux set -g @term "screen-256color"
+tmux set -g @ui_style "bg=blue,fg=white"
+
+# Let user override values before continuing
+if [[ -f $HOME/.tmux/tmux.override ]]; then
+    tmux source $HOME/.tmux/tmux.override
+fi
+# }}}
+
+# {{{ Helper functions and variables
+# Background color
+function bcolor() { bground | awk -F "=" '{print $2}'; }
+
+# Background style
+function bground() { tget -g @ui_style | \grep -Eo "bg=[^,]+"; }
+
+# Foreground color
+function fcolor() { fground | awk -F "=" '{print $2}'; }
+
+# Foreground style
+function fground() { tget -g @ui_style | \grep -Eo "fg=[^,]+"; }
+
+# Create a tmux if statement
+function if_then_else() { echo "#{$1,$2,$3}"; }
+
+# Lazy get tmux option with format strings
+function tfget() { tfstr "$(tlget $@)"; }
+
+# Get a tmux formatted string
+function tfstr() { echo -n "\$(tmux display -p \"$@\")"; }
+
+# Get tmux option
+function tget() { tmux show -qv $@; }
+
+# Lazy get tmux option (lazy-loading)
+function tlget() { echo "\$(tmux show -qv $@)"; }
+
+version="$(tmux -V | awk '{print $2}' | tr -d ".")"
+# }}}
+
+# {{{ Settings
+tmux set -gw aggressive-resize "on"
+tmux set -gw allow-rename "on"
+tmux set -gw alternate-screen "on"
+tmux set -gw automatic-rename "on"
+tmux set -gw clock-mode-style "12"
+tmux set -g default-command "$(tget -g @shell)"
+if [[ -n $(command -v reattach-to-user-namespace) ]]; then
+    tmux set -g default-command \
+        "reattach-to-user-namespace -l $(tget -g @shell)"
+fi
+tmux set -s default-terminal "$(tget -g @term)"
+tmux set -g display-time "4000"
+tmux set -s escape-time "0"
+tmux set -g focus-events "on"
+tmux set -u history-file
+tmux set -g history-limit "65536"
+tmux set -gw mode-keys "vi"
+tmux set -gw monitor-activity "on"
+tmux set -gw monitor-bell "on"
+tmux set -gw monitor-silence "0"
+tmux set -gw mouse "on"
+tmux set -g prefix "$(tget -g @prefix)"
+tmux set -g renumber-windows "on"
+tmux set -g status-interval "5"
+
+# Colors
+tmux set -gw clock-mode-colour "$(bcolor)"
+tmux set -g message-style "$(tget -g @ui_style)"
+tmux set -gw mode-style "$(tget -g @ui_style)"
+tmux set -g pane-active-border-style "fg=blue"
+tmux set -g pane-border-style "fg=brightblack"
+tmux set -g status-style "$(tget -g @ui_style)"
+tmux set -gw window-status-activity-style "bg=$(fcolor),fg=$(bcolor)"
+tmux set -gw window-status-bell-style "bg=$(fcolor),fg=$(bcolor)"
+tmux set -gw window-status-current-style "bg=$(fcolor),fg=$(bcolor)"
+
+# Status bar
+tmux set -g status-justify "left"
+tmux set -g status-keys "emacs"
+tmux set -g status-left-length "16"
+tmux set -g status-right "$(
+    if_then_else "?client_prefix" \
+    "#[bg=$(fcolor)]#[fg=$(bcolor)] $(tget -g @prefix) #[default] " ""
+)"
+tmux set -ag status-right "$(
+    if_then_else "?pane_in_mode" \
+    "#[bg=$(fcolor)]#[fg=$(bcolor)] #{pane_mode} #[default] " ""
+)"
+if [[ -n $(command -v acpi) ]] || [[ -n $(command -v pmset) ]]; then
+    tmux set -ag status-right "#(
+        if [[ -n \$(command -v acpi) ]]; then
+            charge=\"\$(
+                acpi -b | \grep -Eo \"[0-9]+%\" | tr -d \"%\"
+            )\"
+        elif [[ -n \$(command -v pmset) ]]; then
+            charge=\"\$(
+                pmset -g batt | \grep -Eo \"[0-9]+%\" | tr -d \"%\"
+            )\"
+        fi
+
+        if [[ -n \$charge ]]; then
+            [[ \$charge -eq 100 ]] || let \"charge += 1\"
+            echo -n \"\$charge% \"
+
+            battery_bar_size=\"$(tlget -g @battery_bar_size)\"
+            if [[ \$battery_bar_size -gt 0 ]]; then
+                empty=\"$(tlget -g @battery_empty)\"
+                filled=\"$(tlget -g @battery_filled)\"
+
+                let \"increment = 100 / battery_bar_size\"
+                let \"round = increment / 2\"
+                let \"charge = (charge + round) / increment\"
+
+                echo -n \"$(tlget -g @battery_bar_surround)\" | \
+                    head -c 1
+                if [[ -n \$(command -v acpi) ]]; then
+                    if [[ -n \$(acpi -a | \grep \"on-line\") ]]; then
+                        echo -n \"$(tlget -g @battery_charging)\"
+                    fi
+                #elif [[ -n \$(command -v pmset) ]]; then
+                fi
+                for i in \$(seq 1 \$battery_bar_size); do
+                    [[ \$i -gt \$charge ]] || echo -n \"\$filled\"
+                    [[ \$i -le \$charge ]] || echo -n \"\$empty\"
+                    if [[ \$i -ne \$battery_bar_size ]]; then
+                        echo -n \"$(tlget -g @battery_bar_spacer)\"
+                    fi
+                done
+                echo -n \"$(tlget -g @battery_bar_surround)\" | \
+                    tail -c 1
+                echo -n \" \"
+            fi
+        fi
+    )"
+fi
+tmux set -ag status-right "%a %b %d, %Y %I:%M "
+tmux set -g status-right-length "64"
+# }}}
+
+# {{{ Bindings
+if [[ $(tget -g @prefix) != "C-b" ]]; then
+    tmux unbind "C-b"
+    tmux bind "$(tget -g @prefix)" send-prefix
+fi
+tmux bind "$(tget -g @prefix | awk -F "-" '{print $2}')" last-window
+
+tmux bind -n "C-d" detach-client
+tmux bind "d" send -l ""
+tmux bind "R" run "
+    tmux source \"$HOME/.tmux.conf\"
+    tmux display \"Done!\"
+"
+tmux bind "C-t" new-session
+
+# Navigate panes and windows
+tmux bind "h" select-pane -L
+tmux bind "C-h" select-pane -L
+tmux bind "j" select-pane -D
+tmux bind "C-j" select-pane -D
+tmux bind "k" select-pane -U
+tmux bind "C-k" select-pane -U
+tmux bind "l" select-pane -R
+tmux bind "C-l" select-pane -R
+tmux bind "C-n" next-window
+tmux bind "C-p" previous-window
+
+# Swap windows
+tmux bind -r "<" swap-window -t -1
+tmux bind -r ">" swap-window -t +1
+
+# Resize panes
+tmux bind -r "H" resize-pane -L "$(tget -g @resize)"
+tmux bind -r "J" resize-pane -D "$(tget -g @resize)"
+tmux bind -r "K" resize-pane -U "$(tget -g @resize)"
+tmux bind -r "L" resize-pane -R "$(tget -g @resize)"
+
+# Better new pane/window bindings
+tmux bind "|" split-window -h -c "#{pane_current_path}"
+tmux bind "%" split-window -h -c "#{pane_current_path}"
+tmux bind "-" split-window -v -c "#{pane_current_path}"
+tmux bind '"' split-window -v -c "#{pane_current_path}"
+tmux bind "c" new-window -c "#{pane_current_path}"
+
+# Set "v" to begin selection as in Vim
+tmux bind -T copy-mode-vi "v" send -X begin-selection
+
+# Other useful copy-mode-vi bindings
+tmux bind -T copy-mode-vi "BSpace" send -X halfpage-up
+tmux bind -T copy-mode-vi "Space" send -X halfpage-down
+
+# Open files from copy-mode (will not work with filenames with spaces)
+tmux bind -T copy-mode-vi "M-o" send -X copy-pipe-and-cancel "
+    cd $(tfstr "#{pane_current_path}")
+    args=\"\$(xargs -I {} echo \"{}\")\"
+    set -- \$args
+    [[ \$# -ne 0 ]] || exit 0
+    if [[ -f \$1 ]]; then
+        type=\"\$(xdg-mime query filetype \$1)\"
+    elif [[ -n \$(echo \"\$1\" | \grep -E \"https?:\/\/\") ]]; then
+        type=\"text/html\"
+    fi
+    [[ -n \$type ]] || exit 1
+    exe=\"\$(xdg-mime query default \$type | sed \"s/.desktop//g\")\"
+    [[ -n \$exe ]] || exit 2
+    \$exe \$args
+"
+tmux bind -T copy-mode-vi "C-o" send -X copy-pipe-and-cancel "
+    cd $(tfstr "#{pane_current_path}")
+    args=\"\$(xargs -I {} echo \"{}\")\"
+    tmux send \"C-c\"
+    tmux send -l \"\\\${EDITOR:-vi} -- \$args\"
+    tmux send \"C-m\"
+"
+tmux bind -T copy-mode-vi "M-O" send -X copy-pipe-and-cancel "
+    cd $(tfstr "#{pane_current_path}")
+    args=\"\$(xargs -I {} echo \"{}\")\"
+    [[ -n \$(command -v gvim) ]] || exit 1
+    gvim -- \$args
+"
+
+# Copy and paste (Linux only)
+case "$(uname -s)" in
+    "Darwin")
+        tmux bind -T copy-mode-vi "y" send -X copy-pipe-and-cancel \
+                "pbcopy"
+        ;;
+    "Linux")
+        if [[ -n $(command -v xsel) ]]; then
+            copy="xsel -b -i"
+            paste="xsel -b -o"
+        elif [[ -n $(command -v xclip) ]]; then
+            copy="xclip -i -selection clipboard"
+            paste="xclip -o -selection clipboard"
+        fi
+        if [[ -n $copy ]] && [[ -n $paste ]]; then
+            tmux bind -T copy-mode-vi "y" send -X \
+                copy-pipe-and-cancel "$copy"
+            tmux bind "C-v" run \
+                "$paste | tmux load-buffer -; tmux paste-buffer"
+        fi
+        ;;
+esac
+
+# Searching
+tmux bind "/" run "
+    tmux copy-mode
+    tmux command-prompt -p \"(search up)\" \
+        \"send -X search-backward '%%%'\"
+"
+
+# Logging
+# FIXME remove the delete escape sequences
+tmux bind "P" run "
+    pane_uid=$(tfstr "#{session_name}_#{window_index}_#{pane_index}")
+    case \"$(tlget @logging_\$pane_uid)\" in
+        \"true\")
+            tmux pipep
+            tmux set -u @logging_\$pane_uid
+            tmux display \"Logging disabled for \$pane_uid\"
+            ;;
+        *)
+            file=\"$(tfget -g @log_path)/$(tfget -g @log_all)\"
+            case \"\$(uname -s)\" in
+                \"Darwin\") tmux pipep \"cat - >\$file\" ;;
+                \"Linux\")
+                    tmux pipep \"
+                        cat - | sed -r \
+                        -e 's/\[[0-9;?]*[hJKlm]|//g' \
+                        -e 's/\s+$//g' >\$file
+                    \"
+                    ;;
+            esac
+            tmux set @logging_\$pane_uid \"true\"
+            tmux display \"Logging enabled for \$pane_uid\"
+            ;;
+    esac
+"
+tmux bind "M-p" run "
+    file=\"$(tfget -g @log_path)/$(tfget -g @log_screen)\"
+    case \"$(uname -s)\" in
+        \"Darwin\") tmp=\"\$(tmux capturep -J -p)\" ;;
+        \"Linux\")
+            tmp=\"\$(tmux capturep -J -p | sed -r \"s/\s+$//\")\"
+            ;;
+    esac
+    printf \"%s\n\" \"\$tmp\" >\$file
+    tmux display \"Successfully logged screenshot to \$file\"
+"
+tmux bind "M-P" run "
+    file=\"$(tfget -g @log_path)/$(tfget -g @log_all)\"
+    tmp=\"\$(
+        tmux capturep -J -p -S \"-$(tget -g history-limit)\" |
+        sed -r \"s/\s+$//\"
+    )\"
+    case \"$(uname -s)\" in
+        \"Darwin\")
+            tmp=\"\$(
+                tmux capturep -J -p -S \"-$(tget -g history-limit)\"
+            )\"
+            ;;
+        \"Linux\")
+            tmp=\"\$(
+                tmux capturep -J -p -S \"-$(tget -g history-limit)\" |
+                sed -r \"s/\s+$//\"
+            )\"
+            ;;
+    esac
+    printf \"%s\n\" \"\$tmp\" >\$file
+    tmux display \"Successfully logged all history to \$file\"
+"
+# }}}
+
+# {{{ Local file
+for file in $HOME/.tmux/tmux.local $HOME/.tmux.local; do
+    [[ ! -f $file ]] || tmux source $file
+done
+# }}}

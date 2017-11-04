@@ -1,0 +1,23 @@
+# If not running interactively, don't do anything
+[[ $- == *i* ]] || return
+
+case "$0" in
+    *"bash"*|*"zsh"*)
+        if [[ -d $HOME/.milesrc ]]; then
+            . $HOME/.milesrc/shell/milesrc.pre
+            . $HOME/.milesrc/shell/milesrc
+        fi
+        ;;
+    *)
+        echo "SHELL is $SHELL, you probably want bash or zsh"
+        sleep 1
+        if [[ -n $(command -v zsh) ]]; then
+            exec zsh
+        elif [[ -n $(command -v bash) ]]; then
+            exec bash
+        else
+            echo "... but neither appear to be installed..."
+            echo "That's unfortunate..."
+        fi
+        ;;
+esac

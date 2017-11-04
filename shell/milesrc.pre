@@ -1,0 +1,25 @@
+# If not running interactively, don't do anything
+[[ $- == *i* ]] || return
+
+# SSH agent
+if [[ -n $(command -v ssh-agent) ]] && [[ -f $HOME/.ssh-agent ]]; then
+    mkdir -p $HOME/.ssh/agent
+    if [[ ! -f $HOME/.ssh/agent/env ]]; then
+        ssh-agent -s >$HOME/.ssh/agent/env
+    fi
+    . $HOME/.ssh/agent/env >/dev/null
+    pidchk="$(\ps -p $SSH_AGENT_PID -o command | \grep "ssh-agent")"
+    if [[ -z $pidchk ]] || [[ ! -e $SSH_AUTH_SOCK ]]; then
+        [[ -z $pidchk ]] || ssh-agent -k
+        ssh-agent -s >$HOME/.ssh/agent/env
+        . $HOME/.ssh/agent/env >/dev/null
+    fi
+    unset pidchk
+
+    # Add missing keys
+    for key in $(\grep -lRs "PRIVATE KEY" $HOME/.ssh); do
+        fingerprint="$(ssh-keygen -f $key -l | awk '{print $2}')"
+        [[ -n $(ssh-add -l | \grep "$fingerprint") ]] || ssh-add $key
+        unset fingerprint
+    done; unset key
+fi

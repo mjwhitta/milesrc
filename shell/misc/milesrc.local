@@ -1,0 +1,57 @@
+# If not running interactively, don't do anything
+[[ $- == *i* ]] || return
+
+# Start tmux if ssh connection
+if [[ -n $(installed tmux) ]] &&
+   [[ ! -f $HOME/.notmux ]] &&
+   [[ -z $TMUX ]] &&
+   [[ -n $SSH_CLIENT ]]
+then
+    exec tmux -2 new -A -s main
+fi
+
+# {{{ Env Vars
+export MILESRC_THEME_PROMPT="true"
+# }}}
+
+# {{{ PATH
+# }}}
+
+# {{{ Aliases
+# }}}
+
+# {{{ Functions
+# }}}
+
+case "$MILESRC_SHELL" in
+    *bash)
+        # {{{ Bash completions
+        # Complete arTTY
+        if [[ -n $(installed arTTY) ]]; then
+            _arTTY_complete() {
+                mapfile -t COMPREPLY < <(
+                    arTTY --ls | \grep -E "^$2" | sort -u
+                )
+            }
+            complete -F _arTTY_complete arTTY
+        fi
+        # }}}
+        ;;
+    *zsh)
+        # {{{ Zsh completions
+        # Complete arTTY
+        if [[ -n $(installed arTTY) ]]; then
+            compdef _gnu_generic arTTY
+            _arTTY_complete() {
+                reply=($(arTTY --ls))
+            }
+            compctl -K _arTTY_complete arTTY
+        fi
+        # }}}
+        ;;
+esac
+
+if [[ -n $(installed ruby) ]] && [[ -n $(installed arTTY) ]]; then
+    alias nt="arTTY -cfs \$(cat \$HOME/.config/arTTY/rc 2>/dev/null)"
+    arTTY -cfs $(cat $HOME/.config/arTTY/rc 2>/dev/null)
+fi

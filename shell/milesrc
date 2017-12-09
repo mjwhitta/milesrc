@@ -773,7 +773,7 @@ function ipr() {
 }
 
 function iso2usb() {
-    local usage="Usage: ${0/*\//} [-h|--help] <iso> <dev>"
+    local usage="Usage: iso2usb [-h|--help] <iso> <dev>"
 
     [[ $# -ne 2 ]] && echo $usage && return 1
     [[ ! -f $1 ]] && echo $usage && return 2

@@ -29,7 +29,7 @@ function sync_milesrc() {
     }
 
     declare -a args
-    unset skip_plugs
+    unset skip_plug skip_plugs
     sync_tmux="tmux"
     sync_vim="vim"
 
@@ -37,7 +37,10 @@ function sync_milesrc() {
         case "$1" in
             "--") shift && args+=("$@") && break ;;
             "-h"|"--help") sync_milesrc_usage; return 0 ;;
-            "--skip-plugs") skip_plugs="plugs" ;;
+            "--skip-plugs")
+                skip_plug="plug.vim"
+                skip_plugs="plugs"
+                ;;
             "-t"|"--tmux") unset sync_tmux ;;
             "-v"|"--vim") unset sync_vim ;;
             *) args+=("$1") ;;
@@ -50,6 +53,7 @@ function sync_milesrc() {
 
     for host in "$@"; do
         rsync -c --delete --exclude .git \
+            --exclude ${skip_plug:-IGNORE_THIS} \
             --exclude ${skip_plugs:-IGNORE_THIS} \
             --exclude ${sync_tmux:-IGNORE_THIS} \
             --exclude ${sync_vim:-IGNORE_THIS} \

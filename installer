@@ -35,12 +35,14 @@ link() {
     done; unset entry
     echo "[+] done"
 
-    if [[ -d $milesrc/vim/plugs ]] && [[ -n $(command -v git) ]]; then
+    if [[ -f $milesrc/vim/autoload/plug.vim ]] &&
+       [[ -n $(command -v git) ]]
+    then
         echo "[+] Installing vim plugins..."
         vim_plugins
         echo "[+] done"
-    elif [[ ! -d $milesrc/vim/plugs ]]; then
-        echo "[-] There are no vim configs to link"
+    elif [[ ! -f $milesrc/vim/autoload/plug.vim ]]; then
+        echo "[-] Can not install vim plugins without vim-plug"
     else
         echo "[!] Can not install vim plugins without git"
     fi

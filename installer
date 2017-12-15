@@ -1,14 +1,20 @@
 #!/usr/bin/env bash
 
 link() {
+    unset install_vim_plugins
+
     echo "[+] Linking directories and files..."
     for entry in "${files[@]}"; do
-        from="$milesrc/${entry/:*/}"
-        to="${entry/*:/}"
+        from="$here/${entry/:*/}"
+        to="$(eval echo "${entry/*:/}")"
 
         if [[ ! -e $from ]]; then
             echo "[-] $from does not exist"
             continue
+        fi
+
+        if [[ -n $(echo "$from" | \grep -i "vim") ]]; then
+            install_vim_plugins="true"
         fi
 
         if [[ -L $to ]]; then
@@ -35,29 +41,37 @@ link() {
     done; unset entry
     echo "[+] done"
 
-    if [[ -f $milesrc/vim/autoload/plug.vim ]] &&
-       [[ -n $(command -v git) ]]
-    then
-        echo "[+] Installing vim plugins..."
-        vim_plugins
-        echo "[+] done"
-    elif [[ ! -f $milesrc/vim/autoload/plug.vim ]]; then
-        echo "[-] Can not install vim plugins without vim-plug"
-    else
-        echo "[!] Can not install vim plugins without git"
+    if [[ -n $install_vim_plugins ]]; then
+        if [[ -f $here/vim/autoload/plug.vim ]] &&
+           [[ -n $(command -v git) ]]
+        then
+            echo "[+] Installing vim plugins..."
+            vim_plugins
+            echo "[+] done"
+        elif [[ ! -f $here/vim/autoload/plug.vim ]]; then
+            echo "[-] Can not install vim plugins without vim-plug"
+        else
+            echo "[!] Can not install vim plugins without git"
+        fi
     fi
 
     echo "[+] Successfully linked milesrc"
 }
 
 link_status() {
+    unset install_vim_plugins
+
     for entry in "${files[@]}"; do
-        from="$milesrc/${entry/:*/}"
-        to="${entry/*:/}"
+        from="$here/${entry/:*/}"
+        to="$(eval echo "${entry/*:/}")"
 
         if [[ ! -e $from ]]; then
             echo "[-] $from does not exist"
             continue
+        fi
+
+        if [[ -n $(echo "$from" | \grep -i "vim") ]]; then
+            install_vim_plugins="true"
         fi
 
         if [[ -L $to ]]; then
@@ -72,9 +86,9 @@ link_status() {
         fi
     done; unset entry
 
-    if [[ -d $milesrc/vim ]]; then
-        mkdir -p $milesrc/vim/plugs
-        if [[ -n $(ls $milesrc/vim/plugs) ]]; then
+    if [[ -d $here/vim ]] && [[ -n $install_vim_plugins ]]; then
+        mkdir -p $here/vim/plugs
+        if [[ -n $(ls $here/vim/plugs) ]]; then
             echo "[+] vim plugins are installed"
         else
             echo "[-] vim plugins are not installed"
@@ -83,9 +97,15 @@ link_status() {
 }
 
 unlink() {
+    unset install_vim_plugins
+
     for entry in "${files[@]}"; do
-        from="$milesrc/${entry/:*/}"
-        to="${entry/*:/}"
+        from="$here/${entry/:*/}"
+        to="$(eval echo "${entry/*:/}")"
+
+        if [[ -n $(echo "$from" | \grep -i "vim") ]]; then
+            install_vim_plugins="true"
+        fi
 
         if [[ -L $to ]]; then
             already_from="$(\ls -hl $to | awk '{print $NF}')"
@@ -107,15 +127,12 @@ unlink() {
         if [[ -e $to.milesrc.bak ]]; then
             echo "[!] Did not restore backup of $to"
         fi
-
-        [[ ! -f $from ]] || touch $to
-        [[ ! -d $from ]] || mkdir -p $to
-
-        if [[ -d $milesrc/vim ]]; then
-            echo "[+] Removing vim plugins"
-            rm -rf $milesrc/vim/plugs/*
-        fi
     done; unset entry
+
+    if [[ -d $here/vim ]] && [[ -n $install_vim_plugins ]]; then
+        echo "[+] Removing vim plugins"
+        rm -rf $here/vim/plugs/*
+    fi
 
     echo "[+] Successfully unlinked milesrc"
 }
@@ -138,17 +155,17 @@ usage() {
 }
 
 vim_plugins() {
-    mkdir -p $milesrc/vim/plugs
+    mkdir -p $here/vim/plugs
     vim -c :PlugUpgrade -c :q
     [[ $? -eq 0 ]] || exit $?
-    rm -f $milesrc/vim/autoload/plug.vim.old
+    rm -f $here/vim/autoload/plug.vim.old
     vim -c :PlugUpdate -c ":sleep 1" -c :q -c :q
     [[ $? -eq 0 ]] || exit $?
 }
 
 declare -a args
 unset force
-milesrc="$(pwd)"
+here="$(pwd)"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -164,18 +181,8 @@ done
 [[ $# -eq 1 ]] || usage 1
 
 declare -a files
-files=(
-    "shell/bash_zsh_profile:$HOME/.bash_profile"
-    "shell/bash_zsh_rc:$HOME/.bashrc"
-    "shell/complete/bash:$HOME/.config/bash/complete"
-    "shell/bash_zsh_profile:$HOME/.zprofile"
-    "shell/bash_zsh_rc:$HOME/.zshrc"
-    "shell/complete/zsh:$HOME/.config/zsh/complete"
-    "tmux:$HOME/.tmux"
-    "tmux/tmux.conf:$HOME/.tmux.conf"
-    "vim:$HOME/.vim"
-    "vim/vimrc:$HOME/.vimrc"
-)
+files=($(cat files.default))
+[[ ! -f files ]] || files=($(cat files))
 
 case "$1" in
     "link") link ;;

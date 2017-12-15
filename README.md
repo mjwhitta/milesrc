@@ -76,3 +76,9 @@ directories/files if not:
 ```
 $ ./installer unlink
 ```
+
+#### Configure
+
+To configure, simply copy `files.default` to `files` and delete the
+entries you don't want. Deleting all vim related entries will prevent
+vim plugins from automatically being installed

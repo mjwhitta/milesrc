@@ -310,7 +310,7 @@ else
         if !isdirectory($HOME . '/.swp')
             silent! call mkdir($HOME . '/.swp', 'p')
         endif
-        set directory=~/.swp//,.
+        set directory=$HOME/.swp,.
     endif
 endif
 " }}}
@@ -451,10 +451,10 @@ nnoremap <silent> <C-a> ggVG
 nnoremap <silent> <C-f> ggVG=
 
 " Open vimrc in new tab
-nnoremap <silent> <leader>ev :e ~/.vimrc<cr>
+nnoremap <silent> <leader>ev :e $HOME/.vimrc<cr>
 
 " Source vimrc
-nnoremap <silent> <leader>sv :source ~/.vimrc<cr>
+nnoremap <silent> <leader>sv :source $HOME/.vimrc<cr>
 
 " Wrap word with quotes or parens
 nnoremap <leader>" viw<esc>bi"<esc>ea"<esc>l
@@ -535,8 +535,8 @@ if exists(':augroup')
     " vimrc on-the-fly changes
     augroup vimrc
         autocmd!
-        autocmd BufWritePost .vimrc source ~/.vimrc
-        autocmd BufWritePost vimrc source ~/.vimrc
+        autocmd BufWritePost .vimrc source $HOME/.vimrc
+        autocmd BufWritePost vimrc source $HOME/.vimrc
     augroup END
 endif
 " }}}
@@ -751,7 +751,7 @@ if exists(':function')
 endif
 
 if exists(':command')
-    command! JQ .w !jq -C '.' | less
+    command! JQ :w !jq -C . | less
     command! MakeTags call system('ctags -R .')
 endif
 " }}}
@@ -762,14 +762,14 @@ if exists(':let')
     let g:syntastic_off = 0
     let g:syntastic_on_start = 1
 endif
-if filereadable(glob('~/.vimrc.local'))
-    source ~/.vimrc.local
+if filereadable(glob($HOME . '/.vimrc.local'))
+    source $HOME/.vimrc.local
 endif
 " }}}
 
 " {{{ Vim Plugins
 if exists(':function') && exists(':let')
-    silent! call plug#begin('~/.vim/plugs')
+    silent! call plug#begin($HOME . '/.vim/plugs')
     if exists(':Plug')
         let g:plug_window = 'topleft new'
 

@@ -23,8 +23,8 @@ link() {
             echo "[+] Removing symlink $to"
             rm $to
         elif [[ -e $to ]] && [[ -z $force ]]; then
-            echo "[+] Moving $to to $to.milesrc.bak"
-            mv $to $to.milesrc.bak
+            echo "[+] Moving $to to $to.$backup"
+            mv $to $to.$backup
         elif [[ -d $to ]]; then
             echo "[+] Removing directory $to"
             rm -rf $to
@@ -119,14 +119,14 @@ unlink() {
             fi
         fi
 
-        if [[ ! -e $to ]] && [[ -e $to.milesrc.bak ]]; then
-            echo "[+] Restoring $to.milesrc.bak to $to"
-            mv $to.milesrc.bak $to
+        if [[ ! -e $to ]] && [[ -e $to.$backup ]]; then
+            echo "[+] Restoring $to.$backup to $to"
+            mv $to.$backup $to
         elif [[ -e $to ]] && [[ ! -L $to ]]; then
             echo "[!] Could not unlink $to as it was not a symlink"
         fi
 
-        if [[ -e $to.milesrc.bak ]]; then
+        if [[ -e $to.$backup ]]; then
             echo "[!] Did not restore backup of $to"
         fi
     done; unset entry
@@ -169,6 +169,7 @@ vim_plugins() {
 
 declare -a args
 unset force
+backup="milesrc.bak"
 here="$(pwd)"
 
 while [[ $# -gt 0 ]]; do

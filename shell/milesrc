@@ -311,7 +311,6 @@ fi
 unset PTH
 for dir in \
     $HOME/bin \
-    $HOME/scripts/bin \
     $HOME/.local/bin \
     $GEM_HOME/bin \
     $GOPATH \

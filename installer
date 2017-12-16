@@ -148,6 +148,8 @@ usage() {
     echo "Actions:"
     echo "    link"
     echo "        Back up existing configs and symlink milesrc"
+    echo "    status"
+    echo "        Show what's linked and what isn't"
     echo "    unlink"
     echo "        Remove symlinks and restore old configs"
     echo
@@ -181,8 +183,8 @@ done
 [[ $# -eq 1 ]] || usage 1
 
 declare -a files
-files=($(cat files.default | \grep -Ev "^\s*#"))
-[[ ! -f files ]] || files=($(cat files | \grep -Ev "^\s*#"))
+files=($(\grep -Ev "^(\s*#|$)" files.default))
+[[ ! -f files ]] || files=($(\grep -Ev "^(\s*#|$)" files))
 
 case "$1" in
     "link") link ;;

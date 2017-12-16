@@ -81,8 +81,10 @@ link_status() {
             else
                 echo "[-] $to is not linked to the milesrc"
             fi
-        else
+        elif [[ -f $to ]]; then
             echo "[-] $to is not a symlink"
+        else
+            echo "[-] $to does not exist"
         fi
     done; unset entry
 

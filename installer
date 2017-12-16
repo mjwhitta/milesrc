@@ -181,8 +181,8 @@ done
 [[ $# -eq 1 ]] || usage 1
 
 declare -a files
-files=($(cat files.default))
-[[ ! -f files ]] || files=($(cat files))
+files=($(cat files.default | \grep -Ev "^\s*#"))
+[[ ! -f files ]] || files=($(cat files | \grep -Ev "^\s*#"))
 
 case "$1" in
     "link") link ;;

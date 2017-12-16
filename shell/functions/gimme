@@ -98,7 +98,7 @@ function gimme() {
             "search") apt-cache search "$@" ;;
             "update")
                 for cmd in \
-                    update dist-upgrade autoremove autoclean \
+                    update upgrade dist-upgrade autoremove autoclean \
                 ; do
                     sudo apt-get $cmd -y
                 done

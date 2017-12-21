@@ -789,7 +789,7 @@ function lsp() {
     # lists directories in PROJS and allows quick cd'ing to them
     declare -a dirs
     dirs=($(
-        find -L $PROJS -maxdepth 3 -mindepth 1 -name ".git" \
+        find -L $PROJS -maxdepth 6 -mindepth 1 -name ".git" \
         -exec dirname {} + 2>/dev/null | sort -u
     ))
 

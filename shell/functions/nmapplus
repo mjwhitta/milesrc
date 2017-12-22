@@ -76,43 +76,25 @@ function nmapplus() {
         echo "Organizes your nmap scans"
         echo
         echo "Options:"
-        echo "    -6"
-        echo "        Enable IPv6 scanning"
-        echo
-        echo "    -f, --force"
-        echo "        Force scan"
-        echo
-        echo "    -h, --help"
-        echo "        Display this help message"
-        echo
-        echo "    --hosts=FILE"
-        echo "        Use hosts from file (split on whitespace and"
-        echo "        use first token from each line)"
-        echo
-        echo "    -i, --iface=IFACE"
-        echo "        Use the specified interface for scanning"
-        echo
-        echo "    -n, --topn=NUM"
-        echo "        Only scan the top N ports"
-        echo
-        echo "    -o, --os"
-        echo "        Enable OS detection"
-        echo
-        echo "    -p, --ports=PORTS"
-        echo "        Only scan specified ports (default: all ports)"
-        echo
-        echo "    -s, --services"
-        echo "        Enable service identification"
-        echo
-        echo "    -t, --technique=TECHNIQUE"
-        echo "        Scan technique: syn, connect, ack, window,"
-        echo "        maimon, null, fin, xmas"
-        echo
-        echo "    --timeout=TIMEOUT"
-        echo "        Give up on host after specified time (e.g. 15m)"
-        echo
-        echo "    -u, --udp"
-        echo "        UDP scan"
+        echo "    -6                      Enable IPv6 scanning"
+        echo "    -f, --force             Force scan"
+        echo "    -h, --help              Display this help message"
+        echo "    --hosts=FILE            Use hosts from file (split"
+        echo "                            on whitespace and use first"
+        echo "                            token from each line)"
+        echo "    -i, --iface=IFACE       Use the specified interface"
+        echo "                            for scanning"
+        echo "    -n, --topn=NUM          Only scan the top N ports"
+        echo "    -o, --os                Enable OS detection"
+        echo "    -p, --ports=PORTS       Only scan specified ports"
+        echo "                            (default: all ports)"
+        echo "    -s, --services          Identity running services"
+        echo "    -t, --technique=TECH    Scan technique: syn,"
+        echo "                            connect, ack, window,"
+        echo "                            maimon, null, fin, xmas"
+        echo "    --timeout=TIMEOUT       Give up on host after"
+        echo "                            specified time (e.g. 15m)"
+        echo "    -u, --udp               UDP scan"
         echo
         nmapplus_cleanup
     }

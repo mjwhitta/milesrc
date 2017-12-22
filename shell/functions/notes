@@ -41,20 +41,11 @@ function notes() {
         echo "Quickly read/write notes"
         echo
         echo "Options:"
-        echo "    -c, --cat"
-        echo "        Cat the notes"
-        echo
-        echo "    -f, --find"
-        echo "        Find notes matching pattern (default behavior)"
-        echo
-        echo "    -h, --help"
-        echo "        Display this help message"
-        echo
-        echo "    -n, --new"
-        echo "        New notes using pattern as filename"
-        echo
-        echo "    -o, --open"
-        echo "        Open notes matching pattern"
+        echo "    -c, --cat     Cat the notes"
+        echo "    -f, --find    Find notes matching pattern (default)"
+        echo "    -h, --help    Display this help message"
+        echo "    -n, --new     New notes using pattern as filename"
+        echo "    -o, --open    Open notes matching pattern"
         echo
         notes_cleanup
     }

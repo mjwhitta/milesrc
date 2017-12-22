@@ -41,8 +41,7 @@ function ports() {
         echo "Searches for *.nmap files and greps for open ports"
         echo
         echo "Options:"
-        echo "    -h, --help"
-        echo "        Display this help message"
+        echo "    -h, --help    Display this help message"
         echo
         ports_cleanup
     }

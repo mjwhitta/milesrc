@@ -41,14 +41,9 @@ function gen_passwd_entry() {
         echo "Generate /etc/passwd entries"
         echo
         echo "Options:"
-        echo "    -h, --help"
-        echo "        Display this help message"
-        echo
-        echo "    -n, --noblock"
-        echo "        Don't use blocking random"
-        echo
-        echo "    -p, --passwd=PASSWD"
-        echo "        Use specified password"
+        echo "    -h, --help             Display this help message"
+        echo "    -n, --noblock          Don't use blocking random"
+        echo "    -p, --passwd=PASSWD    Use specified password"
         echo
         gen_passwd_entry_cleanup
     }

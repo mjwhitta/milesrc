@@ -63,14 +63,9 @@ function perms() {
         echo "Automatically fix file permissions"
         echo
         echo "Options:"
-        echo "    -f, --fix"
-        echo "        Fix the executable permissions"
-        echo
-        echo "    -g, --group"
-        echo "        Open up group permissions"
-        echo
-        echo "    -h, --help"
-        echo "        Display this help message"
+        echo "    -f, --fix      Fix the executable permissions"
+        echo "    -g, --group    Open up group permissions"
+        echo "    -h, --help     Display this help message"
         echo
         perms_cleanup
     }

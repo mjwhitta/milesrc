@@ -41,15 +41,12 @@ function gen_passwd() {
         echo "Generate passwords using /dev/urandom"
         echo
         echo "Options:"
-        echo "    -h, --help"
-        echo "        Display this help message"
-        echo
-        echo "    -l, --length=LENGTH"
-        echo "        Use specified length (default: $length)"
-        echo
-        echo "    -r, --regex=REGEX"
-        echo "        Generate password matching specified regex"
-        echo "        (default: $regex)"
+        echo "    -h, --help           Display this help message"
+        echo "    -l, --length=LEN     Use specified length (default:"
+        echo "                         $length)"
+        echo "    -r, --regex=REGEX    Generate password matching"
+        echo "                         specified regex (default:"
+        echo "                         $regex)"
         echo
         gen_passwd_cleanup
     }

@@ -41,21 +41,15 @@ function fw() {
     }
 
     fw_clear() {
-        while read chain; do
-            sudo iptables -P $chain ACCEPT
-        done < <(sudo iptables -S | awk '/-P/ {print $2}')
-        sudo iptables -F
-        while read chain; do
-            sudo iptables -X $chain
-        done < <(sudo iptables -S | awk '/-N/ {print $2}')
-
-        while read chain; do
-            sudo iptables -t nat -P $chain ACCEPT
-        done < <(sudo iptables -S -t nat | awk '/-P/ {print $2}')
-        sudo iptables -t nat -F
-        while read chain; do
-            sudo iptables -t nat -X $chain
-        done < <(sudo iptables -S -t nat | awk '/-N/ {print $2}')
+        for tbl in filter mangle nat; do
+            while read chain; do
+                sudo iptables -t $tbl -P $chain ACCEPT
+            done < <(sudo iptables -S -t $tbl | awk '/-P/ {print $2}')
+            sudo iptables -t $tbl -F
+            while read chain; do
+                sudo iptables -t $tbl -X $chain
+            done < <(sudo iptables -S -t $tbl | awk '/-N/ {print $2}')
+        done
     }
 
     fw_close() {
@@ -64,7 +58,10 @@ function fw() {
     }
 
     fw_list() {
-        sudo iptables $@ -S
+        for tbl in filter mangle nat; do
+            echo "### $tbl ###"
+            sudo iptables -S -t $tbl
+        done
     }
 
     fw_open() {
@@ -84,23 +81,13 @@ function fw() {
         echo "Makes some iptables commands easier"
         echo
         echo "Options:"
-        echo "    -h, --help"
-        echo "        Display this help message"
-        echo
-        echo "    -c, --close=PORT"
-        echo "        Close a previously opened port"
-        echo
-        echo "    --clear"
-        echo "        Clear iptables rules"
-        echo
-        echo "    -l, --list"
-        echo "        List iptables rules (default behavior)"
-        echo
-        echo "    -o, --open=PORT"
-        echo "        Open a port"
-        echo
-        echo "    -r, --reset"
-        echo "        Restore default iptables rules"
+        echo "    -h, --help          Display this help message"
+        echo "    -c, --close=PORT    Close a previously opened port"
+        echo "    --clear             Clear iptables rules"
+        echo "    -l, --list          List iptables rules (default"
+        echo "                        behavior)"
+        echo "    -o, --open=PORT     Open a port"
+        echo "    -r, --reset         Restore default iptables rules"
         echo
         fw_cleanup
     }
@@ -137,7 +124,7 @@ function fw() {
     case "$action" in
         "close") fw_close $port ;;
         "clear") fw_clear ;;
-        "list") fw_list; fw_list -t nat ;;
+        "list") fw_list ;;
         "open") fw_open $port ;;
         "reset") fw_reset ;;
     esac

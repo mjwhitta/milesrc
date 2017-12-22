@@ -52,11 +52,8 @@ function netstatplus() {
         echo "Makes netstat output a little more readable"
         echo
         echo "Options:"
-        echo "    -h, --help"
-        echo "        Display this help message"
-        echo
-        echo "    -s, --sudo"
-        echo "        Run as root"
+        echo "    -h, --help    Display this help message"
+        echo "    -s, --sudo    Run as root"
         echo
         netstatplus_cleanup
     }

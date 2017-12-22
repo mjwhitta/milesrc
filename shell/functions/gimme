@@ -41,20 +41,11 @@ function gimme() {
         echo "Automatically uses the correct package manager"
         echo
         echo "Options:"
-        echo "    -h, --help"
-        echo "        Display this help message"
-        echo
-        echo "    -n, --nosave"
-        echo "        Used with --remove to also remove configs"
-        echo
-        echo "    -R, --remove"
-        echo "        Remove package(s)"
-        echo
-        echo "    -s, --search"
-        echo "        Search for matching packages"
-        echo
-        echo "    -u, --update"
-        echo "        Update installed packages"
+        echo "    -h, --help      Display this help message"
+        echo "    -n, --nosave    Also remove configs"
+        echo "    -R, --remove    Remove package(s)"
+        echo "    -s, --search    Search for matching packages"
+        echo "    -u, --update    Update installed packages"
         echo
         gimme_cleanup
     }

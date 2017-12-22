@@ -13,17 +13,11 @@ function sync_milesrc() {
         echo "Sync the milesrc to other hosts"
         echo
         echo "Options:"
-        echo "    -h, --help"
-        echo "        Display this help message"
-        echo
-        echo "    --skip-plugs"
-        echo "        Skip plugs directory when syncing vim configs"
-        echo
-        echo "    -t, --tmux"
-        echo "        Also sync tmux configs"
-        echo
-        echo "    -v, --vim"
-        echo "        Also sync vim configs"
+        echo "    -h, --help      Display this help message"
+        echo "    --skip-plugs    Skip plugs directory when syncing"
+        echo "                    vim configs"
+        echo "    -t, --tmux      Also sync tmux configs"
+        echo "    -v, --vim       Also sync vim configs"
         echo
         sync_milesrc_cleanup
     }

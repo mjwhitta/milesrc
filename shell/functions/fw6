@@ -30,14 +30,9 @@
 
 function fw6() {
     fw6_cleanup() {
-        unset action args chain
-        unset -f fw6_cleanup
-        unset -f fw6_clear
-        unset -f fw6_close
-        unset -f fw6_list
-        unset -f fw6_open
-        unset -f fw6_reset
-        unset -f fw6_usage
+        unset action arg args chain
+        unset -f fw6_cleanup fw6_clear fw6_close fw6_list fw6_open
+        unset -f fw6_reset fw6_usage
     }
 
     fw6_clear() {
@@ -98,18 +93,36 @@ function fw6() {
     while [[ $# -gt 0 ]]; do
         case "$1" in
             "--") shift && args+=("$@") && break ;;
-            "-c"|"--close")
-                shift; [[ $# -eq 0 ]] && fw6_usage && return 1
+            "-c"|"--close"*)
+                case "$1" in
+                    "--"*"="*)
+                        arg="$(echo "$1" | sed -r "s/[^=]+=//")"
+                        [[ -n $arg ]] || usage 1
+                        ;;
+                    *)
+                        shift; [[ $# -eq 0 ]] && fw6_usage && return 1
+                        arg="$1"
+                        ;;
+                esac
                 action="close"
-                port="$1"
+                port="$arg"
                 ;;
             "--clear") action="clear" ;;
             "-h"|"--help") fw6_usage; return 0 ;;
             "-l"|"--list") action="list" ;;
-            "-o"|"--open")
-                shift; [[ $# -eq 0 ]] && fw6_usage && return 1
+            "-o"|"--open"*)
+                case "$1" in
+                    "--"*"="*)
+                        arg="$(echo "$1" | sed -r "s/[^=]+=//")"
+                        [[ -n $arg ]] || usage 1
+                        ;;
+                    *)
+                        shift; [[ $# -eq 0 ]] && fw6_usage && return 1
+                        arg="$1"
+                        ;;
+                esac
                 action="open"
-                port="$1"
+                port="$arg"
                 ;;
             "-r"|"--reset") action="reset" ;;
             *) args+=("$1") ;;

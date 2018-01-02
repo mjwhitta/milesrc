@@ -30,13 +30,8 @@
 
 function fw() {
     fw_cleanup() {
-        unset action args chain
-        unset -f fw_cleanup
-        unset -f fw_clear
-        unset -f fw_close
-        unset -f fw_list
-        unset -f fw_open
-        unset -f fw_reset
+        unset action arg args chain
+        unset -f fw_cleanup fw_clear fw_close fw_list fw_open fw_reset
         unset -f fw_usage
     }
 
@@ -98,18 +93,36 @@ function fw() {
     while [[ $# -gt 0 ]]; do
         case "$1" in
             "--") shift && args+=("$@") && break ;;
-            "-c"|"--close")
-                shift; [[ $# -eq 0 ]] && fw_usage && return 1
+            "-c"|"--close"*)
+                case "$1" in
+                    "--"*"="*)
+                        arg="$(echo "$1" | sed -r "s/[^=]+=//")"
+                        [[ -n $arg ]] || usage 1
+                        ;;
+                    *)
+                        shift; [[ $# -eq 0 ]] && fw_usage && return 1
+                        arg="$1"
+                        ;;
+                esac
                 action="close"
-                port="$1"
+                port="$arg"
                 ;;
             "--clear") action="clear" ;;
             "-h"|"--help") fw_usage; return 0 ;;
             "-l"|"--list") action="list" ;;
-            "-o"|"--open")
-                shift; [[ $# -eq 0 ]] && fw_usage && return 1
+            "-o"|"--open"*)
+                case "$1" in
+                    "--"*"="*)
+                        arg="$(echo "$1" | sed -r "s/[^=]+=//")"
+                        [[ -n $arg ]] || usage 1
+                        ;;
+                    *)
+                        shift; [[ $# -eq 0 ]] && fw_usage && return 1
+                        arg="$1"
+                        ;;
+                esac
                 action="open"
-                port="$1"
+                port="$arg"
                 ;;
             "-r"|"--reset") action="reset" ;;
             *) args+=("$1") ;;

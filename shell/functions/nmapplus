@@ -29,14 +29,13 @@
 # --------------------------------------------------------------------
 
 function nmapplus() {
-    nmapplus_cleanup() {
+    np_cleanup() {
         unset arg args dir force host hosts iface ipv6 os ports prot
         unset services technique timeout udp
-        unset -f nmapplus_cleanup
-        unset -f nmapplus_usage
+        unset -f np_cleanup np_usage
     }
 
-    nmapplus_scan_host() {
+    np_scan_host() {
         host="$1"
 
         echo "Scanning $host"
@@ -63,14 +62,14 @@ function nmapplus() {
         echo
     }
 
-    nmapplus_scan_hosts() {
+    np_scan_hosts() {
         echo "Reading hosts from $1..."
         for host in $(cat $1 | awk '{print $1}'); do
-            nmapplus_scan_host $host
+            np_scan_host $host
         done
     }
 
-    nmapplus_usage() {
+    np_usage() {
         echo "Usage: nmapplus [OPTIONS] [host1]...[hostN]"
         echo
         echo "Organizes your nmap scans"
@@ -96,7 +95,7 @@ function nmapplus() {
         echo "                            specified time (e.g. 15m)"
         echo "    -u, --udp               UDP scan"
         echo
-        nmapplus_cleanup
+        np_cleanup
     }
 
     declare -a args hosts
@@ -109,28 +108,73 @@ function nmapplus() {
             "--") shift && args+=("$@") && break ;;
             "-6") ipv6="-6" ;;
             "-f"|"--force") force="-Pn" ;;
-            "-h"|"--help") nmapplus_usage; return 0 ;;
-            "--hosts")
-                shift; [[ $# -eq 0 ]] && nmapplus_usage && return 1
-                hosts+=("$1")
+            "-h"|"--help") np_usage; return 0 ;;
+            "--hosts"*)
+                case "$1" in
+                    "--"*"="*)
+                        arg="$(echo "$1" | sed -r "s/[^=]+=//")"
+                        [[ -n $arg ]] || usage 1
+                        ;;
+                    *)
+                        shift; [[ $# -eq 0 ]] && np_usage && return 1
+                        arg="$1"
+                        ;;
+                esac
+                hosts+=("$arg")
                 ;;
-            "-i"|"--iface")
-                shift; [[ $# -eq 0 ]] && nmapplus_usage && return 1
-                iface="-e $1"
+            "-i"|"--iface"*)
+                case "$1" in
+                    "--"*"="*)
+                        arg="$(echo "$1" | sed -r "s/[^=]+=//")"
+                        [[ -n $arg ]] || usage 1
+                        ;;
+                    *)
+                        shift; [[ $# -eq 0 ]] && np_usage && return 1
+                        arg="$1"
+                        ;;
+                esac
+                iface="-e $arg"
                 ;;
-            "-n"|"--topn")
-                shift; [[ $# -eq 0 ]] && nmapplus_usage && return 1
-                ports="--top-ports $1"
+            "-n"|"--topn"*)
+                case "$1" in
+                    "--"*"="*)
+                        arg="$(echo "$1" | sed -r "s/[^=]+=//")"
+                        [[ -n $arg ]] || usage 1
+                        ;;
+                    *)
+                        shift; [[ $# -eq 0 ]] && np_usage && return 1
+                        arg="$1"
+                        ;;
+                esac
+                ports="--top-ports $arg"
                 ;;
             "-o"|"--os") os="-A" ;;
-            "-p"|"--ports")
-                shift; [[ $# -eq 0 ]] && nmapplus_usage && return 1
-                ports="-p $1"
+            "-p"|"--ports"*)
+                case "$1" in
+                    "--"*"="*)
+                        arg="$(echo "$1" | sed -r "s/[^=]+=//")"
+                        [[ -n $arg ]] || usage 1
+                        ;;
+                    *)
+                        shift; [[ $# -eq 0 ]] && np_usage && return 1
+                        arg="$1"
+                        ;;
+                esac
+                ports="-p $arg"
                 ;;
             "-s"|"--services") services="-sV" ;;
-            "-t"|"--technique")
-                shift; [[ $# -eq 0 ]] && nmapplus_usage && return 1
+            "-t"|"--technique"*)
                 case "$1" in
+                    "--"*"="*)
+                        arg="$(echo "$1" | sed -r "s/[^=]+=//")"
+                        [[ -n $arg ]] || usage 1
+                        ;;
+                    *)
+                        shift; [[ $# -eq 0 ]] && np_usage && return 1
+                        arg="$1"
+                        ;;
+                esac
+                case "$arg" in
                     "syn") technique="-sS" ;;
                     "connect") technique="-sT" ;;
                     "ack") technique="-sA" ;;
@@ -142,9 +186,18 @@ function nmapplus() {
                     *) usage 1 ;;
                 esac
                 ;;
-            "--timeout")
-                shift; [[ $# -eq 0 ]] && nmapplus_usage && return 1
-                timeout="--host-timeout $1"
+            "--timeout"*)
+                case "$1" in
+                    "--"*"="*)
+                        arg="$(echo "$1" | sed -r "s/[^=]+=//")"
+                        [[ -n $arg ]] || usage 1
+                        ;;
+                    *)
+                        shift; [[ $# -eq 0 ]] && np_usage && return 1
+                        arg="$1"
+                        ;;
+                esac
+                timeout="--host-timeout $arg"
                 ;;
             "-u"|"--udp") udp="-sU" && prot="udp" ;;
             *) args+=("$1") ;;
@@ -156,14 +209,14 @@ function nmapplus() {
     [[ $# -eq 0 ]] || hosts+=($@)
     [[ -z $ipv6 ]] || prot="${prot}6"
 
-    [[ ${#hosts[@]} -eq 0 ]] && nmapplus_usage && return 2
+    [[ ${#hosts[@]} -eq 0 ]] && np_usage && return 2
 
     for arg in "${hosts[@]}"; do
-        [[ ! -f $arg ]] || nmapplus_scan_hosts $arg
-        [[ -f $arg ]] || nmapplus_scan_host $arg
+        [[ ! -f $arg ]] || np_scan_hosts $arg
+        [[ -f $arg ]] || np_scan_host $arg
     done
 
-    nmapplus_cleanup
+    np_cleanup
 }
 
 if [[ -n ${BASH_SOURCE[0]} ]]; then

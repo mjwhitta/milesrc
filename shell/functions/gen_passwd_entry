@@ -29,13 +29,12 @@
 # --------------------------------------------------------------------
 
 function gen_passwd_entry() {
-    gen_passwd_entry_cleanup() {
-        unset args noblock passwd
-        unset -f gen_passwd_entry_cleanup
-        unset -f gen_passwd_entry_usage
+    gpe_cleanup() {
+        unset arg args noblock passwd
+        unset -f gpe_cleanup gpe_usage
     }
 
-    gen_passwd_entry_usage() {
+    gpe_usage() {
         echo "Usage: gen_passwd_entry [OPTIONS] <username>"
         echo
         echo "Generate /etc/passwd entries"
@@ -45,7 +44,7 @@ function gen_passwd_entry() {
         echo "    -n, --noblock          Don't use blocking random"
         echo "    -p, --passwd=PASSWD    Use specified password"
         echo
-        gen_passwd_entry_cleanup
+        gpe_cleanup
     }
 
     declare -a args
@@ -54,12 +53,20 @@ function gen_passwd_entry() {
     while [[ $# -gt 0 ]]; do
         case "$1" in
             "--") shift && args+=("$@") && break ;;
-            "-h"|"--help") gen_passwd_entry_usage; return 0 ;;
+            "-h"|"--help") gpe_usage; return 0 ;;
             "-n"|"--noblock") noblock="true" ;;
-            "-p"|"--passwd")
-                shift
-                [[ $# -eq 0 ]] && gen_passwd_entry_usage && return 1
-                passwd="$1"
+            "-p"|"--passwd"*)
+                case "$1" in
+                    "--"*"="*)
+                        arg="$(echo "$1" | sed -r "s/[^=]+=//")"
+                        [[ -n $arg ]] || usage 1
+                        ;;
+                    *)
+                        shift; [[ $# -eq 0 ]] && gpe_usage && return 1
+                        arg="$1"
+                        ;;
+                esac
+                passwd="$arg"
                 ;;
             *) args+=("$1") ;;
         esac
@@ -69,11 +76,11 @@ function gen_passwd_entry() {
 
     if [[ -z $(command -v makepasswd) ]]; then
         echo "You need to install makepasswd!"
-        gen_passwd_entry_cleanup
+        gpe_cleanup
         return 2
     fi
 
-    [[ $# -ne 1 ]] && gen_passwd_entry_usage && return 3
+    [[ $# -ne 1 ]] && gpe_usage && return 3
     [[ -n $passwd ]] || passwd="$1"
 
     echo -n "$1"
@@ -85,7 +92,7 @@ function gen_passwd_entry() {
             --randomseed 1 | awk '{print ":"$2":0:0:::"}'
     fi
 
-    gen_passwd_entry_cleanup
+    gpe_cleanup
 }
 
 if [[ -n ${BASH_SOURCE[0]} ]]; then

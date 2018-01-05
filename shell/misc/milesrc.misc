@@ -140,6 +140,8 @@ add_to_path() {
 }
 
 if [[ -n $(installed docker) ]]; then
+    alias dps="docker ps -a"
+
     dbash() {
         if [[ $# -eq 0 ]]; then
             echo "You need to specify a container"
@@ -158,14 +160,23 @@ if [[ -n $(installed docker) ]]; then
             return
         fi
 
-        if [[ -z $(installed perl) ]]; then
-            echo "You need to install perl"
+        docker network inspect ${1:-bridge} | \
+            jq -cMrS ".[].Containers[]|.Name,.IPv4Address" | \
+            sed "\$!N;s/\n/\t/"
+    }
+
+    drun() {
+        if [[ $# -eq 0 ]]; then
+            echo "You need to specify a container"
             return
         fi
 
-        docker network inspect ${1:-bridge} | \
-            jq -c ".[].Containers[]" | perl -lne \
-            '/Name":"([^"]+)".*4Address":"([^\/]+)/ && print "$2\t$1"'
+        local s="$(
+            docker run -i --rm -t $1 which zsh | \grep -v "no zsh"
+        )"
+        [[ -z $s ]] || s="zsh"
+        [[ -n $s ]] || s="bash"
+        docker run -i --rm -t $1 $s
     }
 fi
 

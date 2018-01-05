@@ -140,20 +140,6 @@ add_to_path() {
 }
 
 if [[ -n $(installed docker) ]]; then
-    alias dps="docker ps -a"
-
-    dbash() {
-        if [[ $# -eq 0 ]]; then
-            echo "You need to specify a container"
-            return
-        fi
-
-        local s="$(docker exec -it $1 which zsh | \grep -v "no zsh")"
-        [[ -z $s ]] || s="zsh"
-        [[ -n $s ]] || s="bash"
-        docker exec -it $1 $s
-    }
-
     dips() {
         if [[ -z $(installed jq) ]]; then
             echo "You need to install jq"
@@ -165,18 +151,30 @@ if [[ -n $(installed docker) ]]; then
             sed "\$!N;s/\n/\t/"
     }
 
-    drun() {
+    alias dps="docker ps -a"
+
+    dsh() {
         if [[ $# -eq 0 ]]; then
             echo "You need to specify a container"
             return
         fi
 
+        local name="$(echo "$@" | awk '{print $NF}')"
+        local running="$(docker ps | \grep -w "$name")"
+        if [[ -z $running ]]; then
+            docker run -di --name $name --rm -t $name bash
+        fi
         local s="$(
-            docker run -i --rm -t $1 which zsh | \grep -v "no zsh"
+            docker exec -it $name command -v zsh | \grep -v "OCI"
         )"
+        if [[ -z $s ]]; then
+            local s="$(
+                docker exec -it $name which zsh | \grep -v "no zsh"
+            )"
+        fi
         [[ -z $s ]] || s="zsh"
         [[ -n $s ]] || s="bash"
-        docker run -i --rm -t $1 $s
+        docker exec -it $@ $s
     }
 fi
 

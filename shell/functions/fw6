@@ -29,6 +29,11 @@
 # --------------------------------------------------------------------
 
 function fw6() {
+    if [[ -z $(command -v ip6tables) ]]; then
+        echo "Install ip6tables"
+        return 3
+    fi
+
     fw6_cleanup() {
         unset action arg args chain
         unset -f fw6_cleanup fw6_clear fw6_close fw6_list fw6_open
@@ -132,7 +137,6 @@ function fw6() {
     [[ -z ${args[@]} ]] || set -- "${args[@]}"
 
     [[ $# -gt 0 ]] && fw6_usage && return 2
-    [[ -z $(command -v ip6tables) ]] && fw6_usage && return 3
 
     case "$action" in
         "close") fw6_close $port ;;

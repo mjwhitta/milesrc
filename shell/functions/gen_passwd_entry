@@ -29,6 +29,11 @@
 # --------------------------------------------------------------------
 
 function gen_passwd_entry() {
+    if [[ -z $(command -v makepasswd) ]]; then
+        echo "Install makepasswd"
+        return 3
+    fi
+
     gpe_cleanup() {
         unset arg args noblock passwd
         unset -f gpe_cleanup gpe_usage
@@ -74,13 +79,7 @@ function gen_passwd_entry() {
     done
     [[ -z ${args[@]} ]] || set -- "${args[@]}"
 
-    if [[ -z $(command -v makepasswd) ]]; then
-        echo "You need to install makepasswd!"
-        gpe_cleanup
-        return 2
-    fi
-
-    [[ $# -ne 1 ]] && gpe_usage && return 3
+    [[ $# -ne 1 ]] && gpe_usage && return 2
     [[ -n $passwd ]] || passwd="$1"
 
     echo -n "$1"

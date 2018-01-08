@@ -31,9 +31,7 @@
 function perms() {
     perms_cleanup() {
         unset args dir dirs fix group
-        unset -f perms_cleanup
-        unset -f perms_fix_file
-        unset -f perms_fix_files
+        unset -f perms_cleanup perms_fix_file perms_fix_files
         unset -f perms_usage
     }
 

@@ -38,8 +38,7 @@ function ssplus() {
 
     ssplus_cleanup() {
         unset args cmd line pid pids sudo username
-        unset -f ssplus_cleanup
-        unset -f ssplus_usage
+        unset -f ssplus_cleanup ssplus_usage
     }
 
     ssplus_usage() {

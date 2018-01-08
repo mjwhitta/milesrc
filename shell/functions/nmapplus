@@ -29,6 +29,8 @@
 # --------------------------------------------------------------------
 
 function nmapplus() {
+    [[ -z $(command -v nmap) ]] && echo "Install nmap" && return 3
+
     np_cleanup() {
         unset arg args dir force host hosts iface ipv6 os ports prot
         unset services technique timeout udp

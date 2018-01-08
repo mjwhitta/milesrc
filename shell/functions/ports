@@ -31,8 +31,7 @@
 function ports() {
     ports_cleanup() {
         unset args hosts line match newfile oldfile
-        unset -f ports_cleanup
-        unset -f ports_usage
+        unset -f ports_cleanup ports_usage
     }
 
     ports_usage() {

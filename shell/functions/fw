@@ -29,6 +29,11 @@
 # --------------------------------------------------------------------
 
 function fw() {
+    if [[ -z $(command -v iptables) ]]; then
+        echo "Install iptables"
+        return 3
+    fi
+
     fw_cleanup() {
         unset action arg args chain
         unset -f fw_cleanup fw_clear fw_close fw_list fw_open fw_reset
@@ -132,7 +137,6 @@ function fw() {
     [[ -z ${args[@]} ]] || set -- "${args[@]}"
 
     [[ $# -gt 0 ]] && fw_usage && return 2
-    [[ -z $(command -v iptables) ]] && fw_usage && return 3
 
     case "$action" in
         "close") fw_close $port ;;

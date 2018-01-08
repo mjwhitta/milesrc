@@ -31,8 +31,7 @@
 function gimme() {
     gimme_cleanup() {
         unset action args cask cmd nosave old_umask
-        unset -f gimme_cleanup
-        unset -f gimme_usage
+        unset -f gimme_cleanup gimme_usage
     }
 
     gimme_usage() {

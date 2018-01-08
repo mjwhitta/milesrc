@@ -31,8 +31,7 @@
 function notes() {
     notes_cleanup() {
         unset action args notes
-        unset -f notes_cleanup
-        unset -f notes_usage
+        unset -f notes_cleanup notes_usage
     }
 
     notes_usage() {

@@ -42,8 +42,7 @@ function netstatplus() {
 
     netstatplus_cleanup() {
         unset args cmd line pid sudo username
-        unset -f netstatplus_cleanup
-        unset -f netstatplus_usage
+        unset -f netstatplus_cleanup netstatplus_usage
     }
 
     netstatplus_usage() {

@@ -665,14 +665,15 @@ alias which="command -v"
 
 # Git aliases
 if [[ -n $(installed git) ]]; then
-    alias diff="\git diff -b --color-words=. --ignore-blank-lines --minimal"
-    alias gd="\git diff -b --color-words=. --ignore-blank-lines --minimal"
-    alias gl="\git log --date=relative --graph --pretty=format:\"%C(bold red)%h%Creset %s %C(bold green)%cd %C(bold blue)%an\""
-    alias gld="\git log --date=local --graph --pretty=format:\"%C(bold red)%h%Creset %s %C(bold green)%cd %C(bold blue)%an\""
-    alias gls="\git log --color=never --date=relative --graph --pretty=format:\"%h %s (%cd) %an\""
-    alias gp="\git pull -r origin master"
-    alias gs="\git status -b -s"
-    alias gsh="\git show -b --color-words=. --ignore-blank-lines --minimal"
+    alias diff="git diff -b --color-words=. --ignore-blank-lines --minimal"
+    alias gd="git diff -b --color-words=. --ignore-blank-lines --minimal"
+    alias gl="git log --date=relative --graph --pretty=format:\"%C(bold red)%h%Creset %s %C(bold green)%cd %C(bold blue)%an\""
+    alias gld="git log --date=local --graph --pretty=format:\"%C(bold red)%h%Creset %s %C(bold green)%cd %C(bold blue)%an\""
+    alias gls="git log --color=never --date=relative --graph --pretty=format:\"%h %s (%cd) %an\""
+    alias gp="git pull -r origin master"
+    alias grh="git reset --hard"
+    alias gs="git status -b -s"
+    alias gsh="git show -b --color-words=. --ignore-blank-lines --minimal"
 fi
 
 if [[ -z $(installed z | \grep "gem") ]]; then

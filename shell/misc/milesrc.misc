@@ -170,6 +170,7 @@ if [[ -n $(installed docker) ]]; then
         for s in \
             /usr/bin/zsh \
             /bin/zsh \
+            /usr/bin/bash \
             /bin/bash \
             /bin/sh
         do

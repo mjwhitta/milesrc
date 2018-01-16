@@ -11,6 +11,7 @@ tmux set -g @battery_empty "□"
 tmux set -g @battery_filled "■"
 # tmux set -g @battery_empty "♡"
 # tmux set -g @battery_filled "❤"
+tmux set -g @default_ctrl_d "on"
 tmux set -g @log_all "tmux-log_%Y-%m-%d-%H%M%S.log"
 tmux set -g @log_path "#{pane_current_path}"
 tmux set -g @log_screen "tmux-screenshot_%Y-%m-%d-%H%M%S.log"
@@ -164,8 +165,13 @@ if [[ $(tget -g @prefix) != "C-b" ]]; then
 fi
 tmux bind "$(tget -g @prefix | awk -F "-" '{print $2}')" last-window
 
-tmux bind -n "C-d" detach-client
-tmux bind "d" send -l ""
+case "$(tget -g @default_ctrl_d)" in
+    "on") tmux bind "C-d" detach-client ;;
+    *)
+        tmux bind -n "C-d" detach-client
+        tmux bind "d" send -l ""
+        ;;
+esac
 tmux bind "R" run "
     tmux source \"$HOME/.tmux.conf\"
     tmux display \"Done!\"

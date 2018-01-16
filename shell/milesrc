@@ -206,6 +206,9 @@ case "$MILESRC_SHELL" in
 esac
 
 # {{{ Env Vars
+# TERM
+# export TERM="screen-256color"
+
 # Java
 export JAVA_HOME="$(
     find /usr/lib/jvm -maxdepth 1 \

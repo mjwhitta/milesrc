@@ -777,7 +777,9 @@ if exists(':function') && exists(':let')
         Plug 'ctrlpvim/ctrlp.vim'
         Plug 'Yggdroot/indentLine'
         " Plug 'katono/rogue.vim', { 'on': 'Rogue' }
-        Plug 'scrooloose/syntastic'
+        if g:syntastic_off == 0
+            Plug 'scrooloose/syntastic'
+        endif
         " Plug 'majutsushi/tagbar'
         " Plug 'shougo/unite.vim'
         Plug 'tpope/vim-abolish' ", { 'on': 'S' }

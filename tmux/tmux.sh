@@ -248,7 +248,9 @@ tmux bind -T copy-mode-vi "M-O" send -X copy-pipe-and-cancel "
 case "$(uname -s)" in
     "Darwin")
         tmux bind -T copy-mode-vi "y" send -X copy-pipe-and-cancel \
-                "pbcopy"
+            "pbcopy"
+        tmux bind -T copy-mode-vi MouseDragEnd1Pane send -X \
+            copy-pipe-and-cancel "pbcopy"
         ;;
     "Linux")
         if [[ -n $(command -v xsel) ]]; then
@@ -260,6 +262,8 @@ case "$(uname -s)" in
         fi
         if [[ -n $copy ]] && [[ -n $paste ]]; then
             tmux bind -T copy-mode-vi "y" send -X \
+                copy-pipe-and-cancel "$copy"
+            tmux bind -T copy-mode-vi MouseDragEnd1Pane send -X \
                 copy-pipe-and-cancel "$copy"
             tmux bind "C-v" run \
                 "$paste | tmux load-buffer -; tmux paste-buffer"

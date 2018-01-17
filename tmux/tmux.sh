@@ -271,13 +271,6 @@ case "$(uname -s)" in
         ;;
 esac
 
-# Searching
-tmux bind "/" run "
-    tmux copy-mode
-    tmux command-prompt -p \"(search up)\" \
-        \"send -X search-backward '%%%'\"
-"
-
 # Logging
 # FIXME remove the delete escape sequences
 tmux bind "P" run "
@@ -338,6 +331,16 @@ tmux bind "M-P" run "
     printf \"%s\n\" \"\$tmp\" >\$file
     tmux display \"Successfully logged all history to \$file\"
 "
+
+# Searching
+tmux bind "/" run "
+    tmux copy-mode
+    tmux command-prompt -p \"(search up)\" \
+        \"send -X search-backward '%%%'\"
+"
+
+# Send to all panes
+tmux bind "+" set -w synchronize-panes
 # }}}
 
 # {{{ Local file

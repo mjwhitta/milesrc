@@ -77,7 +77,7 @@ tmux set -u history-file
 tmux set -g history-limit "65536"
 tmux set -gw mode-keys "vi"
 tmux set -gw monitor-activity "on"
-tmux set -gw monitor-bell "on"
+tmux set -gqw monitor-bell "on"
 tmux set -gw monitor-silence "0"
 tmux set -gw mouse "on"
 tmux set -g prefix "$(tget -g @prefix)"

@@ -173,7 +173,8 @@ case "$MILESRC_SHELL" in
         ZSH_HIGHLIGHT_STYLES[hashed-command]="fg=white"
         for dir in \
             $HOME/.config/zsh/plugins/zsh-syntax-highlighting \
-            /usr/share/zsh/plugins/zsh-syntax-highlighting
+            /usr/share/zsh/plugins/zsh-syntax-highlighting \
+            /usr/share/zsh-syntax-highlighting
         do
             [[ ! -d $dir ]] || . $dir/zsh-syntax-highlighting.zsh
             [[ ! -d $dir ]] || break

@@ -230,7 +230,10 @@ for dir in code projs projects src; do
 done; unset dir
 
 # Secure perms
-[[ -n $(id | \grep "uid=0") ]] || umask 077
+# Don't touch umask EVER
+# [[ -n $(id | \grep "uid=0") ]] || umask 077
+# Instead do something like
+# setfacl -d -m u::rwx,g::-,o::- -R $HOME
 
 # Less
 export PAGER="less"
@@ -724,8 +727,8 @@ if [[ -d $HOME/.milesrc/shell/functions ]]; then
 fi
 
 function cpan5() {
-    [[ ! -w /usr/local ]] || (umask 022 && cpan $@)
-    [[ -w /usr/local ]] || (umask 022 && sudo cpan $@)
+    [[ ! -w /usr/local ]] || cpan $@
+    [[ -w /usr/local ]] || sudo cpan $@
 }
 
 function ipa() {
@@ -785,7 +788,7 @@ function iso2usb() {
     [[ ! -f $1 ]] && echo $usage && return 2
     [[ ! -b $2 ]] && echo $usage && return 3
 
-    (umask 022 && sudo dd if="$1" of="$2" bs="4M")
+    sudo dd if="$1" of="$2" bs="4M"
 }
 
 function lsp() {
@@ -899,13 +902,13 @@ if [[ -n $(installed xdg-mime) ]]; then
 fi
 
 function pip2() {
-    [[ ! -w /usr/local ]] || (umask 022 && python2 -m pip $@)
-    [[ -w /usr/local ]] || (umask 022 && sudo python2 -m pip $@)
+    [[ ! -w /usr/local ]] || python2 -m pip $@
+    [[ -w /usr/local ]] || sudo python2 -m pip $@
 }
 
 function pip3() {
-    [[ ! -w /usr/local ]] || (umask 022 && python3 -m pip $@)
-    [[ -w /usr/local ]] || (umask 022 && sudo python3 -m pip $@)
+    [[ ! -w /usr/local ]] || python3 -m pip $@
+    [[ -w /usr/local ]] || sudo python3 -m pip $@
 }
 
 function remove_spaces_in_names() {
@@ -928,7 +931,7 @@ function remove_spaces_in_names() {
 
     # May need to cpan install File::Rename
     if [[ -z $rnm ]] || [[ -z $($rnm -h | \grep "perl") ]]; then
-        echo "Please run \"(umask 022 && sudo cpan File::Rename)\""
+        echo "Please run \"sudo cpan File::Rename\""
         return
     fi
 
@@ -968,8 +971,7 @@ function simplehttp() {
                     -e 'Plack::App::Directory->new(root=>".");' \
                     -p ${2:-8080}
             else
-                echo "Please run:"
-                echo " umask 022 && cpan Plack"
+                echo "Please run: cpan Plack"
             fi
             ;;
         "php")
@@ -1004,8 +1006,7 @@ function simplehttp() {
             if [[ -n $(installed twistd) ]]; then
                 twistd -n web -p ${2:-8080} --path .
             else
-                echo "Please run:"
-                echo " umask 022 && python2 -m pip install twisted"
+                echo "Please run: python2 -m pip install twisted"
             fi
             ;;
         *)
@@ -1023,16 +1024,6 @@ function simplehttp() {
             [[ -z $(installed python2) ]] || echo "    twisted"
             ;;
     esac
-}
-
-function sudo() {
-    local sudo="$(installed sudo)"
-    [[ -z $sudo ]] && $@ && return $?
-    umask 022
-    $sudo $@
-    local ret="$?"
-    [[ -n $(id | \grep "uid=0") ]] || umask 077
-    return $ret
 }
 
 function tdump() {

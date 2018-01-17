@@ -30,7 +30,7 @@
 
 function gimme() {
     gimme_cleanup() {
-        unset action args cask cmd nosave old_umask
+        unset action args cask cmd nosave
         unset -f gimme_cleanup gimme_usage
     }
 
@@ -74,9 +74,6 @@ function gimme() {
         "search") [[ $# -eq 0 ]] && gimme_usage && return 3 ;;
         "update") [[ $# -ne 0 ]] && gimme_usage && return 4 ;;
     esac
-
-    old_umask="$(umask)"
-    umask 022
 
     if [[ -n $(command -v apt-get) ]]; then
         case "$action" in
@@ -161,8 +158,6 @@ function gimme() {
     else
         echo "Unsupported package manager!"
     fi
-
-    [[ -n $(id | \grep "uid=0") ]] || umask $old_umask
 
     gimme_cleanup
 }

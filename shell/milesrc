@@ -232,8 +232,9 @@ done; unset dir
 # Secure perms
 # Don't touch umask EVER
 # [[ -n $(id | \grep "uid=0") ]] || umask 077
-# Instead do something like
-# setfacl -d -m u::rwx,g::-,o::- -R $HOME
+# Instead do something like:
+# setfacl -d -m u::rwX,g::-,o::- $HOME
+# setfacl -m u::rwX,g::-,o::- -R $HOME
 
 # Less
 export PAGER="less"

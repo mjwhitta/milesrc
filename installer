@@ -39,7 +39,7 @@ link() {
         echo "[+] Symlinking $from to $to"
         ln -s $from $to
     done; unset entry
-    # echo "[+] done"
+    echo "[+] Successfully linked milesrc"
 
     if [[ -n $install_vim_plugins ]]; then
         if [[ -f $here/vim/autoload/plug.vim ]] &&
@@ -54,8 +54,6 @@ link() {
             echo "[!] Can not install vim plugins without git"
         fi
     fi
-
-    echo "[+] Successfully linked milesrc"
 }
 
 link_status() {
@@ -99,6 +97,7 @@ link_status() {
 unlink() {
     unset install_vim_plugins
 
+    echo "[+] Unlinking directories and files..."
     for entry in "${files[@]}"; do
         from="$here/${entry/:*/}"
         to="$(eval echo "${entry/*:/}")"
@@ -128,13 +127,13 @@ unlink() {
             echo "[!] Did not restore backup of $to"
         fi
     done; unset entry
+    echo "[+] Successfully unlinked milesrc"
 
     if [[ -d $here/vim ]] && [[ -n $install_vim_plugins ]]; then
-        echo "[+] Removing vim plugins"
+        echo -n "[+] Removing vim plugins... "
         rm -rf $here/vim/plugs/*
+        echo "done"
     fi
-
-    echo "[+] Successfully unlinked milesrc"
 }
 
 usage() {

@@ -1,13 +1,21 @@
 # If not running interactively, don't do anything
 [[ $- == *i* ]] || return
 
+# This simply starts an ssh-agent if $HOME/.ssh-agent exists. I'm
+# using a file b/c this is before $HOME/.milesrc.local is sourced so
+# users can't just set an env var.
+
 # SSH agent
 if [[ -n $(command -v ssh-agent) ]] && [[ -f $HOME/.ssh-agent ]]; then
+    # Start agent if needed
     mkdir -p $HOME/.ssh/agent
     if [[ ! -f $HOME/.ssh/agent/env ]]; then
         ssh-agent -s >$HOME/.ssh/agent/env
     fi
     . $HOME/.ssh/agent/env >/dev/null
+
+    # If PID exists but SSH_AUTH_SOCK doesn't, then restart agent. If
+    # PID doesn't exist, try to start agent again.
     pidchk="$(\ps -p $SSH_AGENT_PID -o command | \grep "ssh-agent")"
     if [[ -z $pidchk ]] || [[ ! -e $SSH_AUTH_SOCK ]]; then
         [[ -z $pidchk ]] || ssh-agent -k

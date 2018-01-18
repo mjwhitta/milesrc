@@ -1,6 +1,9 @@
 # If not running interactively, don't do anything
 [[ $- == *i* ]] || return
 
+# I source this file from my $HOME/.milesrc.local so that I can
+# version control the non-host-specific stuff.
+
 # Start tmux if ssh connection
 if [[ -n $(installed tmux) ]] &&
    [[ ! -f $HOME/.notmux ]] &&

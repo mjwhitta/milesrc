@@ -1,6 +1,8 @@
 # If not running interactively, don't do anything
 [[ $- == *i* ]] || return
 
+# Lots of old stuff in here.
+
 # {{{ Colors
 declare -A FX FG BG 2>/dev/null
 

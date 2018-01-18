@@ -4,6 +4,7 @@ shell/complete/bash:$HOME/.config/bash/complete
 shell/bash_zsh_profile:$HOME/.zprofile
 shell/bash_zsh_rc:$HOME/.zshrc
 shell/complete/zsh:$HOME/.config/zsh/complete
+shell/milesrc.prompt:$HOME/.milesrc.prompt
 tmux:$HOME/.tmux
 tmux/tmux.conf:$HOME/.tmux.conf
 vim:$HOME/.vim

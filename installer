@@ -32,22 +32,22 @@ link() {
             echo "[+] Removing file $to"
             rm -f $to
         else
-            echo "[+] Ensuring $(dirname $to) exists"
+            # echo "[+] Ensuring $(dirname $to) exists"
             mkdir -p $(dirname $to)
         fi
 
         echo "[+] Symlinking $from to $to"
         ln -s $from $to
     done; unset entry
-    echo "[+] done"
+    # echo "[+] done"
 
     if [[ -n $install_vim_plugins ]]; then
         if [[ -f $here/vim/autoload/plug.vim ]] &&
            [[ -n $(command -v git) ]]
         then
-            echo "[+] Installing vim plugins..."
+            echo -n "[+] Installing vim plugins... "
             vim_plugins
-            echo "[+] done"
+            echo "done"
         elif [[ ! -f $here/vim/autoload/plug.vim ]]; then
             echo "[-] Can not install vim plugins without vim-plug"
         else

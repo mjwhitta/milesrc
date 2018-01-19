@@ -786,11 +786,11 @@ function update_grub() {
     do
         [[ -n $(command -v $mkconfig) ]] || continue
         for cfg in \
-            /boot/grub/grub.cfg \
-            /boot/grub2/grub2.cfg
+            /boot/grub \
+            /boot/grub2
         do
-            [[ -f $cfg ]] || continue
-            sudo $mkconfig -o $cfg
+            [[ -d $cfg ]] || continue
+            sudo $mkconfig -o $cfg/grub.cfg
         done
     done
 }

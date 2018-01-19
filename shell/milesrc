@@ -366,8 +366,10 @@ fi
 alias c="mycd"
 alias cd="mycd"
 alias cp="\cp -i"
+alias dt="tmux -2 new -d -s"
 alias emacs="emacs -nw"
 alias envg="env | \grep $GREP_CLR -Eis"
+alias et="exec tmux -2 new -A -s"
 alias f="sudo"
 [[ -z $(installed gdb) ]] || alias gdb="gdb -q"
 [[ -z $(installed grep) ]] || alias grep="\grep $GREP_ARGS"
@@ -775,6 +777,22 @@ function tdump() {
     sudo tcpdump -n -vvv $@
     [[ -z $(id | \grep "uid=0") ]] || return 0
     [[ -z $cap ]] || [[ ! -f $cap ]] || sudo chown $USER:$USER $cap
+}
+
+function update_grub() {
+    for mkconfig in \
+        grub-mkconfig \
+        grub2-mkconfig
+    do
+        [[ -n $(command -v $mkconfig) ]] || continue
+        for cfg in \
+            /boot/grub/grub.cfg \
+            /boot/grub2/grub2.cfg
+        do
+            [[ -f $cfg ]] || continue
+            sudo $mkconfig -o $cfg
+        done
+    done
 }
 
 function update_repos() {

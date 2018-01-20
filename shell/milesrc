@@ -642,6 +642,11 @@ if [[ -n $(installed xdg-mime) ]]; then
     }
 fi
 
+function os() {
+    cat /etc/os-release | sed -r -e "s/^NAME=\"?|\"?$//g" \
+        -e "/^[^=]+$/p" -n
+}
+
 function pip2() {
     [[ ! -w /usr/local ]] || python2 -m pip $@
     [[ -w /usr/local ]] || sudo python2 -m pip $@

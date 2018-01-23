@@ -59,6 +59,21 @@ case "$MILESRC_SHELL" in
         ;;
 esac
 
+# Conditional rand value
+# $1 = exit status
+# $2 = rand range if exit status is0
+# $3 = rand range otherwise
+function __milesrc_conditional_rand() {
+    [[ $# -eq 3 ]] || echo -n "0"
+
+    local rand
+    case "$1" in
+        "0") let "rand = RANDOM % $2" ;;
+        *) let "rand = RANDOM % $3" ;;
+    esac
+    echo -n "$rand"
+}
+
 # Current working directory
 function __milesrc_cwd() {
     local cwd="$(
@@ -79,11 +94,12 @@ function __milesrc_cwd() {
 }
 
 # Exit status
+# $1 = last exit status
 function __milesrc_exit_status() {
     [[ $# -eq 1 ]] || return
 
     local status_symbol="$1"
-    local rand="$(__milesrc_rand $1 3 6)"
+    local rand="$(__milesrc_conditional_rand $1 3 6)"
 
     case "$MILESRC_PROMPT_EMOTICONS" in
         "") [[ $status_symbol -gt 0 ]] || status_symbol="" ;;
@@ -168,6 +184,7 @@ function __milesrc_git_status() {
 }
 
 # Prompt PS1 string
+# $1 = last exit status
 function __milesrc_prompt_ps1() {
     [[ $# -eq 1 ]] || return
 
@@ -250,27 +267,18 @@ function __milesrc_prompt() {
     fi
 }
 
-function __milesrc_rand() {
-    [[ $# -eq 3 ]] || echo -n "0"
-
-    local rand
-    case "$1" in
-        "0") let "rand = RANDOM % $2" ;;
-        *) let "rand = RANDOM % $3" ;;
-    esac
-    echo -n "$rand"
-}
-
 case "$MILESRC_SHELL" in
     *"bash")
-        if [[ $PROMPT_COMMAND != *__milesrc_prompt* ]]; then
-            PROMPT_COMMAND="__milesrc_prompt;"$'\n'"$PROMPT_COMMAND"
-        fi
+        case "$PROMPT_COMMAND" in
+            *"__milesrc_prompt;"*) ;;
+            *) PROMPT_COMMAND="__milesrc_prompt; $PROMPT_COMMAND" ;;
+        esac
         ;;
     *"zsh")
-        if [[ ${precmd_functions[(r)__milesrc_prompt]} != __milesrc_prompt ]]; then
-            precmd_functions+=(__milesrc_prompt)
-        fi
+        case "${precmd_functions[(r)__milesrc_prompt]}" in
+            "__milesrc_prompt") ;;
+            *) precmd_functions+=(__milesrc_prompt) ;;
+        esac
         ;;
 esac
 # }}}

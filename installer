@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
 link() {
-    unset install_vim_plugins
-
     echo "[+] Linking directories and files..."
     for entry in "${files[@]}"; do
         from="$here/${entry/:*/}"
@@ -11,10 +9,6 @@ link() {
         if [[ ! -e $from ]]; then
             echo "[-] $from does not exist"
             continue
-        fi
-
-        if [[ -n $(echo "$from" | \grep -i "vim") ]]; then
-            install_vim_plugins="true"
         fi
 
         if [[ -L $to ]]; then
@@ -42,23 +36,19 @@ link() {
     echo "[+] Successfully linked milesrc"
 
     if [[ -n $install_vim_plugins ]]; then
-        if [[ -f $here/vim/autoload/plug.vim ]] &&
-           [[ -n $(command -v git) ]]
-        then
-            echo -n "[+] Installing vim plugins... "
-            vim_plugins
-            echo "done"
+        if [[ -z $(command -v git) ]]; then
+            echo "[!] Can not install vim plugins without git"
         elif [[ ! -f $here/vim/autoload/plug.vim ]]; then
             echo "[-] Can not install vim plugins without vim-plug"
         else
-            echo "[!] Can not install vim plugins without git"
+            echo -n "[+] Installing vim plugins... "
+            vim_plugins
+            echo "done"
         fi
     fi
 }
 
 link_status() {
-    unset install_vim_plugins
-
     for entry in "${files[@]}"; do
         from="$here/${entry/:*/}"
         to="$(eval echo "${entry/*:/}")"
@@ -66,10 +56,6 @@ link_status() {
         if [[ ! -e $from ]]; then
             echo "[-] $from does not exist"
             continue
-        fi
-
-        if [[ -n $(echo "$from" | \grep -i "vim") ]]; then
-            install_vim_plugins="true"
         fi
 
         if [[ -L $to ]]; then
@@ -84,9 +70,8 @@ link_status() {
         fi
     done; unset entry
 
-    if [[ -d $here/vim ]] && [[ -n $install_vim_plugins ]]; then
-        mkdir -p $here/vim/plugs
-        if [[ -n $(ls $here/vim/plugs) ]]; then
+    if [[ -d $here/vim ]]; then
+        if [[ -d $here/vim/plugs ]]; then
             echo "[+] vim plugins are installed"
         else
             echo "[-] vim plugins are not installed"
@@ -95,16 +80,10 @@ link_status() {
 }
 
 unlink() {
-    unset install_vim_plugins
-
     echo "[+] Unlinking directories and files..."
     for entry in "${files[@]}"; do
         from="$here/${entry/:*/}"
         to="$(eval echo "${entry/*:/}")"
-
-        if [[ -n $(echo "$from" | \grep -i "vim") ]]; then
-            install_vim_plugins="true"
-        fi
 
         if [[ -L $to ]]; then
             already_from="$(\ls -hl $to | awk '{print $NF}')"
@@ -129,9 +108,9 @@ unlink() {
     done; unset entry
     echo "[+] Successfully unlinked milesrc"
 
-    if [[ -d $here/vim ]] && [[ -n $install_vim_plugins ]]; then
+    if [[ -d $here/vim/plugs ]]; then
         echo -n "[+] Removing vim plugins... "
-        rm -rf $here/vim/plugs/*
+        rm -rf $here/vim/plugs
         echo "done"
     fi
 }
@@ -141,6 +120,7 @@ usage() {
     echo "Options:"
     echo "    -f, --force    Do not make backups"
     echo "    -h, --help     Display this help message"
+    echo "    -v, --vim      Install vim plugins when linking"
     echo
     echo "Actions:"
     echo "    link"
@@ -163,7 +143,7 @@ vim_plugins() {
 }
 
 declare -a args
-unset force
+unset force install_vim_plugins
 backup="milesrc.bak"
 here="$(pwd)"
 
@@ -172,6 +152,7 @@ while [[ $# -gt 0 ]]; do
         "--") shift && args+=("$@") && break ;;
         "-f"|"--force") force="true" ;;
         "-h"|"--help") usage 0 ;;
+        "-v"|"--vim") install_vim_plugins="true" ;;
         *) args+=("$1") ;;
     esac
     shift

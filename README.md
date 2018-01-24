@@ -57,7 +57,7 @@ This will make backups of existing configs and install tmux/vim
 plugins:
 
 ```
-$ ./installer link
+$ ./installer -v link
 ```
 
 #### Force install
@@ -65,7 +65,7 @@ $ ./installer link
 This will NOT make backups of existing configs:
 
 ```
-$ ./installer -f link
+$ ./installer -f -v link
 ```
 
 #### Unintall

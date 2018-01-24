@@ -305,7 +305,7 @@ export VI_CMD="$(__milesrc_colors white blue)    NORMAL    $reset"
 export VI_INS="$(__milesrc_colors white green) -- INSERT -- $reset"
 
 # For convenience
-local reset="$(__milesrc_colors)"
+reset="$(__milesrc_colors)"
 
 case "$MILESRC_SHELL" in
     *"bash")

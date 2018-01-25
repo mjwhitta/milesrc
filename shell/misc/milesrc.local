@@ -14,7 +14,15 @@ then
 fi
 
 # {{{ Env Vars
-export MILESRC_THEME_PROMPT="true"
+declare -a MILESRC_PROMPT
+MILESRC_PROMPT+=("host;white;blue")
+MILESRC_PROMPT+=("git;light_black;white")
+MILESRC_PROMPT+=("cwd;white;light_black")
+MILESRC_PROMPT+=("mode;white;green;white;blue")
+MILESRC_PROMPT+=("newline")
+MILESRC_PROMPT+=("exit;white;red")
+MILESRC_PROMPT+=("prompt;white;light_black")
+export MILESRC_PROMPT
 # }}}
 
 # {{{ PATH

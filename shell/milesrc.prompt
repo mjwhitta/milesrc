@@ -5,6 +5,7 @@
 # share it.
 
 # {{{ Functions
+# {{{ __milesrc_colors
 # Get color escape codes
 # $1 = fg
 # $2 = bg
@@ -60,14 +61,16 @@ function __milesrc_colors() {
     fi
 
     case "$MILESRC_SHELL" in
-        *"bash") echo -en "\\[$fgcode$bgcode\\]" ;;
-        *"zsh") echo -en "%{$fgcode$bgcode%}" ;;
+        *"bash") echo -n "\\[$fgcode$bgcode\\]" ;;
+        *"zsh") echo -n "%{$fgcode$bgcode%}" ;;
     esac
 }
+# }}}
 
+# {{{ __milesrc_conditional_rand
 # Conditional rand value
 # $1 = exit status
-# $2 = rand range if exit status is0
+# $2 = rand range if exit status is 0
 # $3 = rand range otherwise
 function __milesrc_conditional_rand() {
     if [[ $# -ne 3 ]]; then
@@ -82,43 +85,67 @@ function __milesrc_conditional_rand() {
     esac
     echo -n "$rand"
 }
+# }}}
 
+# {{{ __milesrc_cwd
 # Current working directory
-# $1 = the width needed to truncate the cwd
+# $1 = format in the form of ignore;fgclr;bgclr
+# $2 = the width needed to truncate the cwd
 function __milesrc_cwd() {
-    if [[ $# -ne 1 ]]; then
-        pwd
-        return
-    fi
+    [[ $# -eq 2 ]] || return
 
     local cwd="$(
         pwd | sed -r -e "s#$HOME#\~#" -e "s#/# / #g" -e "s/^ //"
     )"
     local length="$(echo -n "$cwd" | wc -m)"
     local offset="0"
-    local width="$1"
+    local width="$2"
+    let "width -= 2" # leading and trailing spaces
+    [[ $width -ge 0 ]] || let "width = 0"
 
     if [[ $length -le $width ]]; then
         let "offset = $width - $length - 1"
-        echo -n "$cwd"
-        for i in $(seq 0 $offset); do echo -n " "; done; unset i
+        cwd="$(
+            echo -n "$cwd"
+            for i in $(seq 0 $offset); do echo -n " "; done; unset i
+        )"
     else
         let "offset = $length - $width"
-        echo -n "${cwd:$offset:$width}" | sed -r "s/^.... ?/\.\.\. /"
+        cwd = "$(
+            echo -n "${cwd:$offset:$width}" | \
+            sed -r "s/^.... ?/\.\.\. /"
+        )"
     fi
+    __milesrc_format $1 "$cwd"
 }
+# }}}
 
+# {{{ __milesrc_exit_status
 # Exit status
-# $1 = last exit status
+# $1 = format in the form of # ignore;fgclr;bgclr;[emotes|unsupported]
+# $2 = last exit status
 function __milesrc_exit_status() {
-    [[ $# -eq 1 ]] || return
+    [[ $# -eq 2 ]] || return
 
-    local status_symbol="$1"
-    local rand="$(__milesrc_conditional_rand $1 3 6)"
+    local fmt="$1"
+    local status_symbol="$2"
+    [[ $status_symbol -ne 130 ]] || status_symbol="0" # Ignore ^C
+    local rand="$(__milesrc_conditional_rand $status_symbol 3 6)"
 
-    case "$MILESRC_PROMPT_EMOTICONS" in
-        "") [[ $status_symbol -gt 0 ]] || status_symbol="" ;;
-        "unsupported")
+    case "$1" in
+        *"emotes"*)
+            if [[ status_symbol -eq 0 ]]; then
+                fmt="$(echo -n "$fmt" | \grep -Eo "(;[^;]+){3}$")"
+            fi
+            case "$status_symbol" in
+                "0") status_symbol="(^‿^)" ;;
+                *) status_symbol="┻━┻ ︵ヽ(°□°)ﾉ︵ ┻━┻ " ;;
+            esac
+            ;;
+        *"unsupported"*)
+            if [[ status_symbol -eq 0 ]]; then
+                fmt="$(echo -n "$fmt" | \grep -Eo "(;[^;]+){3}$")"
+            fi
             if [[ $status_symbol -eq 0 ]]; then
                 case "$rand" in
                     "0") status_symbol="(^‿^)" ;;
@@ -136,19 +163,37 @@ function __milesrc_exit_status() {
                 esac
             fi
             ;;
-        *)
-            case "$status_symbol" in
-                "0") status_symbol="(^‿^)" ;;
-                *) status_symbol="┻━┻ ︵ヽ(°□°)ﾉ︵ ┻━┻ " ;;
-            esac
-            ;;
+        *) [[ $status_symbol -gt 0 ]] || status_symbol="" ;;
     esac
 
-    echo -n "$status_symbol"
+    __milesrc_format $fmt "$status_symbol"
 }
+# }}}
 
+# {{{ __milesrc_format
+# Used to format a string
+# $1 = format in the form of ignore;fgclr;bgclr
+# $2 = string
+function __milesrc_format() {
+    [[ $# -eq 2 ]] || return
+    local conf=($(echo -n "${1//;/ }"))
+    local bgclr="${conf[2]}"
+    local fgclr="${conf[1]}"
+    case "$MILESRC_SHELL" in
+        *"zsh") # zsh is dumb and 1-indexed... wtf...
+            bgclr="${conf[3]}"
+            fgclr="${conf[2]}"
+            ;;
+    esac
+    echo -n "$(__milesrc_colors $fgclr $bgclr) $2 $(__milesrc_colors)"
+}
+# }}}
+
+# {{{ __milesrc_git_status
 # Git info
+# $1 = format in the form of ignore;fgclr;bgclr
 function __milesrc_git_status() {
+    [[ $# -eq 1 ]] || return
     [[ -n $(installed git) ]] || return
     [[ -n $(installed perl) ]] || return
 
@@ -160,28 +205,30 @@ function __milesrc_git_status() {
     local git_status="$(git status -b --porcelain $ignore)"
 
     local branch_name="$(
-        echo "$git_status" | \
+        echo -n "$git_status" | \
         perl -lne '/^##(.*\s+on)?\s+([^.]+)/ && print $2'
     )"
     [[ -n $branch_name ]] || return
     local git="$branch_name"
 
     local ahead="$(
-        echo "$git_status" | \
+        echo -n "$git_status" | \
         perl -lne '/ahead ([0-9]+)/ && print $1'
     )"
     [[ -z $ahead ]] || git="$git ↑$ahead"
 
     local behind="$(
-        echo "$git_status" | \
+        echo -n "$git_status" | \
         perl -lne '/behind ([0-9]+)/ && print $1'
     )"
     [[ -z $behind ]] || git="$git ↓$behind"
 
     local num_diffs="$(
-        echo "$git_status" | \grep -cEv "^ *(##|\?\?|st)"
+        echo -n "$git_status" | \grep -cEv "^ *(##|\?\?|st)"
     )"
-    local untracked="$(echo "$git_status" | \grep -cE "^ *(\?\?|st)")"
+    local untracked="$(
+        echo -n "$git_status" | \grep -cE "^ *(\?\?|st)"
+    )"
     case "$num_diffs" in
         "0") ;;
         *) git="$git +$num_diffs" ;;
@@ -195,118 +242,158 @@ function __milesrc_git_status() {
         git="$git ✓"
     fi
 
-    echo -n "$git"
+    __milesrc_format $1 "$git"
 }
+# }}}
 
+# {{{ __milesrc_host
 # Hostname and related metadata
+# $1 = format in the form of ignore;fgclr;bgclr
 function __milesrc_host() {
-    echo -n "$USER@$(uname -n | awk -F "." '{print $1}')"
-}
-
-# Vi mode for the simulated right prompt
-function __milesrc_mode() {
-    case "$MILESRC_SHELL" in
-        *"bash") ;;
-        *"zsh") echo -n "$MILESRC_MODE" ;;
-    esac
-}
-
-# Prompt PS1 string
-# $1 = last exit status
-function __milesrc_prompt_ps1() {
     [[ $# -eq 1 ]] || return
-
-    local last_status="$1"
-
-    # Exit status
-    local exit="$(__milesrc_exit_status $last_status)"
-
-    # Host
-    local host="$(__milesrc_host)"
-
-    # Git
-    local git="$(__milesrc_git_status)"
-
-    # CWD
-    local width="$COLUMNS"
-    [[ -z $exit ]] || let "width -= $(echo -n " $exit " | wc -m)"
-    [[ -z $host ]] || let "width -= $(echo -n " $host " | wc -m)"
-    [[ -z $git ]] || let "width -= $(echo -n " $git " | wc -m)"
-    case "$MILESRC_SHELL" in
-        *"bash") let "width -= 3" ;;
-        *"zsh") let "width -= 17" ;;
-    esac
-    [[ $width -ge 0 ]] || let "width = 0"
-    local cwd="$(__milesrc_cwd $width)"
-
-    # Prompt symbol
-    local sym="\$"
-    [[ -z $(id | \grep "uid=0") ]] || sym="#"
-
-    # Put it all together
-    case "$last_status" in
-        "0")
-            if [[ -n $exit ]]; then
-                echo -n "$(__milesrc_colors white green) $exit $reset"
-            fi
-            ;;
-        *) echo -n "$(__milesrc_colors white red) $exit $reset" ;;
-    esac
-    echo -n "$(__milesrc_colors white blue) $host $reset"
-    if [[ -n $git ]]; then
-        echo -n "$(__milesrc_colors light_black white) $git $reset"
-    fi
-    echo -n "$(__milesrc_colors white light_black) $cwd $reset"
-    echo "$(__milesrc_mode)"
-    echo -n "$(__milesrc_colors white light_black)$sym $reset "
+    local host="$USER@$(uname -n | awk -F "." '{print $1}')"
+    __milesrc_format $1 "$host"
 }
+# }}}
 
+# {{{ __milesrc_mode
+# Vi mode for the simulated right prompt
+# $1 = format in the form of ignore;fgclr;bgclr;fgclr;bgclr
+function __milesrc_mode() {
+    [[ $# -eq 1 ]] || return
+    case "$MILESRC_SHELL" in
+        *"zsh") ;;
+        *) return ;;
+    esac
+    local fmt="$1"
+    case "$MILESRC_MODE" in
+        $VI_CMD) fmt="$(echo -n "$fmt" | \grep -Eo "(;[^;]+){3}$")" ;;
+    esac
+    __milesrc_format $fmt "$MILESRC_MODE"
+}
+# }}}
+
+# {{{ __milesrc_prompt
 # Set prompt
 function __milesrc_prompt() {
-    local last_status="$?"
-    if [[ -n $MILESRC_THEME_PROMPT ]]; then
+    local exit_status="$?"
+    if [[ -n ${MILESRC_PROMPT[@]} ]]; then
         case "$MILESRC_SHELL" in
             *"bash")
                 if [[ -z $MILESRC_OLD_PROMPT ]]; then
                     export MILESRC_OLD_PROMPT="$PS1"
                 fi
-                export PS1="$(__milesrc_prompt_ps1 $last_status)"
+                export PS1="$(__milesrc_prompt_ps1 $exit_status)"
                 ;;
             *"zsh")
                 if [[ -z $MILESRC_OLD_PROMPT ]]; then
                     export MILESRC_OLD_PROMPT="$PROMPT"
                 fi
                 export MILESRC_MODE="$VI_INS"
-                export PROMPT="$(__milesrc_prompt_ps1 $last_status)"
+                export PROMPT="$(__milesrc_prompt_ps1 $exit_status)"
                 ;;
         esac
     else
-        case "$MILESRC_SHELL" in
-            *"bash")
-                if [[ -n $MILESRC_OLD_PROMPT ]]; then
-                    export PS1="$MILESRC_OLD_PROMPT"
-                    unset MILESRC_OLD_PROMPT
-                fi
-                ;;
-            *"zsh")
-                if [[ -n $MILESRC_OLD_PROMPT ]]; then
-                    export PROMPT="$MILESRC_OLD_PROMPT"
-                    unset MILESRC_OLD_PROMPT
-                fi
-                ;;
-        esac
+        if [[ -n $MILESRC_OLD_PROMPT ]]; then
+            case "$MILESRC_SHELL" in
+                *"bash") export PS1="$MILESRC_OLD_PROMPT" ;;
+                *"zsh") export PROMPT="$MILESRC_OLD_PROMPT" ;;
+            esac
+            unset MILESRC_OLD_PROMPT
+        fi
     fi
 }
 # }}}
 
+# {{{ __milesrc_prompt_ps1
+# Prompt PS1 string
+# $1 = last exit status
+function __milesrc_prompt_ps1() {
+    [[ $# -eq 1 ]] || return
+
+    local -A ps
+    local exit_status="$1"
+    local subtract="true"
+    local width="$COLUMNS"
+    let "width -= 1"
+
+    for i in "${MILESRC_PROMPT[@]}"; do
+        local clrlen="0"
+        let "clrlen = $(__milesrc_format $i "" | wc -m) - 2"
+        local len="0"
+        case "$i" in
+            "exit"*)
+                ps[exit]="$(__milesrc_exit_status $i $exit_status)"
+                let "len = $(echo -n "${ps[exit]}" | wc -m) - $clrlen"
+                [[ $len -gt 2 ]] || ps[exit]=""
+                ;;
+            "git"*)
+                ps[git]="$(__milesrc_git_status $i)"
+                let "len = $(echo -n "${ps[git]}" | wc -m) - $clrlen"
+                [[ $len -gt 2 ]] || ps[git]=""
+                ;;
+            "host"*)
+                ps[host]="$(__milesrc_host $i)"
+                let "len = $(echo -n "${ps[host]}" | wc -m) - $clrlen"
+                [[ $len -gt 2 ]] || ps[host]=""
+                ;;
+            "mode"*)
+                ps[mode]="$(__milesrc_mode $i)"
+                let "len = $(echo -n "${ps[mode]}" | wc -m) - $clrlen"
+                [[ $len -gt 2 ]] || ps[mode]=""
+                ;;
+            "newline") unset subtract ;;
+            "prompt"*)
+                ps[prompt]="$(__milesrc_prompt_sym $i)"
+                let "len = $(echo -n "${ps[prompt]}" | wc -m) - $clrlen"
+                [[ $len -gt 2 ]] || ps[prompt]=""
+                ;;
+        esac
+        if [[ -n $subtract ]] && [[ $len -gt 2 ]]; then
+            let "width -= $len"
+        fi
+    done; unset i
+
+    # CWD
+    local fmt="$(
+        echo -n "${MILESRC_PROMPT[@]}" | \grep -Eo "cwd[^ ]+"
+    )"
+    ps[cwd]="$(__milesrc_cwd $fmt $width)"
+
+    # Put it together
+    for i in "${MILESRC_PROMPT[@]}"; do
+        case "$i" in
+            "cwd"*) [[ -z ${ps[cwd]} ]] || echo -n "${ps[cwd]}" ;;
+            "exit"*) [[ -z ${ps[exit]} ]] || echo -n "${ps[exit]}" ;;
+            "git"*) [[ -z ${ps[git]} ]] || echo -n "${ps[git]}" ;;
+            "host"*) [[ -z ${ps[host]} ]] || echo -n "${ps[host]}" ;;
+            "mode"*) [[ -z ${ps[mode]} ]] || echo -n "${ps[mode]}" ;;
+            "newline") echo ;;
+            "prompt"*) echo -n "${ps[prompt]}" ;;
+        esac
+    done; unset i
+    echo -n " "
+}
+# }}}
+
+# {{{ __milesrc_prompt_sym
+# The prompt symbol
+# $1 = format in the form of ignore;fgclr;bgclr
+function __milesrc_prompt_sym() {
+    [[ $# -eq 1 ]] || return
+    sym="\$"
+    [[ -z $(id | \grep "uid=0") ]] || sym="#"
+    __milesrc_format $1 "$sym"
+}
+# }}}
+# }}}
+
 # {{{ Prompt
-# Right prompt stuff
-export VI_CMD="$(__milesrc_colors white blue)    NORMAL    $reset"
-export VI_INS="$(__milesrc_colors white green) -- INSERT -- $reset"
+# Vi mode strings
+export VI_CMD="   NORMAL   "
+export VI_INS="-- INSERT --"
 
-# For convenience
-reset="$(__milesrc_colors)"
-
+# Enable prompt
 case "$MILESRC_SHELL" in
     *"bash")
         # set vi-cmd-mode-string "    NORMAL    "
@@ -320,26 +407,35 @@ case "$MILESRC_SHELL" in
         ;;
     *"zsh")
         function zle-keymap-select() {
-            local last_status="$?"
-            if [[ -n $MILESRC_THEME_PROMPT ]]; then
+            local exit_status="$?"
+            if [[ -n ${MILESRC_PROMPT[@]} ]]; then
                 case "$KEYMAP" in
-                    "main"|"viins") MILESRC_MODE="$VI_INS" ;;
-                    "vicmd") MILESRC_MODE="$VI_CMD" ;;
+                    "main"|"viins") export MILESRC_MODE="$VI_INS" ;;
+                    "vicmd") export MILESRC_MODE="$VI_CMD" ;;
                 esac
-                export PROMPT="$(__milesrc_prompt_ps1 $last_status)"
+                local fmt="$(
+                    echo -n "${MILESRC_PROMPT[@]}" | \
+                    \grep -Eo "mode[^ ]+"
+                )"
+                local mode="$(__milesrc_mode $fmt)"
+                local new_prompt="$(
+                    echo -n "$PROMPT" | \
+                    sed -r "s/ ($VI_CMD|$VI_INS) /$mode/"
+                )"
+                export PROMPT="$new_prompt"
             fi
             zle reset-prompt
         }
         zle -N zle-keymap-select
 
-        function zle-line-finish() {
-            local last_status="$?"
-            if [[ -n $MILESRC_THEME_PROMPT ]]; then
-                export MILESRC_MODE="$VI_INS"
-                export PROMPT="$(__milesrc_prompt_ps1 $last_status)"
-            fi
-        }
-        zle -N zle-line-finish
+        #function zle-line-finish() {
+        #    local exit_status="$?"
+        #    if [[ -n ${MILESRC_PROMPT[@]} ]]; then
+        #        export MILESRC_MODE="$VI_INS"
+        #        export PROMPT="$(__milesrc_prompt_ps1 $exit_status)"
+        #    fi
+        #}
+        #zle -N zle-line-finish
 
         case "${precmd_functions[(r)__milesrc_prompt]}" in
             "__milesrc_prompt") ;;

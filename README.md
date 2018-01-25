@@ -22,22 +22,32 @@ Configuration via files
 Configuration via ENV vars
     MILESRC_ACKNOWLEDGE_MACOS_IS_DUMB
         If set, hide warnings about missing gnu utilities
-        on macOS
+        on macOS.
     MILESRC_LS_AFTER_CD
         If set, ls will be automatically run after each cd.
         You likely don't want this if you're looking at
         large directory trees with numerous files in each
         directory.
-    MILESRC_PROMPT_EMOTICONS
-        If set, the prompt will use emoticons to show exit
-        status of the last command. If set to
-        "unsupported" the prompt will use more emoticons
-        to show exit status of the last command. However,
-        they don't all work unless you properly configure
-        your locales.
-    MILESRC_THEME_PROMPT
-        If set, will theme the prompt. Unsetting should
-        immediately untheme the prompt.
+    MILESRC_PROMPT
+        Should be an array, and, if set, will theme the
+        prompt. Unsetting should immediately untheme the
+        prompt. Example below:
+            delcare -a MILESRC_PROMPT
+            MILESRC_PROMPT+=(host;white;blue)
+            MILESRC_PROMPT+=(cwd;white;light_black)
+            MILESRC_PROMPT+=(exit;white;red)
+            MILESRC_PROMPT+=(mode;white;green;white;blue)
+            MILESRC_PROMPT+=(prompt;white;light_black)
+            export MILESRC_PROMPT
+        These are of the form:
+            section;fg_color;bg_color
+        where section is one of:
+            host, git, cwd, exit, mode, prompt
+        and valid colors are:
+            black, red, green, yellow, blue, magenta, cyan,
+            white, light_black, light_red, light_green,
+            light_yellow, light_blue, light_magenta,
+            light_cyan, light_white
 ```
 
 Below are some commands to install or uninstall my configs.

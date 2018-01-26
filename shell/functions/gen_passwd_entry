@@ -63,8 +63,8 @@ function gen_passwd_entry() {
             "-p"|"--passwd"*)
                 case "$1" in
                     "--"*"="*)
-                        arg="$(echo "$1" | sed -r "s/[^=]+=//")"
-                        [[ -n $arg ]] || usage 1
+                        arg="${1#*=}"
+                        [[ -z $arg ]] && gpe_usage && return 1
                         ;;
                     *)
                         shift; [[ $# -eq 0 ]] && gpe_usage && return 1

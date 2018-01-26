@@ -353,6 +353,7 @@ unset PTH
 # }}}
 
 # {{{ Prompt
+unset MILESRC_PROMPT
 [[ ! -f $HOME/.milesrc.prompt ]] || . $HOME/.milesrc.prompt
 # }}}
 
@@ -538,7 +539,7 @@ function lsp() {
     local count=0
 
     # lists directories in PROJS and allows quick cd'ing to them
-    declare -a dirs
+    local -a dirs
     dirs=($(
         find -L $PROJS -maxdepth 6 -mindepth 1 -name ".git" \
         -exec dirname {} + 2>/dev/null | sort -u
@@ -637,6 +638,7 @@ if [[ -n $(installed xdg-mime) ]]; then
     function open() {
         [[ $# -ne 0 ]] || return 0
 
+        local type
         if [[ -f $1 ]]; then
             type="$(xdg-mime query filetype $1)"
         elif [[ -n $(echo "$1" | \grep -E "https?:\/\/") ]]; then
@@ -644,11 +646,12 @@ if [[ -n $(installed xdg-mime) ]]; then
         fi
         [[ -n $type ]] || return 1
 
-        exe="$(xdg-mime query default $type | sed "s/.desktop//g")"
+        local exe="$(
+            xdg-mime query default $type | sed "s/.desktop//g"
+        )"
         [[ -n $exe ]] || return 2
 
         $exe "$@"
-        unset exe type
     }
 fi
 
@@ -808,28 +811,6 @@ function update_grub() {
             sudo $mkconfig -o $cfg/grub.cfg
         done
     done
-}
-
-function update_repos() {
-    [[ -z $(installed git) ]] && echo "git is not installed" && return
-
-    declare -a dirs
-    dirs=($(find -L $PROJS -type d -name ".git" 2>/dev/null))
-    for dir in "${dirs[@]}"; do
-        if [[ -z $(echo "$dir" | \grep "archived") ]]; then
-            (
-                \cd $(dirname $dir)
-                if [[ -d .git ]] &&
-                   [[ -n $(git config remote.origin.url) ]]
-                then
-                    echo -e "\e[36m$(basename $(dirname $dir))\e[0m"
-                    git pull --all
-                    echo
-                fi
-            )
-        fi
-    done; unset dir
-    unset dirs
 }
 
 function x() {

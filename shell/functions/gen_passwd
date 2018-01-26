@@ -61,8 +61,8 @@ function gen_passwd() {
             "-l"|"--length"*)
                 case "$1" in
                     "--"*"="*)
-                        arg="$(echo "$1" | sed -r "s/[^=]+=//")"
-                        [[ -n $arg ]] || usage 1
+                        arg="${1#*=}"
+                        [[ -z $arg ]] && gp_usage && return 1
                         ;;
                     *)
                         shift; [[ $# -eq 0 ]] && gp_usage && return 1
@@ -74,8 +74,8 @@ function gen_passwd() {
             "-r"|"--regex"*)
                 case "$1" in
                     "--"*"="*)
-                        arg="$(echo "$1" | sed -r "s/[^=]+=//")"
-                        [[ -n $arg ]] || usage 1
+                        arg="${1#*=}"
+                        [[ -z $arg ]] && gp_usage && return 1
                         ;;
                     *)
                         shift; [[ $# -eq 0 ]] && gp_usage && return 1

@@ -111,7 +111,7 @@ function __milesrc_cwd() {
         )"
     else
         let "offset = $length - $width"
-        cwd = "$(
+        cwd="$(
             echo -n "${cwd:$offset:$width}" | \
             sed -r "s/^.... ?/\.\.\. /"
         )"

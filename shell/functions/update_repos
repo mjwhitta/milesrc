@@ -1,0 +1,151 @@
+#!/usr/bin/env bash
+
+function update_repos() {
+    function ur_cleanup() {
+        unset args dir ext parallel repos
+        unset -f ur_cleanup ur_update ur_usage
+    }
+
+    function ur_update() {
+        local dir="$1"
+        case "$dir" in
+            *"archived"*) return ;;
+        esac
+        (
+            repo="$(dirname $dir)"
+            \cd $repo
+            if [[ -n $(git config remote.origin.url) ]]; then
+                stash="$(
+                    git status --porcelain | \grep -E "^[^#?]{2}"
+                )"
+                if [[ -n $stash ]]; then
+                    echo -e "\e[33m[-] $repo: stashing changes\e[0m"
+                    git stash &>/dev/null
+                    if [[ $? -ne 0 ]]; then
+                        echo -e "\e[31m[!] $repo: error ocurred\e[0m"
+                        return
+                    fi
+                fi
+
+                echo -e "\e[32m[+] $repo: pulling changes\e[0m"
+                git pull -r &>/dev/null
+                if [[ $? -ne 0 ]]; then
+                    echo -e "\e[31m[!] $repo: error ocurred\e[0m"
+                    return
+                fi
+
+                git pull --all &>/dev/null
+                if [[ $? -ne 0 ]]; then
+                    echo -e "\e[31m[!] $repo: error ocurred\e[0m"
+                    return
+                fi
+
+                if [[ -n $stash ]]; then
+                    echo -e "\e[33m[-] $repo: restoring changes\e[0m"
+                    git stash pop &>/dev/null
+                    if [[ $? -ne 0 ]]; then
+                        echo -e "\e[31m[!] $repo: error ocurred\e[0m"
+                        return
+                    fi
+                fi
+            fi
+        )
+    }
+
+    function ur_usage() {
+        echo "Usage: update_repos [OPTIONS] [dir]"
+        echo
+        echo "Update git repos under specified directory (default: .)"
+        echo
+        echo "Options:"
+        echo "    -h, --help           Display this help message"
+        echo "    -p, --parallel       Run using parallel (if"
+        echo "                         installed)"
+        echo "    -t, --threads=NUM    Use the specified number of"
+        echo "                         threads if running in parallel"
+        echo "                         (default: $threads)"
+        echo
+        ur_cleanup
+    }
+
+    declare -a args
+    unset parallel
+    dir="."
+    threads="32"
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            "--") shift && args+=("$@") && break ;;
+            "-h"|"--help") ur_usage; return 0 ;;
+            "-p"|"--parallel") parallel="true" ;;
+            "-t"|"--threads"*)
+                case "$1" in
+                    "--"*"="*)
+                        arg="${1#*=}"
+                        [[ -z $arg ]] && ur_usage && return 1
+                        ;;
+                    *)
+                        shift
+                        [[ $# -eq 0 ]] && ur_usage && return 1
+                        arg="$1"
+                        ;;
+                esac
+                threads="$arg"
+                ;;
+            *) args+=("$1") ;;
+        esac
+        shift
+    done
+    [[ -z ${args[@]} ]] || set -- "${args[@]}"
+
+    [[ $# -ge 2 ]] && ur_usage && return 2
+    if [[ -z $(command -v git) ]]; then
+        echo "git is not installed"
+        return 3
+    fi
+
+    ext="zsh"
+    [[ -z $BASH ]] || ext="bash"
+
+    if [[ -n $parallel ]]; then
+        if [[ -z $(command -v parallel) ]] ||
+           [[ -z $(command -v env_parallel.$ext) ]]
+        then
+            echo "Parallel is not installed, using default behavior"
+            unset parallel
+        fi
+    fi
+
+    # Doesn't work with zsh right now
+    [[ -n $BASH ]] || unset parallel
+
+    [[ $# -eq 0 ]] || dir="$1"
+
+    declare -a repos
+    repos=($(find $dir -type d -name ".git" 2>/dev/null))
+
+    if [[ ${#repos[@]} -gt 0 ]]; then
+        if [[ -n $parallel ]]; then
+            source $(command -v env_parallel.$ext)
+            env_parallel --eta -P $threads ur_update {} ::: \
+                ${repos[@]}
+        else
+            let "count = 1"
+            let "total = ${#repos[@]}"
+            for repo in "${repos[@]}"; do
+                echo -en "\e[37m$count/$total\e[0m "
+                ur_update $repo
+                let "count += 1"
+            done; unset repo
+        fi
+    fi
+
+    ur_cleanup
+}
+
+if [[ -n ${BASH_SOURCE[0]} ]]; then
+    case "$0" in
+        *"bash") ;;
+        *) update_repos "$@" ;;
+    esac
+fi

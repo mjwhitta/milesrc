@@ -53,9 +53,9 @@ function update_repos() {
     }
 
     function ur_usage() {
-        echo "Usage: update_repos [OPTIONS] [dir]"
+        echo "Usage: update_repos [OPTIONS] <dir>"
         echo
-        echo "Update git repos under specified directory (default: .)"
+        echo "Update git repos under specified directory"
         echo
         echo "Options:"
         echo "    -h, --help           Display this help message"
@@ -69,8 +69,7 @@ function update_repos() {
     }
 
     declare -a args
-    unset parallel
-    dir="."
+    unset dir parallel
     threads="32"
 
     while [[ $# -gt 0 ]]; do
@@ -98,7 +97,7 @@ function update_repos() {
     done
     [[ -z ${args[@]} ]] || set -- "${args[@]}"
 
-    [[ $# -ge 2 ]] && ur_usage && return 2
+    [[ $# -ne 1 ]] && ur_usage && return 2
     if [[ -z $(command -v git) ]]; then
         echo "git is not installed"
         return 3

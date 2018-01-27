@@ -331,13 +331,12 @@ function __milesrc_prompt_ps1() {
 
     local -A p
     local exit_status="$1"
-    local len="0"
     local subtract="true"
     local width="$COLUMNS"
     let "width -= 1"
 
     for i in "${MILESRC_PROMPT[@]}"; do
-        len="0"
+        local len="0"
         case "$i" in
             "exit"*)
                 p[exit]="$(__milesrc_exit_status $i $exit_status)"
@@ -361,7 +360,7 @@ function __milesrc_prompt_ps1() {
                 len="${p[mode]%%|*}"
                 ;;
         esac
-        [[ -z $subtract ]] || let "width -= $len"
+        [[ -z $subtract ]] || let "width -= ${len:-0}"
     done; unset i
 
     # CWD

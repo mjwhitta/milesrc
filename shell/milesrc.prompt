@@ -34,6 +34,7 @@ function __milesrc_colors() {
             "light_magenta") fgcode="\e[95m" ;;
             "light_cyan") fgcode="\e[96m" ;;
             "light_white") fgcode="\e[97m" ;;
+            *) fgcode="\e[38;5;${fgclr}m" ;;
         esac
     fi
 
@@ -56,7 +57,7 @@ function __milesrc_colors() {
             "light_magenta") bgcode="\e[105m" ;;
             "light_cyan") bgcode="\e[106m" ;;
             "light_white") bgcode="\e[107m" ;;
-            *) ;;
+            *) bgcode="\e[48;5;${bgclr}m" ;;
         esac
     fi
 

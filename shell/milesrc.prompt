@@ -90,7 +90,7 @@ function __milesrc_conditional_rand() {
 
 # {{{ __milesrc_cwd
 # Current working directory
-# $1 = format in the form of ignore;fgclr;bgclr
+# $1 = format in the form of cwd;fgclr;bgclr
 # $2 = the width needed to truncate the cwd
 function __milesrc_cwd() {
     [[ $# -eq 2 ]] || return
@@ -98,6 +98,7 @@ function __milesrc_cwd() {
     local cwd="$(
         pwd | sed -r -e "s#$HOME#\~#" -e "s#/# / #g" -e "s/^ //"
     )"
+    local fmt="$(echo -n "$1" | \grep -Eo "cwd(;[^;]+){2}")"
     local length="$(echo -n "$cwd" | wc -m)"
     local offset="0"
     local width="$2"
@@ -117,18 +118,21 @@ function __milesrc_cwd() {
             sed -r "s/^.... ?/\.\.\. /"
         )"
     fi
-    __milesrc_format $1 "$cwd"
+
+    __milesrc_format $fmt "$cwd"
 }
 # }}}
 
 # {{{ __milesrc_exit_status
 # Exit status
-# $1 = format in the form of # ignore;fgclr;bgclr;[emotes|unsupported]
+# $1 = format in the form of
+#      exit;fgclr;bgclr
+#      [;[emotes|unsupported];fgclr;bgclr]
 # $2 = last exit status
 function __milesrc_exit_status() {
     [[ $# -eq 2 ]] || return
 
-    local fmt="$1"
+    local fmt="$(echo -n "$1" | \grep -Eo "exit(;[^;]+){2}")"
     local status_symbol="$2"
     [[ $status_symbol -ne 130 ]] || status_symbol="0" # Ignore ^C
     local rand="$(__milesrc_conditional_rand $status_symbol 3 6)"
@@ -136,7 +140,7 @@ function __milesrc_exit_status() {
     case "$1" in
         *"emotes"*)
             if [[ status_symbol -eq 0 ]]; then
-                fmt="$(echo -n "$fmt" | \grep -Eo "(;[^;]+){3}$")"
+                fmt="$(echo -n "$1" | \grep -Eo "emotes(;[^;]+){2}")"
             fi
             case "$status_symbol" in
                 "0") status_symbol="(^‿^)" ;;
@@ -145,7 +149,9 @@ function __milesrc_exit_status() {
             ;;
         *"unsupported"*)
             if [[ status_symbol -eq 0 ]]; then
-                fmt="$(echo -n "$fmt" | \grep -Eo "(;[^;]+){3}$")"
+                fmt="$(
+                    echo -n "$1" | \grep -Eo "unsupported(;[^;]+){2}"
+                )"
             fi
             if [[ $status_symbol -eq 0 ]]; then
                 case "$rand" in
@@ -177,6 +183,7 @@ function __milesrc_exit_status() {
 # $2 = string
 function __milesrc_format() {
     [[ $# -eq 2 ]] || return
+
     local conf=($(echo -n "${1//;/ }"))
     local bgclr="${conf[2]}"
     local fgclr="${conf[1]}"
@@ -186,17 +193,24 @@ function __milesrc_format() {
             fgclr="${conf[2]}"
             ;;
     esac
+
+    local len="0"
+    [[ -z $2 ]] || len="$(echo -n " $2 " | wc -m)"
+
+    echo -n "$len|"
     echo -n "$(__milesrc_colors $fgclr $bgclr) $2 $(__milesrc_colors)"
 }
 # }}}
 
 # {{{ __milesrc_git_status
 # Git info
-# $1 = format in the form of ignore;fgclr;bgclr
+# $1 = format in the form of git;fgclr;bgclr
 function __milesrc_git_status() {
     [[ $# -eq 1 ]] || return
     [[ -n $(installed git) ]] || return
     [[ -n $(installed perl) ]] || return
+
+    local fmt="$(echo -n "$1" | \grep -Eo "git(;[^;]+){2}")"
 
     local git_dir="$(git rev-parse --show-toplevel 2>/dev/null)"
     [[ -n $git_dir ]] || return
@@ -243,34 +257,37 @@ function __milesrc_git_status() {
         git="$git ✓"
     fi
 
-    __milesrc_format $1 "$git"
+    __milesrc_format $fmt "$git"
 }
 # }}}
 
 # {{{ __milesrc_host
 # Hostname and related metadata
-# $1 = format in the form of ignore;fgclr;bgclr
+# $1 = format in the form of
+#      host;fgclr;bgclr
+#      [;remote;fgclr;bgclr]
+#      [;root;fgclr;bgclr]
+#      [;hide_local:[true|false]]
 function __milesrc_host() {
     [[ $# -eq 1 ]] || return
-    local host="$USER@$(uname -n | awk -F "." '{print $1}')"
-    __milesrc_format $1 "$host"
-}
-# }}}
 
-# {{{ __milesrc_mode
-# Vi mode for the simulated right prompt
-# $1 = format in the form of ignore;fgclr;bgclr;fgclr;bgclr
-function __milesrc_mode() {
-    [[ $# -eq 1 ]] || return
-    case "$MILESRC_SHELL" in
-        *"zsh") ;;
-        *) return ;;
+    local fmt="$(echo -n "$1" | \grep -Eo "host(;[^;]+){2}")"
+    local host="$USER@$(uname -n | awk -F "." '{print $1}')"
+
+    local hide_local="$(echo -n "$1" | \grep -Eo "hide_local;[^;]+")"
+    case "$hide_local" in
+        *"true") host="$USER" ;;
     esac
-    local fmt="$1"
-    case "$MILESRC_MODE" in
-        $VI_CMD) fmt="$(echo -n "$fmt" | \grep -Eo "(;[^;]+){3}$")" ;;
-    esac
-    __milesrc_format $fmt "$MILESRC_MODE"
+
+    if [[ -n $SSH_CLIENT ]]; then
+        fmt="$(echo -n "$1" | \grep -Eo "remote(;[^;]+){2}")"
+        host="$USER@$(uname -n | awk -F "." '{print $1}')"
+    fi
+
+    local root="$(echo -n "$1" | \grep -Eo "root(;[^;]+){2}")"
+    [[ -z $root ]] || [[ -z $(id | \grep "uid=0") ]] || fmt="$root"
+
+    __milesrc_format $fmt "$host"
 }
 # }}}
 
@@ -314,45 +331,37 @@ function __milesrc_prompt_ps1() {
 
     local -A p
     local exit_status="$1"
+    local len="0"
     local subtract="true"
     local width="$COLUMNS"
     let "width -= 1"
 
     for i in "${MILESRC_PROMPT[@]}"; do
-        local c_len="0"
-        let "c_len = $(__milesrc_format $i "" | wc -m) - 2"
-        local len="0"
+        len="0"
         case "$i" in
             "exit"*)
                 p[exit]="$(__milesrc_exit_status $i $exit_status)"
-                let "len = $(echo -n "${p[exit]}" | wc -m) - $c_len"
-                [[ $len -gt 2 ]] || p[exit]=""
+                len="${p[exit]%%|*}"
                 ;;
             "git"*)
                 p[git]="$(__milesrc_git_status $i)"
-                let "len = $(echo -n "${p[git]}" | wc -m) - $c_len"
-                [[ $len -gt 2 ]] || p[git]=""
+                len="${p[git]%%|*}"
                 ;;
             "host"*)
                 p[host]="$(__milesrc_host $i)"
-                let "len = $(echo -n "${p[host]}" | wc -m) - $c_len"
-                [[ $len -gt 2 ]] || p[host]=""
+                len="${p[host]%%|*}"
                 ;;
             "newline") unset subtract ;;
             "prompt"*)
                 p[prompt]="$(__milesrc_prompt_sym $i)"
-                let "len = $(echo -n "${p[prompt]}" | wc -m) - $c_len"
-                [[ $len -gt 2 ]] || p[prompt]=""
+                len="${p[prompt]%%|*}"
                 ;;
-            "vi_ins"*)
-                p[mode]="$(__milesrc_mode $i)"
-                let "len = $(echo -n "${p[mode]}" | wc -m) - $c_len"
-                [[ $len -gt 2 ]] || p[mode]=""
+            "vi_cmd"*|"vi_ins"*)
+                p[mode]="$(__milesrc_vi_mode $i)"
+                len="${p[mode]%%|*}"
                 ;;
         esac
-        if [[ -n $subtract ]] && [[ $len -gt 2 ]]; then
-            let "width -= $len"
-        fi
+        [[ -z $subtract ]] || let "width -= $len"
     done; unset i
 
     # CWD
@@ -364,13 +373,31 @@ function __milesrc_prompt_ps1() {
     # Put it together
     for i in "${MILESRC_PROMPT[@]}"; do
         case "$i" in
-            "cwd"*) [[ -z ${p[cwd]} ]] || echo -n "${p[cwd]}" ;;
-            "exit"*) [[ -z ${p[exit]} ]] || echo -n "${p[exit]}" ;;
-            "git"*) [[ -z ${p[git]} ]] || echo -n "${p[git]}" ;;
-            "host"*) [[ -z ${p[host]} ]] || echo -n "${p[host]}" ;;
-            "vi_ins"*) [[ -z ${p[mode]} ]] || echo -n "${p[mode]}" ;;
+            "cwd"*)
+                len="${p[cwd]%%|*}"
+                [[ $len -eq 0 ]] || echo -n "${p[cwd]#*|}"
+                ;;
+            "exit"*)
+                len="${p[exit]%%|*}"
+                [[ $len -eq 0 ]] || echo -n "${p[exit]#*|}"
+                ;;
+            "git"*)
+                len="${p[git]%%|*}"
+                [[ $len -eq 0 ]] || echo -n "${p[git]#*|}"
+                ;;
+            "host"*)
+                len="${p[host]%%|*}"
+                [[ $len -eq 0 ]] || echo -n "${p[host]#*|}"
+                ;;
             "newline") echo ;;
-            "prompt"*) echo -n "${p[prompt]}" ;;
+            "prompt"*)
+                len="${p[prompt]%%|*}"
+                [[ $len -eq 0 ]] || echo -n "${p[prompt]#*|}"
+                ;;
+            "vi_cmd"*|"vi_ins"*)
+                len="${p[mode]%%|*}"
+                [[ $len -eq 0 ]] || echo -n "${p[mode]#*|}"
+                ;;
         esac
     done; unset i
     echo -n " "
@@ -379,12 +406,36 @@ function __milesrc_prompt_ps1() {
 
 # {{{ __milesrc_prompt_sym
 # The prompt symbol
-# $1 = format in the form of ignore;fgclr;bgclr
+# $1 = format in the form of prompt;fgclr;bgclr
 function __milesrc_prompt_sym() {
     [[ $# -eq 1 ]] || return
+
+    local fmt="$(echo -n "$1" | \grep -Eo "prompt(;[^;]+){2}")"
     sym="\$"
     [[ -z $(id | \grep "uid=0") ]] || sym="#"
-    __milesrc_format $1 "$sym"
+
+    __milesrc_format $fmt "$sym"
+}
+# }}}
+
+# {{{ __milesrc_vi_mode
+# Vi mode for the simulated right prompt
+# $1 = format in the form of vi_cmd;fgclr;bgclr;vi_ins;fgclr;bgclr
+function __milesrc_vi_mode() {
+    [[ $# -eq 1 ]] || return
+    case "$MILESRC_SHELL" in
+        *"zsh") ;;
+        *) return ;;
+    esac
+
+    local fmt="$(echo -n "$1" | \grep -Eo "vi_ins(;[^;]+){2}")"
+    case "$MILESRC_MODE" in
+        $VI_CMD)
+            fmt="$(echo -n "$1" | \grep -Eo "vi_cmd(;[^;]+){2}")"
+            ;;
+    esac
+
+    __milesrc_format $fmt "$MILESRC_MODE"
 }
 # }}}
 # }}}
@@ -419,7 +470,8 @@ case "$MILESRC_SHELL" in
                     \grep -Eo "vi_ins[^ ]+"
                 )"
                 if [[ -n $fmt ]]; then
-                    local mode="$(__milesrc_mode $fmt)"
+                    local mode="$(__milesrc_vi_mode $fmt)"
+                    mode="${mode#*|}"
                     local new_prompt="$(
                         echo -n "$PROMPT" | \
                         sed -r "s/ ($VI_CMD|$VI_INS) /$mode/"

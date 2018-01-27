@@ -312,42 +312,42 @@ function __milesrc_prompt() {
 function __milesrc_prompt_ps1() {
     [[ $# -eq 1 ]] || return
 
-    local -A ps
+    local -A p
     local exit_status="$1"
     local subtract="true"
     local width="$COLUMNS"
     let "width -= 1"
 
     for i in "${MILESRC_PROMPT[@]}"; do
-        local clrlen="0"
-        let "clrlen = $(__milesrc_format $i "" | wc -m) - 2"
+        local c_len="0"
+        let "c_len = $(__milesrc_format $i "" | wc -m) - 2"
         local len="0"
         case "$i" in
             "exit"*)
-                ps[exit]="$(__milesrc_exit_status $i $exit_status)"
-                let "len = $(echo -n "${ps[exit]}" | wc -m) - $clrlen"
-                [[ $len -gt 2 ]] || ps[exit]=""
+                p[exit]="$(__milesrc_exit_status $i $exit_status)"
+                let "len = $(echo -n "${p[exit]}" | wc -m) - $c_len"
+                [[ $len -gt 2 ]] || p[exit]=""
                 ;;
             "git"*)
-                ps[git]="$(__milesrc_git_status $i)"
-                let "len = $(echo -n "${ps[git]}" | wc -m) - $clrlen"
-                [[ $len -gt 2 ]] || ps[git]=""
+                p[git]="$(__milesrc_git_status $i)"
+                let "len = $(echo -n "${p[git]}" | wc -m) - $c_len"
+                [[ $len -gt 2 ]] || p[git]=""
                 ;;
             "host"*)
-                ps[host]="$(__milesrc_host $i)"
-                let "len = $(echo -n "${ps[host]}" | wc -m) - $clrlen"
-                [[ $len -gt 2 ]] || ps[host]=""
-                ;;
-            "mode"*)
-                ps[mode]="$(__milesrc_mode $i)"
-                let "len = $(echo -n "${ps[mode]}" | wc -m) - $clrlen"
-                [[ $len -gt 2 ]] || ps[mode]=""
+                p[host]="$(__milesrc_host $i)"
+                let "len = $(echo -n "${p[host]}" | wc -m) - $c_len"
+                [[ $len -gt 2 ]] || p[host]=""
                 ;;
             "newline") unset subtract ;;
             "prompt"*)
-                ps[prompt]="$(__milesrc_prompt_sym $i)"
-                let "len = $(echo -n "${ps[prompt]}" | wc -m) - $clrlen"
-                [[ $len -gt 2 ]] || ps[prompt]=""
+                p[prompt]="$(__milesrc_prompt_sym $i)"
+                let "len = $(echo -n "${p[prompt]}" | wc -m) - $c_len"
+                [[ $len -gt 2 ]] || p[prompt]=""
+                ;;
+            "vi_ins"*)
+                p[mode]="$(__milesrc_mode $i)"
+                let "len = $(echo -n "${p[mode]}" | wc -m) - $c_len"
+                [[ $len -gt 2 ]] || p[mode]=""
                 ;;
         esac
         if [[ -n $subtract ]] && [[ $len -gt 2 ]]; then
@@ -359,18 +359,18 @@ function __milesrc_prompt_ps1() {
     local fmt="$(
         echo -n "${MILESRC_PROMPT[@]}" | \grep -Eo "cwd[^ ]+"
     )"
-    ps[cwd]="$(__milesrc_cwd $fmt $width)"
+    p[cwd]="$(__milesrc_cwd $fmt $width)"
 
     # Put it together
     for i in "${MILESRC_PROMPT[@]}"; do
         case "$i" in
-            "cwd"*) [[ -z ${ps[cwd]} ]] || echo -n "${ps[cwd]}" ;;
-            "exit"*) [[ -z ${ps[exit]} ]] || echo -n "${ps[exit]}" ;;
-            "git"*) [[ -z ${ps[git]} ]] || echo -n "${ps[git]}" ;;
-            "host"*) [[ -z ${ps[host]} ]] || echo -n "${ps[host]}" ;;
-            "mode"*) [[ -z ${ps[mode]} ]] || echo -n "${ps[mode]}" ;;
+            "cwd"*) [[ -z ${p[cwd]} ]] || echo -n "${p[cwd]}" ;;
+            "exit"*) [[ -z ${p[exit]} ]] || echo -n "${p[exit]}" ;;
+            "git"*) [[ -z ${p[git]} ]] || echo -n "${p[git]}" ;;
+            "host"*) [[ -z ${p[host]} ]] || echo -n "${p[host]}" ;;
+            "vi_ins"*) [[ -z ${p[mode]} ]] || echo -n "${p[mode]}" ;;
             "newline") echo ;;
-            "prompt"*) echo -n "${ps[prompt]}" ;;
+            "prompt"*) echo -n "${p[prompt]}" ;;
         esac
     done; unset i
     echo -n " "
@@ -416,14 +416,16 @@ case "$MILESRC_SHELL" in
                 esac
                 local fmt="$(
                     echo -n "${MILESRC_PROMPT[@]}" | \
-                    \grep -Eo "mode[^ ]+"
+                    \grep -Eo "vi_ins[^ ]+"
                 )"
-                local mode="$(__milesrc_mode $fmt)"
-                local new_prompt="$(
-                    echo -n "$PROMPT" | \
-                    sed -r "s/ ($VI_CMD|$VI_INS) /$mode/"
-                )"
-                export PROMPT="$new_prompt"
+                if [[ -n $fmt ]]; then
+                    local mode="$(__milesrc_mode $fmt)"
+                    local new_prompt="$(
+                        echo -n "$PROMPT" | \
+                        sed -r "s/ ($VI_CMD|$VI_INS) /$mode/"
+                    )"
+                    export PROMPT="$new_prompt"
+                fi
             fi
             zle reset-prompt
         }

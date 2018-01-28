@@ -355,6 +355,10 @@ function __milesrc_prompt_ps1() {
                 p[prompt]="$(__milesrc_prompt_sym $i)"
                 len="${p[prompt]%%|*}"
                 ;;
+            "venv"*)
+                p[venv]="$(__milesrc_python_venv $i)"
+                len="${p[venv]%%|*}"
+                ;;
             "vi_cmd"*|"vi_ins"*)
                 p[mode]="$(__milesrc_vi_mode $i)"
                 len="${p[mode]%%|*}"
@@ -393,6 +397,10 @@ function __milesrc_prompt_ps1() {
                 len="${p[prompt]%%|*}"
                 [[ $len -eq 0 ]] || echo -n "${p[prompt]#*|}"
                 ;;
+            "venv"*)
+                len="${p[venv]%%|*}"
+                [[ $len -eq 0 ]] || echo -n "${p[venv]#*|}"
+                ;;
             "vi_cmd"*|"vi_ins"*)
                 len="${p[mode]%%|*}"
                 [[ $len -eq 0 ]] || echo -n "${p[mode]#*|}"
@@ -410,12 +418,26 @@ function __milesrc_prompt_sym() {
     [[ $# -eq 1 ]] || return
 
     local fmt="$(echo -n "$1" | \grep -Eo "prompt(;[^;]+){2}")"
-    sym="\$"
+    local sym="\$"
     [[ -z $(id | \grep "uid=0") ]] || sym="#"
 
     __milesrc_format $fmt "$sym"
 }
 # }}}
+
+# {{{ __milesrc_python_venv
+# The python virtual environment
+# $1 = format in the form of venv;fgclr;bgclr
+function __milesrc_python_venv() {
+    [[ $# -eq 1 ]] || return
+
+    local fmt="$(echo -n "$1" | \grep -Eo "venv(;[^;]+){2}")"
+    local venv="$(echo -n "$VIRTUAL_ENV" | awk -F "/" '{print $NF}')"
+    [[ -z $venv ]] || venv="($venv)"
+
+    __milesrc_format $fmt "$venv"
+}
+#}}}
 
 # {{{ __milesrc_vi_mode
 # Vi mode for the simulated right prompt

@@ -16,6 +16,7 @@ fi
 # {{{ Env Vars
 declare -a MILESRC_PROMPT
 MILESRC_PROMPT+=("host;white;blue;remote;white;56;root;white;160")
+MILESRC_PROMPT+=("venv;white;166")
 MILESRC_PROMPT+=("git;light_black;white")
 MILESRC_PROMPT+=("cwd;white;light_black")
 MILESRC_PROMPT+=("vi_ins;white;green;vi_cmd;white;blue")

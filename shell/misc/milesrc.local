@@ -15,15 +15,17 @@ fi
 
 # {{{ Env Vars
 declare -a MILESRC_PROMPT
-# MILESRC_PROMPT+=("host;white;blue;remote;white;56;root;white;160;hide_local;true")
-MILESRC_PROMPT+=("host;white;blue;root;white;160")
-MILESRC_PROMPT+=("venv;white;166")
-MILESRC_PROMPT+=("git;light_black;white")
-MILESRC_PROMPT+=("cwd;white;light_black")
-MILESRC_PROMPT+=("vi_ins;white;green;vi_cmd;white;blue")
-MILESRC_PROMPT+=("newline")
-MILESRC_PROMPT+=("exit;white;red")
-MILESRC_PROMPT+=("prompt;white;light_black")
+MILESRC_PROMPT=(
+    # "host;white;blue;remote;white;56;root;white;160;hide_local;true"
+    "host;white;blue;root;white;160"
+    "venv;white;166"
+    "git;light_black;white"
+    "cwd;white;light_black"
+    "vi_ins;white;green;vi_cmd;white;blue"
+    "newline"
+    "exit;white;red"
+    "prompt;white;light_black"
+)
 export MILESRC_PROMPT
 # }}}
 

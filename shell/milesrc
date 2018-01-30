@@ -353,7 +353,6 @@ unset PTH
 # }}}
 
 # {{{ Prompt
-unset MILESRC_PROMPT
 [[ ! -f $HOME/.milesrc.prompt ]] || . $HOME/.milesrc.prompt
 # }}}
 
@@ -586,21 +585,27 @@ function milesrc() {
     echo "        prompt. Unsetting should immediately untheme the"
     echo "        prompt. Example below:"
     echo "            delcare -a MILESRC_PROMPT"
-    echo "            MILESRC_PROMPT+=(host;white;blue)"
-    echo "            MILESRC_PROMPT+=(cwd;white;light_black)"
-    echo "            MILESRC_PROMPT+=(exit;white;red)"
-    echo "            MILESRC_PROMPT+=(mode;white;green;white;blue)"
-    echo "            MILESRC_PROMPT+=(prompt;white;light_black)"
+    echo "            MILESRC_PROMPT=("
+    echo "                host;white;blue;root;white;160"
+    echo "                venv;white;166"
+    echo "                git;light_black;white"
+    echo "                cwd;white;light_black"
+    echo "                vi_ins;white;green;vi_cmd;white;blue"
+    echo "                newline"
+    echo "                exit;white;red"
+    echo "                prompt;white;light_black"
+    echo "            )"
     echo "            export MILESRC_PROMPT"
-    echo "        These are of the form:"
+    echo "        These are generally of the form:"
     echo "            section;fg_color;bg_color"
     echo "        where section is one of:"
-    echo "            host, git, cwd, exit, mode, prompt"
+    echo "            cwd, exit, git, host, newline, prompt, venv,"
+    echo "            or vi_ins|vi_cmd"
     echo "        and valid colors are:"
     echo "            black, red, green, yellow, blue, magenta, cyan,"
     echo "            white, light_black, light_red, light_green,"
     echo "            light_yellow, light_blue, light_magenta,"
-    echo "            light_cyan, light_white"
+    echo "            light_cyan, light_white, or any number in 0-255"
 }
 
 function mycd() {

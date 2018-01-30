@@ -119,7 +119,7 @@ function __milesrc_cwd() {
         )"
     fi
 
-    __milesrc_format $fmt "$cwd"
+    __milesrc_format "$fmt" "$cwd"
 }
 # }}}
 
@@ -173,7 +173,7 @@ function __milesrc_exit_status() {
         *) [[ $status_symbol -gt 0 ]] || status_symbol="" ;;
     esac
 
-    __milesrc_format $fmt "$status_symbol"
+    __milesrc_format "$fmt" "$status_symbol"
 }
 # }}}
 
@@ -184,7 +184,7 @@ function __milesrc_exit_status() {
 function __milesrc_format() {
     [[ $# -eq 2 ]] || return
 
-    local conf=($(echo -n "${1//;/ }"))
+    local -a conf=($(echo -n "${1//;/ }"))
     local bgclr="${conf[2]}"
     local fgclr="${conf[1]}"
     case "$MILESRC_SHELL" in
@@ -257,7 +257,7 @@ function __milesrc_git_status() {
         git="$git ✓"
     fi
 
-    __milesrc_format $fmt "$git"
+    __milesrc_format "$fmt" "$git"
 }
 # }}}
 
@@ -280,14 +280,15 @@ function __milesrc_host() {
     esac
 
     if [[ -n $SSH_CLIENT ]]; then
-        fmt="$(echo -n "$1" | \grep -Eo "remote(;[^;]+){2}")"
+        local remote="$(echo -n "$1" | \grep -Eo "remote(;[^;]+){2}")"
+        [[ -z $remote ]] || fmt="$remote"
         host="$USER@$(uname -n | awk -F "." '{print $1}')"
     fi
 
     local root="$(echo -n "$1" | \grep -Eo "root(;[^;]+){2}")"
     [[ -z $root ]] || [[ -z $(id | \grep "uid=0") ]] || fmt="$root"
 
-    __milesrc_format $fmt "$host"
+    __milesrc_format "$fmt" "$host"
 }
 # }}}
 
@@ -421,7 +422,7 @@ function __milesrc_prompt_sym() {
     local sym="\$"
     [[ -z $(id | \grep "uid=0") ]] || sym="#"
 
-    __milesrc_format $fmt "$sym"
+    __milesrc_format "$fmt" "$sym"
 }
 # }}}
 
@@ -435,7 +436,7 @@ function __milesrc_python_venv() {
     local venv="$(echo -n "$VIRTUAL_ENV" | awk -F "/" '{print $NF}')"
     [[ -z $venv ]] || venv="($venv)"
 
-    __milesrc_format $fmt "$venv"
+    __milesrc_format "$fmt" "$venv"
 }
 #}}}
 
@@ -456,7 +457,7 @@ function __milesrc_vi_mode() {
             ;;
     esac
 
-    __milesrc_format $fmt "$MILESRC_MODE"
+    __milesrc_format "$fmt" "$MILESRC_MODE"
 }
 # }}}
 # }}}

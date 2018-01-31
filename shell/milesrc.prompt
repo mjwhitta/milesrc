@@ -114,12 +114,12 @@ function __milesrc_cwd() {
     else
         let "offset = $length - $width"
         cwd="$(
-            echo -n "${cwd:$offset:$width}" | \
+            echo -n "${cwd:$offset:$width} " | \
             sed -r "s/^.... ?/\.\.\. /"
         )"
     fi
 
-    __milesrc_format "$fmt" "$cwd"
+    __milesrc_format "$fmt" "${cwd:0:$width}"
 }
 # }}}
 
@@ -272,21 +272,19 @@ function __milesrc_host() {
     [[ $# -eq 1 ]] || return
 
     local fmt="$(echo -n "$1" | \grep -Eo "host(;[^;]+){2}")"
-    local host="$USER@$(uname -n | awk -F "." '{print $1}')"
-
     local hide_local="$(echo -n "$1" | \grep -Eo "hide_local;[^;]+")"
-    case "$hide_local" in
-        *"true") host="$USER" ;;
-    esac
+    [[ -z $SSH_CLIENT ]] || unset hide_local
 
-    if [[ -n $SSH_CLIENT ]]; then
-        local remote="$(echo -n "$1" | \grep -Eo "remote(;[^;]+){2}")"
-        [[ -z $remote ]] || fmt="$remote"
-        host="$USER@$(uname -n | awk -F "." '{print $1}')"
-    fi
+    local remote="$(echo -n "$1" | \grep -Eo "remote(;[^;]+){2}")"
+    [[ -z $SSH_CLIENT ]] || [[ -z $remote ]] || fmt="$remote"
 
     local root="$(echo -n "$1" | \grep -Eo "root(;[^;]+){2}")"
-    [[ -z $root ]] || [[ -z $(id | \grep "uid=0") ]] || fmt="$root"
+    [[ -z $(id | \grep "uid=0") ]] || [[ -z $root ]] || fmt="$root"
+
+    local host="$USER@$(uname -n | awk -F "." '{print $1}')"
+    case "$hide_local" in
+        "hide_local;true") host="$USER" ;;
+    esac
 
     __milesrc_format "$fmt" "$host"
 }

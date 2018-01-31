@@ -29,7 +29,10 @@
 # --------------------------------------------------------------------
 
 function nmapplus() {
-    [[ -z $(command -v nmap) ]] && echo "Install nmap" && return 3
+    if [[ -z $(command -v nmap) ]]; then
+        echo "nmap is not installed"
+        return 3
+    fi
 
     np_cleanup() {
         unset arg args dir force host hosts iface ipv6 os ports prot

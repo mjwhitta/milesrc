@@ -30,7 +30,7 @@
 
 function fw6() {
     if [[ -z $(command -v ip6tables) ]]; then
-        echo "Install ip6tables"
+        echo "ip6tables is not installed"
         return 3
     fi
 

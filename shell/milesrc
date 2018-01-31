@@ -822,72 +822,72 @@ function x() {
     case "$1" in
         *.7z)
             if [[ -z $(installed 7z) ]]; then
-                echo "Install p7zip!"
+                echo "p7zip is not installed"
             else
                 7z x $@
             fi
             ;;
         *.bz2)
             if [[ -z $(installed bzip2) ]]; then
-                echo "Install bzip2!"
+                echo "bzip2 is not installed"
             else
                 bzip2 -dk $@
             fi
             ;;
         *.jar)
             if [[ -z $(installed jar) ]]; then
-                echo "Install java!"
+                echo "java is not installed"
             else
                 jar -xf $@
             fi
             ;;
         *.rar)
             if [[ -z $(installed unrar) ]]; then
-                echo "Install unrar!"
+                echo "unrar is not installed"
             else
                 unrar x $@
             fi
             ;;
         *.rpm)
             if [[ -z $(installed rpm2cpio) ]]; then
-                echo "Install rpm2cpio!"
+                echo "rpm2cpio is not installed"
             elif [[ -z $(installed cpio) ]]; then
-                echo "Install rpm2cpio!"
+                echo "rpm2cpio is not installed"
             else
                 rpm2cpio $@ | cpio -idmv
             fi
             ;;
         *.tar.gz|*.tgz)
             if [[ -z $(installed tar) ]]; then
-                echo "Install tar!"
+                echo "tar is not installed"
             else
                 tar -xzf $@
             fi
             ;;
         *.gz)
             if [[ -z $(installed gzip) ]]; then
-                echo "Install gzip!"
+                echo "gzip is not installed"
             else
                 gzip -dk $@
             fi
             ;;
         *.tar)
             if [[ -z $(installed tar) ]]; then
-                echo "Install tar!"
+                echo "tar is not installed"
             else
                 tar -xf $@
             fi
             ;;
         *.xz)
             if [[ -z $(installed xz) ]]; then
-                echo "Install xz!"
+                echo "xz is not installed"
             else
                 xz -dk $@
             fi
             ;;
         *.zip)
             if [[ -z $(installed unzip) ]]; then
-                echo "Install unzip!"
+                echo "unzip is not installed"
             else
                 unzip $@
             fi

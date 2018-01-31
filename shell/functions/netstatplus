@@ -33,12 +33,13 @@ function netstatplus() {
         "Darwin") echo "Unsupported OS!" && return 2 ;;
     esac
 
-    if [[ -z $(command -v netstat) ]]; then
-        echo "Install netstat"
-        return 3
-    fi
-
-    [[ -z $(command -v column) ]] && echo "Install column" && return 4
+    for exe in column netstat; do
+        if [[ -z $(command -v $exe) ]]; then
+            echo "$exe is not installed"
+            unset $exe
+            return 3
+        fi
+    done; unset exe
 
     netstatplus_cleanup() {
         unset args cmd line pid sudo username

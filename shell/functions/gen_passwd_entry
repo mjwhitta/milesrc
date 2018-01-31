@@ -30,7 +30,7 @@
 
 function gen_passwd_entry() {
     if [[ -z $(command -v makepasswd) ]]; then
-        echo "Install makepasswd"
+        echo "makepasswd is not installed"
         return 3
     fi
 

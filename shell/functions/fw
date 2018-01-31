@@ -30,7 +30,7 @@
 
 function fw() {
     if [[ -z $(command -v iptables) ]]; then
-        echo "Install iptables"
+        echo "iptables is not installed"
         return 3
     fi
 

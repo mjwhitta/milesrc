@@ -36,7 +36,7 @@ function ssplus() {
     for exe in column ss; do
         if [[ -z $(command -v $exe) ]]; then
             echo "$exe is not installed"
-            unset $exe
+            unset exe
             return 3
         fi
     done; unset exe

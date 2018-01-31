@@ -144,7 +144,7 @@ add_to_path() {
 if [[ -n $(installed docker) ]]; then
     dips() {
         if [[ -z $(installed jq) ]]; then
-            echo "You need to install jq"
+            echo "jq is not installed"
             return
         fi
 
@@ -233,7 +233,7 @@ rat() {
 if [[ -n $(installed vim) ]]; then
     rogue() {
         if [[ ! -d $HOME/.vim/bundle/rogue.vim ]]; then
-            echo "Rogue.vim is not installed"
+            echo "rogue.vim is not installed"
             return
         fi
 

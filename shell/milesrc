@@ -726,7 +726,7 @@ function simplehttp() {
             if [[ -n $(installed busybox) ]]; then
                 busybox httpd -f -p ${2:-8080}
             else
-                echo "busybox not installed"
+                echo "busybox is not installed"
             fi
             ;;
         "perl")
@@ -742,28 +742,28 @@ function simplehttp() {
             if [[ -n $(installed php) ]]; then
                 php -S 127.0.0.1:${2:-8080}
             else
-                echo "php not installed"
+                echo "php is not installed"
             fi
             ;;
         "python2")
             if [[ -n $(installed python2) ]]; then
                 python2 -m SimpleHTTPServer ${2:-8080}
             else
-                echo "python2 not installed"
+                echo "python2 is not installed"
             fi
             ;;
         "python3")
             if [[ -n $(installed python3) ]]; then
                 python3 -m http.server ${2:-8080}
             else
-                echo "python3 not installed"
+                echo "python3 is not installed"
             fi
             ;;
         "ruby")
             if [[ -n $(installed ruby) ]]; then
                 ruby -r un -e httpd . -p ${2:-8080}
             else
-                echo "ruby not installed"
+                echo "ruby is not installed"
             fi
             ;;
         "twisted")

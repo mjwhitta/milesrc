@@ -2,7 +2,7 @@
 
 function update_repos() {
     function ur_cleanup() {
-        unset args dir ext parallel repos
+        unset args count dir ext parallel repos stash total
         unset -f ur_cleanup ur_update ur_usage
     }
 
@@ -120,23 +120,21 @@ function update_repos() {
 
     [[ $# -eq 0 ]] || dir="$1"
 
-    declare -a repos
-    repos=($(find $dir -type d -name ".git" 2>/dev/null))
+    local -a repos=($(find $dir -type d -name ".git" 2>/dev/null))
+    let "total = ${#repos[@]}"
 
-    if [[ ${#repos[@]} -gt 0 ]]; then
-        if [[ -n $parallel ]]; then
-            source $(command -v env_parallel.$ext)
-            env_parallel --eta -P $threads ur_update {} ::: \
-                ${repos[@]}
-        else
-            let "count = 1"
-            let "total = ${#repos[@]}"
-            for repo in "${repos[@]}"; do
-                echo -en "\e[37m$count/$total\e[0m "
-                ur_update $repo
-                let "count += 1"
-            done; unset repo
-        fi
+    if [[ -n $parallel ]]; then
+        source $(command -v env_parallel.$ext)
+        echo -e "\e[32m[+] $total repos to update\e[0m"
+        env_parallel -P $threads ur_update {} ::: \
+            ${repos[@]}
+    else
+        let "count = 1"
+        for repo in "${repos[@]}"; do
+            echo -e "\e[37m[$count/$total]\e[0m" >&2
+            ur_update $repo
+            let "count += 1"
+        done; unset repo
     fi
 
     ur_cleanup

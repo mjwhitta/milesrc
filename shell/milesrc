@@ -820,6 +820,13 @@ function update_grub() {
 
 function x() {
     case "$1" in
+        *.tar*|*.tgz)
+            if [[ -z $(installed tar) ]]; then
+                echo "tar is not installed"
+            else
+                tar -xf $@
+            fi
+            ;;
         *.7z)
             if [[ -z $(installed 7z) ]]; then
                 echo "p7zip is not installed"
@@ -832,6 +839,13 @@ function x() {
                 echo "bzip2 is not installed"
             else
                 bzip2 -dk $@
+            fi
+            ;;
+        *.gz)
+            if [[ -z $(installed gzip) ]]; then
+                echo "gzip is not installed"
+            else
+                gzip -dk $@
             fi
             ;;
         *.jar)
@@ -855,27 +869,6 @@ function x() {
                 echo "rpm2cpio is not installed"
             else
                 rpm2cpio $@ | cpio -idmv
-            fi
-            ;;
-        *.tar.gz|*.tgz)
-            if [[ -z $(installed tar) ]]; then
-                echo "tar is not installed"
-            else
-                tar -xzf $@
-            fi
-            ;;
-        *.gz)
-            if [[ -z $(installed gzip) ]]; then
-                echo "gzip is not installed"
-            else
-                gzip -dk $@
-            fi
-            ;;
-        *.tar)
-            if [[ -z $(installed tar) ]]; then
-                echo "tar is not installed"
-            else
-                tar -xf $@
             fi
             ;;
         *.xz)

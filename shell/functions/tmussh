@@ -28,18 +28,18 @@
 # SOFTWARE.
 # --------------------------------------------------------------------
 
-function multissh() {
-    multissh_cleanup() {
+function tmussh() {
+    tmussh_cleanup() {
         unset args delay hosts interactive window wname
-        unset -f multissh_cleanup multissh_usage
+        unset -f tmussh_cleanup tmussh_usage
     }
 
-    multissh_usage() {
-        echo "Usage: multissh [OPTIONS] [cmd]"
+    tmussh_usage() {
+        echo "Usage: tmussh [OPTIONS] [cmd]"
         echo
-        echo "Open connections to multiple hosts using tmux. If a"
-        echo "command is specified, it will run that command on each"
-        echo "host."
+        echo "Open connections to multiple hosts using tmux and ssh."
+        echo "If a command is specified, it will run that command on"
+        echo "each host."
         echo
         echo "Options:"
         echo "    -d, --delay=SECS     Wait for specified time after"
@@ -51,7 +51,7 @@ function multissh() {
         echo "                         (default: true if no cmd)"
         echo "    -w, --window         Run in new tmux window"
         echo
-        multissh_cleanup
+        tmussh_cleanup
     }
 
     declare -a args hosts
@@ -65,26 +65,26 @@ function multissh() {
                 case "$1" in
                     "--"*"="*)
                         arg="${1#*=}"
-                        [[ -z $arg ]] && multissh_usage && return 1
+                        [[ -z $arg ]] && tmussh_usage && return 1
                         ;;
                     *)
                         shift
-                        [[ $# -eq 0 ]] && multissh_usage && return 1
+                        [[ $# -eq 0 ]] && tmussh_usage && return 1
                         arg="$1"
                         ;;
                 esac
                 delay="$arg"
                 ;;
-            "-h"|"--help") multissh_usage; return 0 ;;
+            "-h"|"--help") tmussh_usage; return 0 ;;
             "--host"*)
                 case "$1" in
                     "--"*"="*)
                         arg="${1#*=}"
-                        [[ -z $arg ]] && multissh_usage && return 1
+                        [[ -z $arg ]] && tmussh_usage && return 1
                         ;;
                     *)
                         shift
-                        [[ $# -eq 0 ]] && multissh_usage && return 1
+                        [[ $# -eq 0 ]] && tmussh_usage && return 1
                         arg="$1"
                         ;;
                 esac
@@ -98,13 +98,14 @@ function multissh() {
     done
     [[ -z ${args[@]} ]] || set -- "${args[@]}"
 
-    wname="multissh_$(head -c 4 /dev/urandom | xxd -p)"
+    wname="tmussh_$(head -c 4 /dev/urandom | xxd -p)"
     [[ -z $window ]] || tmux new-window -n $wname
 
     for host in "${hosts[@]}"; do
         tmux split-window -h "ssh $host"
     done
 
+    [[ -z $window ]] || tmux select-pane -t 0
     tmux select-layout tiled
     tmux set-option -w synchronize-panes on
 
@@ -117,12 +118,12 @@ function multissh() {
         fi
     fi
 
-    multissh_cleanup
+    tmussh_cleanup
 }
 
 if [[ -n ${BASH_SOURCE[0]} ]]; then
     case "$0" in
         *"bash") ;;
-        *) multissh "$@" ;;
+        *) tmussh "$@" ;;
     esac
 fi

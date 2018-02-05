@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# A script for generating passwords from /dev/urandom.
+# A clusterssh like script for tmux.
 # by Miles Whittaker <mjwhitta@gmail.com>
 #
 # --------------------------------------------------------------------
@@ -28,84 +28,101 @@
 # SOFTWARE.
 # --------------------------------------------------------------------
 
-function gen_passwd() {
-    gp_cleanup() {
-        unset arg args char length passwd regex
-        unset -f gp_cleanup gp_usage
+function multissh() {
+    multissh_cleanup() {
+        unset args delay hosts interactive window wname
+        unset -f multissh_cleanup multissh_usage
     }
 
-    gp_usage() {
-        echo "Usage: gen_passwd [OPTIONS]"
+    multissh_usage() {
+        echo "Usage: multissh [OPTIONS] [cmd]"
         echo
-        echo "Generate passwords using /dev/urandom"
+        echo "Open connections to multiple hosts using tmux. If a"
+        echo "command is specified, it will run that command on each"
+        echo "host."
         echo
         echo "Options:"
+        echo "    -d, --delay=SECS     Wait for specified time after"
+        echo "                         connecting (default: $delay)"
+        echo "    --host=HOST          Specify host to connect to"
+        echo "                         (can be used more than once)"
         echo "    -h, --help           Display this help message"
-        echo "    -l, --length=LEN     Use specified length (default:"
-        echo "                         $length)"
-        echo "    -r, --regex=REGEX    Generate password matching"
-        echo "                         specified regex (default:"
-        echo "                         $regex)"
+        echo "    -i, --interactive    Do not close connection"
+        echo "                         (default: true if no cmd)"
+        echo "    -w, --window         Run in new tmux window"
         echo
-        gp_cleanup
+        multissh_cleanup
     }
 
-    declare -a args
-    length=64
-    regex="[-A-Za-z0-9\`~!@#$%^&*()_+={}|;:'\",<.>/?]"
+    declare -a args hosts
+    unset interactive window
+    delay="3"
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
             "--") shift && args+=("$@") && break ;;
-            "-h"|"--help") gp_usage; return 0 ;;
-            "-l"|"--length"*)
+            "-d"|"--delay"*)
                 case "$1" in
                     "--"*"="*)
                         arg="${1#*=}"
-                        [[ -z $arg ]] && gp_usage && return 1
+                        [[ -z $arg ]] && multissh_usage && return 1
                         ;;
                     *)
-                        shift; [[ $# -eq 0 ]] && gp_usage && return 1
+                        shift
+                        [[ $# -eq 0 ]] && multissh_usage && return 1
                         arg="$1"
                         ;;
                 esac
-                length="$arg"
+                delay="$arg"
                 ;;
-            "-r"|"--regex"*)
+            "-h"|"--help") multissh_usage; return 0 ;;
+            "--host"*)
                 case "$1" in
                     "--"*"="*)
                         arg="${1#*=}"
-                        [[ -z $arg ]] && gp_usage && return 1
+                        [[ -z $arg ]] && multissh_usage && return 1
                         ;;
                     *)
-                        shift; [[ $# -eq 0 ]] && gp_usage && return 1
+                        shift
+                        [[ $# -eq 0 ]] && multissh_usage && return 1
                         arg="$1"
                         ;;
                 esac
-                regex="$arg"
+                hosts+=("$arg")
                 ;;
+            "-i"|"--interactive") interactive="true" ;;
+            "-w"|"--window") window="true" ;;
             *) args+=("$1") ;;
         esac
         shift
     done
     [[ -z ${args[@]} ]] || set -- "${args[@]}"
 
-    [[ $# -gt 0 ]] && gp_usage && return 2
+    wname="multissh_$(head -c 4 /dev/urandom | xxd -p)"
+    [[ -z $window ]] || tmux new-window -n $wname
 
-    unset passwd
-    while [[ $(echo -n "$passwd" | wc -c) -lt $length ]]; do
-        char="$(head -c 1 /dev/urandom | \grep -Es "$regex")"
-        [[ -z $char ]] || passwd="$passwd$char"
+    for host in "${hosts[@]}"; do
+        tmux split-window -h "ssh $host"
     done
 
-    echo "$passwd"
+    tmux select-layout tiled
+    tmux set-option -w synchronize-panes on
 
-    gp_cleanup
+    if [[ $# -gt 0 ]]; then
+        sleep $delay
+        tmux send-keys "$@"
+        if [[ -z $interactive ]]; then
+            tmux send-keys "exit"
+            tmux set-option -w synchronize-panes off
+        fi
+    fi
+
+    multissh_cleanup
 }
 
 if [[ -n ${BASH_SOURCE[0]} ]]; then
     case "$0" in
         *"bash") ;;
-        *) gen_passwd "$@" ;;
+        *) multissh "$@" ;;
     esac
 fi

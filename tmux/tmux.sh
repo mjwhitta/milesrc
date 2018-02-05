@@ -172,7 +172,7 @@ case "$(tget -g @default_ctrl_d)" in
         tmux bind "d" send -l ""
         ;;
 esac
-tmux bind "R" run "
+tmux bind "C-r" run "
     tmux source \"$HOME/.tmux.conf\"
     tmux display \"Done!\"
 "
@@ -199,6 +199,10 @@ tmux bind -r "H" resize-pane -L "$(tget -g @resize)"
 tmux bind -r "J" resize-pane -D "$(tget -g @resize)"
 tmux bind -r "K" resize-pane -U "$(tget -g @resize)"
 tmux bind -r "L" resize-pane -R "$(tget -g @resize)"
+
+# Rotate windows
+tmux bind -r "r" rotate-window -D
+tmux bind -r "R" rotate-window -U
 
 # Better new pane/window bindings
 tmux bind "|" split-window -h -c "#{pane_current_path}"

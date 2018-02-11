@@ -472,6 +472,46 @@ function cpan5() {
     [[ -w /usr/local ]] || sudo cpan $@
 }
 
+if [[ -n $(installed curl) ]]; then
+    function git_clone() {
+        local git_url
+        local group_or_user
+        local repo
+        local tmp="${1%.git}"
+
+        case "$tmp" in
+            "git@"*)
+                tmp="${tmp#git@}"
+                git_url="${tmp%:*}"
+                tmp="${tmp##*:}"
+                group_or_user="${tmp%/*}"
+                repo="${tmp##*/}"
+                ;;
+            "https://"*)
+                tmp="${tmp#https://}"
+                git_url="${tmp%%/*}"
+                tmp="${tmp#*/}"
+                group_or_user="${tmp%/*}"
+                repo="${tmp##*/}"
+                ;;
+        esac
+
+        local url="https://$git_url/$group_or_user/$repo"
+        case "$git_url" in
+            "github.com")
+                curl -LO "$url/archive/master.zip"
+                unzip master.zip >/dev/null && rm -f master.zip
+                mv $repo-master $repo
+                ;;
+            "gitlab.com")
+                curl -LO "$url/repository/master/archive.tar"
+                tar -xf archive.tar && rm -f archive.tar
+                mv $repo-master-* $repo
+                ;;
+        esac
+    }
+fi
+
 function ipa() {
     if [[ -n $(installed ip) ]]; then
         if ip 2>&1 | \grep -Eq "c.olor"; then

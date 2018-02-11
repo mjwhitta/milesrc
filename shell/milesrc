@@ -501,12 +501,20 @@ if [[ -n $(installed curl) ]]; then
             "github.com")
                 curl -LO "$url/archive/master.zip"
                 unzip master.zip >/dev/null && rm -f master.zip
-                mv $repo-master $repo
+                if [[ $# -eq 1 ]]; then
+                    mv $repo-master $repo
+                else
+                    mv $repo-master $2
+                fi
                 ;;
             "gitlab.com")
                 curl -LO "$url/repository/master/archive.tar"
                 tar -xf archive.tar && rm -f archive.tar
-                mv $repo-master-* $repo
+                if [[ $# -eq 1 ]]; then
+                    mv $repo-master-* $repo
+                else
+                    mv $repo-master-* $2
+                fi
                 ;;
         esac
     }

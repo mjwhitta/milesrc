@@ -155,18 +155,20 @@ function update_repos() {
     ))
     let "total = ${#repos[@]}"
 
-    if [[ -n $parallel ]]; then
-        source $(command -v env_parallel.$ext)
-        echo -e "\e[32m[+] $total repos to update\e[0m"
-        env_parallel -P $threads ur_update {} ::: \
-            ${repos[@]}
-    else
-        let "count = 1"
-        for repo in "${repos[@]}"; do
-            echo -e "\e[37m[$count/$total]\e[0m" >&2
-            ur_update $repo
-            let "count += 1"
-        done; unset repo
+    if [[ $total -gt 0 ]]; then
+        if [[ -n $parallel ]]; then
+            source $(command -v env_parallel.$ext)
+            echo -e "\e[32m[+] $total repos to update\e[0m"
+            env_parallel -P $threads ur_update {} ::: \
+                ${repos[@]}
+        else
+            let "count = 1"
+            for repo in "${repos[@]}"; do
+                echo -e "\e[37m[$count/$total]\e[0m" >&2
+                ur_update $repo
+                let "count += 1"
+            done; unset repo
+        fi
     fi
 
     ur_cleanup

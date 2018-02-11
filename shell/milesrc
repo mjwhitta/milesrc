@@ -472,8 +472,13 @@ function cpan5() {
     [[ -w /usr/local ]] || sudo cpan $@
 }
 
-if [[ -n $(installed curl) ]]; then
-    function git_clone() {
+function git_clone() {
+    if [[ -n $(installed git) ]]; then
+        git clone $1 $2
+    else
+        [[ -n $(installed curl) ]] || return 1
+        [[ $# -gt 0 ]] || return 2
+
         local git_url
         local group_or_user
         local repo
@@ -517,8 +522,8 @@ if [[ -n $(installed curl) ]]; then
                 fi
                 ;;
         esac
-    }
-fi
+    fi
+}
 
 function ipa() {
     if [[ -n $(installed ip) ]]; then

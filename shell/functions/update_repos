@@ -31,8 +31,12 @@
 function update_repos() {
     function ur_cleanup() {
         unset args count dir ext parallel repos stash total
-        unset -f ur_cleanup ur_update ur_usage
+        unset -f ur_cleanup ur_err ur_info ur_update ur_usage ur_warn
     }
+
+    function ur_err() { echo -e "\e[31m[!] $@\e[0m"; }
+
+    function ur_info() { echo -e "\e[32m[+] $@\e[0m"; }
 
     function ur_update() {
         dir="$1"
@@ -47,37 +51,37 @@ function update_repos() {
                     git status --porcelain | \grep -E "^[^#?]{2}"
                 )"
                 if [[ -n $stash ]]; then
-                    echo -e "\e[33m[-] $repo: stashing changes\e[0m"
+                    ur_warn "$repo: stashing changes"
                     git stash &>/dev/null
                     if [[ $? -ne 0 ]]; then
-                        echo -e "\e[31m[!] $repo: error ocurred\e[0m"
+                        ur_err "$repo: error ocurred"
                         return
                     fi
                 fi
 
-                echo -e "\e[32m[+] $repo: pulling changes\e[0m"
+                ur_info "$repo: pulling changes"
                 git pull -r &>/dev/null
                 if [[ $? -ne 0 ]]; then
-                    echo -e "\e[31m[!] $repo: error ocurred\e[0m"
+                    ur_err "$repo: error ocurred"
                     return
                 fi
 
                 git pull --all &>/dev/null
                 if [[ $? -ne 0 ]]; then
-                    echo -e "\e[31m[!] $repo: error ocurred\e[0m"
+                    ur_err "$repo: error ocurred"
                     return
                 fi
 
                 if [[ -n $stash ]]; then
-                    echo -e "\e[33m[-] $repo: restoring changes\e[0m"
+                    ur_warn "$repo: restoring changes"
                     git stash pop &>/dev/null
                     if [[ $? -ne 0 ]]; then
-                        echo -e "\e[31m[!] $repo: error ocurred\e[0m"
+                        ur_err "$repo: error ocurred"
                         return
                     fi
                 fi
             else
-                echo -e "\e[33m[-] $repo: no remote origin\e[0m"
+                ur_warn "$repo: no remote origin"
             fi
         )
     }
@@ -97,6 +101,8 @@ function update_repos() {
         echo
         ur_cleanup
     }
+
+    function ur_warn() { echo -e "\e[33m[-] $@\e[0m"; }
 
     declare -a args
     unset dir parallel
@@ -158,7 +164,7 @@ function update_repos() {
     if [[ $total -gt 0 ]]; then
         if [[ -n $parallel ]]; then
             source $(command -v env_parallel.$ext)
-            echo -e "\e[32m[+] $total repos to update\e[0m"
+            ur_info "$total repos to update"
             env_parallel -P $threads ur_update {} ::: \
                 ${repos[@]}
         else

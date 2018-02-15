@@ -585,28 +585,33 @@ function iso2usb() {
     sudo dd if="$1" of="$2" bs="4M"
 }
 
+# Lists directories in PROJS and allows quick cd'ing to them
 function lsp() {
     [[ -d $PROJS ]] || return 0
 
-    local count=0
-
-    # lists directories in PROJS and allows quick cd'ing to them
+    # Find repos that are not archived
     local -a dirs
     dirs=($(
-        find -L $PROJS -maxdepth 6 -mindepth 1 -name ".git" \
-        -exec dirname {} + 2>/dev/null | sort -u
+        find -L $PROJS -mindepth 1 -path "*archived*" -prune -o \
+        -name ".git" -exec dirname {} + 2>/dev/null | sort -u
     ))
 
-    local dir
+    # This really needs to be more efficient
+    local count=0
+    local prev=""
     for dir in "${dirs[@]}"; do
-        [[ -z $(echo $dir | \grep "archived" ) ]] || continue
-        let "count += 1"
-        if [[ $# -ne 1 ]]; then
-            printf "%03d %s\n" $count ${dir/$PROJS\//}
-        elif [[ $count -eq $1 ]]; then
-            \cd $dir
+        if [[ -z $prev ]] ||
+           [[ -z $(echo "${dir#PROJS/}" | \grep -E "${prev#|}") ]]
+        then
+            let "count += 1"
+            prev+="|${dir#$PROJS/}"
+            if [[ $# -ne 1 ]]; then
+                printf "%03d %s\n" $count ${dir#$PROJS/}
+            elif [[ $count -eq $1 ]]; then
+                \cd $dir
+            fi
         fi
-    done
+    done; unset dir
 }
 
 function milesrc() {

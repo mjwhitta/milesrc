@@ -211,9 +211,10 @@ esac
 # {{{ Env Vars
 # TERM
 # Don't do this as it can break zsh highlighting
-export TERM="screen-256color"
-# This appears safe
+# export TERM="screen-256color"
+# But this appears safe
 export TERM="xterm-256color"
+[[ -z $TMUX ]] || TERM="tmux-256color"
 
 # Java
 export JAVA_HOME="$(

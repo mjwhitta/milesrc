@@ -18,7 +18,7 @@ tmux set -g @log_screen "tmux-screenshot_%Y-%m-%d-%H%M%S.log"
 tmux set -g @prefix "C-a"
 tmux set -g @resize "5"
 tmux set -g @shell "$SHELL"
-tmux set -g @term "screen-256color"
+tmux set -g @term "tmux-256color"
 tmux set -g @ui_style "bg=blue,fg=white"
 
 # Let user override values before continuing

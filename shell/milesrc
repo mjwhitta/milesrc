@@ -226,7 +226,7 @@ export JAVA_HOME="$(
 export EDITOR="vim"
 
 # GPG
-export GPG_TTY="$(tty)"
+[[ -z $(installed tty) ]] || export GPG_TTY="$(tty)"
 
 # Let's make an educated guess
 for dir in code projs projects src; do

@@ -33,6 +33,7 @@ export MILESRC_PROMPT
 # }}}
 
 # {{{ Aliases
+alias weather="clear; curl -s wttr.in/~Lafayette,IN | head -n -2"
 # }}}
 
 # {{{ Functions

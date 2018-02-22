@@ -113,13 +113,8 @@ esac
 # }}}
 
 # {{{ Aliases
-# if [[ -n $(installed mutt) ]]; then
-#     alias mutt="TERM=\"screen-256color\" \mutt"
-# fi
 [[ -z $(installed nano) ]] || alias nano="\nano $NANO_ARGS"
-# if [[ -n $(installed weechat) ]]; then
-#     alias weechat="TERM=\"screen-256color\" \weechat"
-# fi
+alias weather="clear; curl -s wttr.in/~Lafayette,IN | head -n -2"
 # }}}
 
 # {{{ Functions
@@ -287,23 +282,6 @@ if [[ -n "$(installed vim)" ]] || [[ -n "$(installed vi)" ]]; then
 
         [[ -z $sudo ]] && $vi $@ && return $?
         sudo $vi $@
-    }
-fi
-
-if [[ -n $(installed nc) ]]; then
-    weather() {
-        local print=""
-        while read line; do
-            case "$line" in
-                *"CITY FORECAST MENU"*) unset print ;;
-                *"Press Return to continue,"*) unset print ;;
-                *"Temp(F)"*) print="true" ;;
-            esac
-            [[ -z $print ]] || echo "$line"
-        done < <(
-            echo -e "\n${1:-IND}\nX" | \
-            nc rainmaker.wunderground.com 23 | sed "s/^*\.*//"
-        )
     }
 fi
 # }}}

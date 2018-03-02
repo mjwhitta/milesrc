@@ -35,13 +35,13 @@ function fw() {
     fi
 
     fw_cleanup() {
-        unset action arg args chain
+        unset action arg args chain tbl tbls
         unset -f fw_cleanup fw_clear fw_close fw_list fw_open fw_reset
         unset -f fw_usage
     }
 
     fw_clear() {
-        for tbl in filter mangle nat; do
+        for tbl in "${tbls[@]}"; do
             while read chain; do
                 sudo iptables -t $tbl -P $chain ACCEPT
             done < <(sudo iptables -S -t $tbl | awk '/-P/ {print $2}')
@@ -58,7 +58,7 @@ function fw() {
     }
 
     fw_list() {
-        for tbl in filter mangle nat; do
+        for tbl in "${tbls[@]}"; do
             echo "### $tbl ###"
             sudo iptables -S -t $tbl
         done
@@ -92,8 +92,13 @@ function fw() {
         fw_cleanup
     }
 
-    declare -a args
+    declare -a args tbls
     action="list"
+    tbls=($(lsmod | perl -lne '/^iptable_(\S+)/ && print $1' | sort))
+    case "${tbls}" in
+        *"filter"*) ;;
+        *) tbls=("filter" ${tbls[@]})
+    esac
 
     while [[ $# -gt 0 ]]; do
         case "$1" in

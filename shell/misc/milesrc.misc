@@ -157,13 +157,29 @@ if [[ -n $(installed docker) ]]; then
         fi
 
         local -a args=($@)
+        local -a exposed=($(
+            echo "$@" | \
+            \grep -Eos -- "--expose [\"']?[0-9]+[\"']?"
+        ))
         local image="${args[-2]}"
         local name="${args[-1]}"
+        local -a published=($(
+            echo "$@" | \
+            \grep -Eos -- "(-p|--publish) [\"']?[0-9]+:[0-9]+[\"']?"
+        ))
+        for port in "${exposed[@]}"; do
+            args=(${args[@]#$port})
+        done; unset port
         args=(${args[@]%$name})
+        for port in "${published[@]}"; do
+            args=(${args[@]#$port})
+        done; unset port
         args=(${args[@]%$image})
 
         if [[ -z $(docker ps | \grep -w "$name") ]]; then
-            docker run -di --name $name --rm -t $image bash
+            docker run -d ${exposed[@]} -i --name $name \
+                ${published[@]} --rm -t $image
+            [[ $# -eq 0 ]] || return
         fi
 
         local shell="bash"

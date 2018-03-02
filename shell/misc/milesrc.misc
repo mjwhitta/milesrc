@@ -170,9 +170,9 @@ if [[ -n $(installed docker) ]]; then
         for s in /usr/bin/zsh /bin/zsh /bin/bash /bin/sh; do
             docker exec -it $name test -f $s
             [[ $# -eq 0 ]] && shell="$s" && break
-        done
+        done; unset s
 
-        docker exec -it $name $shell
+        docker exec -it ${args[@]} $name $shell
     }
 fi
 

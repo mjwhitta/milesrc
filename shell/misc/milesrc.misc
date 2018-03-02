@@ -178,8 +178,8 @@ if [[ -n $(installed docker) ]]; then
 
         if [[ -z $(docker ps | \grep -w "$name") ]]; then
             docker run -d ${exposed[@]} -i --name $name \
-                ${published[@]} --rm -t $image
-            [[ $# -eq 0 ]] || return
+                ${published[@]} --rm -t $image bash
+            [[ -n $(docker ps | \grep -w "$name") ]] || return
         fi
 
         local shell="bash"

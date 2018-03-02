@@ -156,29 +156,23 @@ if [[ -n $(installed docker) ]]; then
             return
         fi
 
-        local name="$(echo "$@" | awk '{print $NF}')"
-        local running="$(docker ps | \grep -w "$name")"
-        local shell="bash"
+        local -a args=($@)
+        local image="${args[-2]}"
+        local name="${args[-1]}"
+        args=(${args[@]%$name})
+        args=(${args[@]%$image})
 
-        if [[ -z $running ]]; then
-            docker run -di --name $name --rm -t $name bash
+        if [[ -z $(docker ps | \grep -w "$name") ]]; then
+            docker run -di --name $name --rm -t $image bash
         fi
 
-        for s in \
-            /usr/bin/zsh \
-            /bin/zsh \
-            /usr/bin/bash \
-            /bin/bash \
-            /bin/sh
-        do
+        local shell="bash"
+        for s in /usr/bin/zsh /bin/zsh /bin/bash /bin/sh; do
             docker exec -it $name test -f $s
-            if [[ $# -eq 0 ]]; then
-                shell="$s"
-                break
-            fi
+            [[ $# -eq 0 ]] && shell="$s" && break
         done
 
-        docker exec -it $@ $shell
+        docker exec -it $name $shell
     }
 fi
 

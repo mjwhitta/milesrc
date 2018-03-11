@@ -590,29 +590,27 @@ function iso2usb() {
 function lsp() {
     [[ -d $PROJS ]] || return 0
 
-    # Find repos that are not archived
-    local -a dirs
-    dirs=($(
-        find -L $PROJS -mindepth 1 -path "*archived*" -prune -o \
-        -name ".git" -exec dirname {} + 2>/dev/null | sort -u
-    ))
-
-    # This really needs to be more efficient
-    local count=0
+    local count="0"
     local prev=""
-    for dir in "${dirs[@]}"; do
+
+    # Find repos that are not archived and not submodules
+    while read dir; do
         if [[ -z $prev ]] ||
-           [[ -z $(echo "${dir#PROJS/}" | \grep -E "${prev#|}") ]]
+           [[ -z $(echo "${dir#$PROJS/}" | \grep -Es "$prev") ]]
         then
             let "count += 1"
-            prev+="|${dir#$PROJS/}"
-            if [[ $# -ne 1 ]]; then
-                printf "%03d %s\n" $count ${dir#$PROJS/}
+            prev="${dir#$PROJS/}"
+
+            if [[ $# -eq 0 ]]; then
+                printf "%03d %s\n" $count $prev
             elif [[ $count -eq $1 ]]; then
                 \cd $dir
             fi
         fi
-    done; unset dir
+    done < <(
+        find -L $PROJS -mindepth 1 -path "*archived*" -prune -o \
+        -name ".git" -exec dirname {} + 2>/dev/null | sort -u
+    ); unset dir
 }
 
 function milesrc() {

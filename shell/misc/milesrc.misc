@@ -151,30 +151,67 @@ if [[ -n $(installed docker) ]]; then
     alias dps="docker ps -a"
 
     dsh() {
-        if [[ $# -eq 0 ]]; then
-            echo "You need to specify a container"
-            return
+        dsh_usage() {
+            echo "Usage: ${0/*\//} [OPTIONS] <name> [image]"
+            echo
+            echo "Options:"
+            echo "    --expose=PORT         Expose ports"
+            echo "    -h, --help            Display this help message"
+            echo "    -p, --publish=PORT    Publish ports to the host"
+            echo
+            unset -f dsh_usage
+        }
+
+        local -a args exposed published
+        local arg
+
+        while [[ $# -gt 0 ]]; do
+            case "$1" in
+                "--") shift && args+=("$@") && break ;;
+                "--expose"*)
+                    case "$1" in
+                        "--"*"="*)
+                            arg="${1#*=}"
+                            [[ -z $arg ]] && dsh_usage && return 1
+                            ;;
+                        *)
+                            shift
+                            [[ $# -eq 0 ]] && dsh_usage && return 1
+                            arg="$1"
+                            ;;
+                    esac
+                    exposed+=("$arg")
+                    ;;
+                "-h"|"--help") dsh_usage && return 0 ;;
+                "-p"|"--publish"*)
+                    case "$1" in
+                        "--"*"="*)
+                            arg="${1#*=}"
+                            [[ -z $arg ]] && dsh_usage && return 1
+                            ;;
+                        *)
+                            shift
+                            [[ $# -eq 0 ]] && dsh_usage && return 1
+                            arg="$1"
+                            ;;
+                    esac
+                    published+=("$arg")
+                    ;;
+                *) args+=("$1") ;;
+            esac
+            shift
+        done
+        [[ -z ${args[@]} ]] || set -- "${args[@]}"
+
+        if [[ $# -eq 0 ]] || [[ $# -gt 2 ]]; then
+            dsh_usage && return 2
         fi
 
-        local -a args=($@)
-        local -a exposed=($(
-            echo "$@" | \
-            \grep -Eos -- "--expose [\"']?[0-9]+[\"']?"
-        ))
-        local image="${args[-2]}"
-        local name="${args[-1]}"
-        local -a published=($(
-            echo "$@" | \
-            \grep -Eos -- "(-p|--publish) [\"']?[0-9]+:[0-9]+[\"']?"
-        ))
-        for port in "${exposed[@]}"; do
-            args=(${args[@]#$port})
-        done; unset port
-        args=(${args[@]%$name})
-        for port in "${published[@]}"; do
-            args=(${args[@]#$port})
-        done; unset port
+        local image="${2:-$1}"
+        local name="$1"
+
         args=(${args[@]%$image})
+        [[ $# -eq 1 ]] || args=(${args[@]%$name})
 
         if [[ -z $(docker ps | \grep -w "$name") ]]; then
             docker run -d ${exposed[@]} -i --name $name \
@@ -189,6 +226,7 @@ if [[ -n $(installed docker) ]]; then
         done; unset s
 
         docker exec -it ${args[@]} $name $shell
+        return 0
     }
 fi
 

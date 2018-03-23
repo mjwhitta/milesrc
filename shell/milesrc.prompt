@@ -68,26 +68,6 @@ function __milesrc_colors() {
 }
 # }}}
 
-# {{{ __milesrc_conditional_rand
-# Conditional rand value
-# $1 = exit status
-# $2 = rand range if exit status is 0
-# $3 = rand range otherwise
-function __milesrc_conditional_rand() {
-    if [[ $# -ne 3 ]]; then
-        echo -n "0"
-        return
-    fi
-
-    local rand="0"
-    case "$1" in
-        "0") let "rand = RANDOM % $2" ;;
-        *) let "rand = RANDOM % $3" ;;
-    esac
-    echo -n "$rand"
-}
-# }}}
-
 # {{{ __milesrc_cwd
 # Current working directory
 # $1 = format in the form of cwd;fgclr;bgclr
@@ -135,32 +115,41 @@ function __milesrc_exit_status() {
     local fmt="$(echo -n "$1" | \grep -Eo "exit(;[^;]+){2}")"
     local status_symbol="$2"
     [[ $status_symbol -ne 130 ]] || status_symbol="0" # Ignore ^C
-    local rand="$(__milesrc_conditional_rand $status_symbol 3 6)"
 
     case "$1" in
         *"emotes"*)
             if [[ status_symbol -eq 0 ]]; then
                 fmt="$(echo -n "$1" | \grep -Eo "emotes(;[^;]+){2}")"
+                case "$(__milesrc_rand_status 2)" in
+                    "0")   status_symbol="(^‿^)" ;;
+                    *)   status_symbol="=)" ;;
+                esac
+            else
+                case "$(__milesrc_rand_status 9)" in
+                    "0") status_symbol="(o^^)o" ;;
+                    "1") status_symbol="\(o_o)/" ;;
+                    "2") status_symbol="(>_<)" ;;
+                    "3") status_symbol="(._.)" ;;
+                    "4") status_symbol="(;-;)" ;;
+                    "5") status_symbol="(='X'=)" ;;
+                    "6") status_symbol="(^_^)b" ;;
+                    "7") status_symbol="(^-^)*" ;;
+                    *) status_symbol="=(" ;;
+                esac
             fi
-            case "$status_symbol" in
-                "0") status_symbol="(^‿^)" ;;
-                *) status_symbol="┻━┻ ︵ヽ(°□°)ﾉ︵ ┻━┻ " ;;
-            esac
             ;;
         *"unsupported"*)
             if [[ status_symbol -eq 0 ]]; then
                 fmt="$(
                     echo -n "$1" | \grep -Eo "unsupported(;[^;]+){2}"
                 )"
-            fi
-            if [[ $status_symbol -eq 0 ]]; then
-                case "$rand" in
+                case "$(__milesrc_rand_status 3)" in
                     "0") status_symbol="(^‿^)" ;;
                     "1") status_symbol="(ツ)" ;;
                     *) status_symbol="¯\_(ツ)_/¯" ;;
                 esac
             else
-                case "$rand" in
+                case "$(__milesrc_rand_status 6)" in
                     "0") status_symbol="┻━┻ ︵ヽ(°□°)ﾉ︵ ┻━┻ " ;;
                     "1") status_symbol="(╯°□°)╯︵┻━┻ " ;;
                     "2") status_symbol="(ಠ_ಠ)" ;;
@@ -437,6 +426,16 @@ function __milesrc_python_venv() {
     __milesrc_format "$fmt" "$venv"
 }
 #}}}
+
+# {{{ __milesrc_rand_status
+# Return rand value
+# $1 = rand range
+function __milesrc_rand_status() {
+    local rand="0"
+    [[ $# -ne 1 ]] || let "rand = RANDOM % $1"
+    echo -n "$rand"
+}
+# }}}
 
 # {{{ __milesrc_vi_mode
 # Vi mode for the simulated right prompt

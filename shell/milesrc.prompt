@@ -120,21 +120,22 @@ function __milesrc_exit_status() {
         *"emotes"*)
             if [[ status_symbol -eq 0 ]]; then
                 fmt="$(echo -n "$1" | \grep -Eo "emotes(;[^;]+){2}")"
-                case "$(__milesrc_rand_status 2)" in
-                    "0")   status_symbol="(^‿^)" ;;
-                    *)   status_symbol="=)" ;;
+                case "$(__milesrc_rand_status 3)" in
+                    "0")   status_symbol="=)" ;;
+                    "1") status_symbol="(^ت^)" ;;
+                    *) status_symbol="¯\_(^ت^)_/¯" ;;
                 esac
             else
                 case "$(__milesrc_rand_status 9)" in
-                    "0") status_symbol="(o^^)o" ;;
-                    "1") status_symbol="\(o_o)/" ;;
-                    "2") status_symbol="(>_<)" ;;
-                    "3") status_symbol="(._.)" ;;
-                    "4") status_symbol="(;-;)" ;;
-                    "5") status_symbol="(='X'=)" ;;
-                    "6") status_symbol="(^_^)b" ;;
-                    "7") status_symbol="(^-^)*" ;;
-                    *) status_symbol="=(" ;;
+                    "0") status_symbol="=(" ;;
+                    "1") status_symbol="(-_-)" ;;
+                    "2") status_symbol="¯\_(-_-)_/¯" ;;
+                    "3") status_symbol="\(⊙_⊙)/" ;;
+                    "4") status_symbol="(o‵-′)o" ;;
+                    "5") status_symbol="(‵-′)b" ;;
+                    "6") status_symbol="(>_<)" ;;
+                    "7") status_symbol="(°⌂°)" ;;
+                    *) status_symbol="(;⌒;)" ;;
                 esac
             fi
             ;;
@@ -143,19 +144,31 @@ function __milesrc_exit_status() {
                 fmt="$(
                     echo -n "$1" | \grep -Eo "unsupported(;[^;]+){2}"
                 )"
-                case "$(__milesrc_rand_status 3)" in
-                    "0") status_symbol="(^‿^)" ;;
-                    "1") status_symbol="(ツ)" ;;
-                    *) status_symbol="¯\_(ツ)_/¯" ;;
+                case "$(__milesrc_rand_status 6)" in
+                    "0")   status_symbol="=)" ;;
+                    "1") status_symbol="(^ت^)" ;;
+                    "2") status_symbol="¯\_(^ت^)_/¯" ;;
+                    "3") status_symbol="(ツ)" ;;
+                    "4") status_symbol="¯\_(ツ)_/¯" ;;
+                    *) status_symbol="(^‿^)" ;;
                 esac
             else
-                case "$(__milesrc_rand_status 6)" in
-                    "0") status_symbol="┻━┻ ︵ヽ(°□°)ﾉ︵ ┻━┻ " ;;
-                    "1") status_symbol="(╯°□°)╯︵┻━┻ " ;;
-                    "2") status_symbol="(ಠ_ಠ)" ;;
-                    "3") status_symbol="(ಠ╭╮ಠ)" ;;
-                    "4") status_symbol="(ಥ_ಥ)" ;;
-                    *) status_symbol="(ง'̀-'́)ง" ;;
+                case "$(__milesrc_rand_status 15)" in
+                    "0") status_symbol="=(" ;;
+                    "1") status_symbol="(-_-)" ;;
+                    "2") status_symbol="¯\_(-_-)_/¯" ;;
+                    "3") status_symbol="\(⊙_⊙)/" ;;
+                    "4") status_symbol="(o‵′)o" ;;
+                    "5") status_symbol="(‵-′)b" ;;
+                    "6") status_symbol="(>_<)" ;;
+                    "7") status_symbol="(°⌂°)" ;;
+                    "8") status_symbol="(;⌒;)" ;;
+                    "9") status_symbol="(╯°⌂°)╯︵┻━┻ " ;;
+                    "10") status_symbol="┻━┻ ︵ヽ(°⌂°)ﾉ︵ ┻━┻ " ;;
+                    "11") status_symbol="(ಠ_ಠ)" ;;
+                    "12") status_symbol="(ಠ╭╮ಠ)" ;;
+                    "13") status_symbol="(ಥ_ಥ)" ;;
+                    *) status_symbol="(ง‵-′)ง" ;;
                 esac
             fi
             ;;
@@ -432,6 +445,9 @@ function __milesrc_python_venv() {
 # $1 = rand range
 function __milesrc_rand_status() {
     local rand="0"
+    RANDOM="$(
+        xxd -p /dev/urandom | \grep -Em 1 -os "[0-9]+" | head -n 1
+    )"
     [[ $# -ne 1 ]] || let "rand = RANDOM % $1"
     echo -n "$rand"
 }

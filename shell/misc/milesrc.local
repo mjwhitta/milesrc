@@ -21,9 +21,9 @@ MILESRC_PROMPT=(
     "venv;white;166"
     "git;light_black;white"
     "cwd;white;light_black"
+    "exit;red;light_black;emotes;green;light_black"
     "vi_ins;white;green;vi_cmd;white;blue"
     "newline"
-    "exit;white;red"
     "prompt;white;light_black"
 )
 export MILESRC_PROMPT

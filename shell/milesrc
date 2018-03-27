@@ -605,11 +605,12 @@ function lsp() {
                 printf "%03d %s\n" $count $prev
             elif [[ $count -eq $1 ]]; then
                 \cd $dir
+                return 0
             fi
         fi
     done < <(
         find -L $PROJS -mindepth 1 -path "*archived*" -prune -o \
-        -name ".git" -exec dirname {} + 2>/dev/null | sort -u
+        -name ".git" -exec dirname {} + 2>/dev/null | sort
     ); unset dir
 }
 

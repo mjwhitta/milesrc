@@ -446,7 +446,7 @@ function __milesrc_python_venv() {
 function __milesrc_rand_status() {
     local rand="0"
     RANDOM="$(
-        xxd -p /dev/urandom | \grep -Em 1 -os "[0-9]+" | head -n 1
+        xxd -p /dev/urandom | \grep -Eos "[0-9]{1,16}" | head -n 1
     )"
     [[ $# -ne 1 ]] || let "rand = RANDOM % $1"
     echo -n "$rand"

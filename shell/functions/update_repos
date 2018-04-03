@@ -156,7 +156,7 @@ function update_repos() {
 
     declare -a repos
     repos=($(
-        find $1 -ipath "*archived*" -prune -o -type d -name ".git" \
+        find -L $1 -ipath "*archived*" -prune -o -type d -name ".git" \
         2>/dev/null | \grep -iv "archived"
     ))
     let "total = ${#repos[@]}"

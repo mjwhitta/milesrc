@@ -306,7 +306,8 @@ fi
 
 # Go
 export GOPATH="$HOME/.go"
-[[ -z $(installed go) ]] || mkdir -p $GOPATH/bin
+export GOBIN="$GOPATH/bin"
+[[ -z $(installed go) ]] || mkdir -p $GOBIN
 
 # Display
 if [[ -z $DISPLAY ]] &&

@@ -110,43 +110,49 @@ tmux set -ag status-right "$(
 if [[ -n $(command -v acpi) ]] || [[ -n $(command -v pmset) ]]; then
     tmux set -ag status-right "#(
         if [[ -n \$(command -v acpi) ]]; then
-            charge=\"\$(
-                acpi -b | \grep -Eo \"[0-9]+%\" | tr -d \"%\"
+            no_batt=\"\$(
+                acpi 2>&1 | \grep -E \"^No support.+power_supply$\"
             )\"
+            c=\"100\"
+            if [[ -z \$no_batt ]]; then
+                c=\"\$(
+                    acpi -b | \grep -Eo \"[0-9]+%\" | tr -d \"%\"
+                )\"
+            fi
         elif [[ -n \$(command -v pmset) ]]; then
-            charge=\"\$(
+            c=\"\$(
                 pmset -g batt | \grep -Eo \"[0-9]+%\" | tr -d \"%\"
             )\"
         fi
 
-        if [[ -n \$charge ]]; then
-            [[ \$charge -eq 100 ]] || let \"charge += 1\"
-            echo -n \"\$charge% \"
+        if [[ -n \$c ]]; then
+            [[ \$c -eq 100 ]] || let \"c += 1\"
+            echo -n \"\$c% \"
 
-            battery_bar_size=\"$(tlget -g @battery_bar_size)\"
-            if [[ \$battery_bar_size -gt 0 ]]; then
+            bsize=\"$(tlget -g @battery_bar_size)\"
+            if [[ \$bsize -gt 0 ]]; then
                 empty=\"$(tlget -g @battery_empty)\"
                 filled=\"$(tlget -g @battery_filled)\"
 
-                let \"increment = 100 / battery_bar_size\"
+                let \"increment = 100 / bsize\"
                 let \"round = increment / 2\"
-                let \"charge = (charge + round) / increment\"
+                let \"c = (c + round) / increment\"
 
                 echo -n \"$(tlget -g @battery_bar_surround)\" | \
                     head -c 1
                 if [[ -n \$(command -v acpi) ]]; then
-                    if [[ -n \$(acpi -a | \grep \"on-line\") ]]; then
+                    chrg=\"\$(acpi -a 2>&1 | \grep \"on-line\")\"
+                    if [[ -n \$chrg ]] || [[ -n \$no_batt ]]; then
                         echo -n \"$(tlget -g @battery_charging)\"
                     fi
-                #elif [[ -n \$(command -v pmset) ]]; then
                 fi
-                for i in \$(seq 1 \$battery_bar_size); do
-                    [[ \$i -gt \$charge ]] || echo -n \"\$filled\"
-                    [[ \$i -le \$charge ]] || echo -n \"\$empty\"
-                    if [[ \$i -ne \$battery_bar_size ]]; then
+                for i in \$(seq 1 \$bsize); do
+                    [[ \$i -gt \$c ]] || echo -n \"\$filled\"
+                    [[ \$i -le \$c ]] || echo -n \"\$empty\"
+                    if [[ \$i -ne \$bsize ]]; then
                         echo -n \"$(tlget -g @battery_bar_spacer)\"
                     fi
-                done
+                done; unset i
                 echo -n \"$(tlget -g @battery_bar_surround)\" | \
                     tail -c 1
                 echo -n \" \"
@@ -350,5 +356,5 @@ tmux bind "+" set -w synchronize-panes
 # {{{ Local file
 for file in $HOME/.tmux/tmux.local $HOME/.tmux.local; do
     [[ ! -f $file ]] || tmux source $file
-done
+done; unset file
 # }}}

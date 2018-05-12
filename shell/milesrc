@@ -241,7 +241,7 @@ done; unset dir
 
 # Less
 export PAGER="less"
-export LESS="-ciMNRs"
+export LESS="-ciMRs"
 if [[ -f $HOME/.config/less/lessfilter ]]; then
     export LESSOPEN="|$HOME/.config/less/lessfilter %s"
 fi

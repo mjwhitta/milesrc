@@ -68,9 +68,9 @@ case "$MILESRC_SHELL" in
         ;;
 esac
 
-if [[ -n $(installed ruby) ]] && [[ -n $(installed arTTY) ]]; then
-    alias nt="arTTY -cs \$(head -n 1 \$HOME/.config/arTTY/rc)"
-    arTTY -cs $(head -n 1 $HOME/.config/arTTY/rc)
+if [[ -n $(installed arTTY) ]]; then
+    alias nt="arTTY \$(head -n 1 \$HOME/.config/arTTY/rc)"
+    arTTY $(head -n 1 $HOME/.config/arTTY/rc)
 else
     clear
 fi

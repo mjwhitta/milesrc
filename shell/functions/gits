@@ -35,9 +35,10 @@ function gits() {
     }
 
     gits_usage() {
-        echo "Usage: gits [OPTIONS]"
+        echo "Usage: gits [OPTIONS] [do] <command>"
         echo
-        echo "Run a git command in all repos below current directory."
+        echo "Run a command in all git repos below current directory."
+        echo "If using \"do\", run shell command, else git command."
         echo
         echo "Options:"
         echo "    -h, --help    Display this help message"
@@ -63,10 +64,13 @@ function gits() {
         (
             echo -e "\e[37m$repo\e[0m"
             cd "$repo"
-            git $@
+            case "$1" in
+                "do") shift; sh -c $@ ;;
+                *) git $@ ;;
+            esac
             echo
         )
-    done < <(find . -name ".git" -type d -exec dirname {} +)
+    done < <(find . -name ".git" -type d -exec dirname {} + | sort)
 
     gits_cleanup
 }

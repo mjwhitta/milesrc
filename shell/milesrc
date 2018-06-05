@@ -422,7 +422,7 @@ if [[ -n $(installed git) ]]; then
     alias gl="git log --date=relative --graph --pretty=tformat:\"%Cred%h%Creset %s %Cgreen%cd %Cblue%an\""
     alias gld="git log --date=local --graph --pretty=tformat:\"%Cred%h%Creset %s %Cgreen%cd %Cblue%an\""
     alias gp="git pull -r origin master"
-    alias grevs="git log --date=relative --full-history --pretty=tformat:\"%Cred%H%Creset %s %Cgreen%cd %Cblue%an\""
+    alias grevs="git log --date=relative --full-history --pretty=tformat:\"%Cred%H%Creset %s %Cgreen%cd %Cblue%an\" --"
     alias grh="git reset --hard"
     alias gs="git status -b -s"
     alias gsh="git show -b --color-words=. --ignore-blank-lines --minimal"

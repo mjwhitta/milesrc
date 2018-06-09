@@ -94,7 +94,7 @@ function gen_passwd() {
 
     unset passwd
     while [[ $(echo -n "$passwd" | wc -c) -lt $length ]]; do
-        char="$(head -c 1 /dev/urandom | \grep -Es "$regex")"
+        char="$(head -c 1 /dev/urandom | grep -Es "$regex")"
         [[ -z $char ]] || passwd="$passwd$char"
     done
 

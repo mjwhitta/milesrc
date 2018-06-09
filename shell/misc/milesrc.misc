@@ -213,10 +213,10 @@ if [[ -n $(installed docker) ]]; then
         args=(${args[@]%$image})
         [[ $# -eq 1 ]] || args=(${args[@]%$name})
 
-        if [[ -z $(docker ps | \grep -w "$name") ]]; then
+        if [[ -z $(docker ps | grep -w "$name") ]]; then
             docker run -d ${exposed[@]} -i --name $name \
                 ${published[@]} --rm -t $image bash
-            [[ -n $(docker ps | \grep -w "$name") ]] || return
+            [[ -n $(docker ps | grep -w "$name") ]] || return
         fi
 
         local shell="bash"
@@ -253,7 +253,7 @@ q() {
     fi
 
     local session="$(tmux display-message -p "#S")"
-    local clients="$(tmux list-clients | \grep $session | wc -l)"
+    local clients="$(tmux list-clients | grep $session | wc -l)"
 
     if [[ $clients -eq 1 ]]; then
         \cd
@@ -323,7 +323,7 @@ if [[ -n "$(installed vim)" ]] || [[ -n "$(installed vi)" ]]; then
         done
 
         local num="$(
-            \grep -Ev "^[#_]|false|git|nologin|postgres|root|sync" \
+            grep -Ev "^[#_]|false|git|nologin|postgres|root|sync" \
             /etc/passwd | wc -l
         )"
         [[ $num -le 1 ]] || unset sudo
@@ -367,7 +367,7 @@ case "$MILESRC_SHELL" in
         if [[ -n $(installed mspac) ]]; then
             _mspac_complete() {
                 mapfile -t COMPREPLY < <(
-                    mspac --list-pellets | \grep -E "^$2" | sort -u
+                    mspac --list-pellets | grep -E "^$2" | sort -u
                 )
             }
             complete -F _mspac_complete mspac
@@ -378,7 +378,7 @@ case "$MILESRC_SHELL" in
             if [[ -f $HOME/.ssh/config ]]; then
                 mapfile -t COMPREPLY < <(
                     perl -lne '/^Host ([A-Za-z0-9]+)/ && print $1' \
-                    $HOME/.ssh/config | \grep -E "^$2" | sort -u
+                    $HOME/.ssh/config | grep -E "^$2" | sort -u
                 )
             fi
         }

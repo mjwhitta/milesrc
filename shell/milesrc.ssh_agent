@@ -14,7 +14,7 @@ if [[ -n $(command -v ssh-agent) ]] && [[ -f $HOME/.ssh-agent ]]; then
 
     # If PID exists but SSH_AUTH_SOCK doesn't, then restart agent. If
     # PID doesn't exist, try to start agent again.
-    pidchk="$(\ps -p $SSH_AGENT_PID -o command | \grep "ssh-agent")"
+    pidchk="$(\ps -p $SSH_AGENT_PID -o command | grep "ssh-agent")"
     if [[ -z $pidchk ]] || [[ ! -e $SSH_AUTH_SOCK ]]; then
         [[ -z $pidchk ]] || ssh-agent -k 2>/dev/null
         ssh-agent >$HOME/.ssh/agent/env
@@ -23,7 +23,7 @@ if [[ -n $(command -v ssh-agent) ]] && [[ -f $HOME/.ssh-agent ]]; then
     unset pidchk
 
     # Add missing keys
-    for key in $(\grep -lrs "PRIVATE KEY" $HOME/.ssh); do
-        [[ -n $(ssh-add -l | \grep " $key ") ]] || ssh-add $key
+    for key in $(grep -lr "PRIVATE KEY" $HOME/.ssh); do
+        [[ -n $(ssh-add -l | grep " $key ") ]] || ssh-add $key
     done; unset key
 fi

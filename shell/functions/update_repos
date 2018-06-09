@@ -48,7 +48,7 @@ function update_repos() {
             \cd $repo
             if [[ -n $(git config remote.origin.url) ]]; then
                 stash="$(
-                    git status --porcelain | \grep -E "^[^#?]{2}"
+                    git status --porcelain | grep -E "^[^#?]{2}"
                 )"
                 if [[ -n $stash ]]; then
                     ur_warn "$repo: stashing changes"
@@ -157,7 +157,7 @@ function update_repos() {
     declare -a repos
     repos=($(
         find -L $1 -ipath "*archived*" -prune -o -type d -name ".git" \
-        2>/dev/null | \grep -iv "archived"
+        2>/dev/null | grep -iv "archived"
     ))
     let "total = ${#repos[@]}"
 

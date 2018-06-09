@@ -5,7 +5,7 @@
 
 # {{{ Helper utils
 function installed() {
-    type -a $1 2>&1 | \grep -Em 1 "$1 is /" | \
+    type -a $1 2>&1 | grep -Em 1 "$1 is /" | \
         awk '{print $3}' 2>/dev/null
 }
 
@@ -17,7 +17,7 @@ case "$MILESRC_SHELL" in
     *"bash")
         # {{{ Bash setup
         BASHV="$(
-            bash --version | \grep -Eo "[0-9]+\.[0-9]+" | head -n 1
+            bash --version | grep -Eo "[0-9]+\.[0-9]+" | head -n 1
         )"
 
         # History settings
@@ -66,7 +66,7 @@ case "$MILESRC_SHELL" in
         bind '"^U":kill-line'
         bind '"^W":backward-kill-word'
 
-        if [[ -n $(bind -P | \grep "history-substring-searc") ]]; then
+        if [[ -n $(bind -P | grep "history-substring-searc") ]]; then
             bind -m vi-move '"k":history-substring-search-backward'
             bind -m vi-move '"j":history-substring-search-forward'
         else
@@ -81,7 +81,7 @@ case "$MILESRC_SHELL" in
     *"zsh")
         # {{{ Zsh setup
         ZSHV="$(
-            zsh --version | \grep -Eo "[0-9]+\.[0-9]+" | head -n 1
+            zsh --version | grep -Eo "[0-9]+\.[0-9]+" | head -n 1
         )"
 
         # History settings
@@ -104,7 +104,7 @@ case "$MILESRC_SHELL" in
         zstyle ":completion:*" matcher-list "m:{a-zA-Z}={A-Za-z}"
         # Better completion for killall
         zstyle ":completion:*:killall:*" command \
-            "\ps -u $USER -o comm | \grep -v \"COMMAND\""
+            "\ps -u $USER -o comm | grep -v \"COMMAND\""
 
         zstyle :compinstall filename "$HOME/.zshrc"
 
@@ -235,7 +235,7 @@ done; unset dir
 
 # Secure perms
 # Don't touch umask EVER
-# [[ -n $(id | \grep "uid=0") ]] || umask 077
+# [[ -n $(id | grep "uid=0") ]] || umask 077
 # Instead do something like:
 # setfacl -m d:u::rwX,g::-,o::- -R $HOME
 
@@ -261,28 +261,35 @@ export ACK_COLOR_LINENO="white"
 export ACK_COLOR_MATCH="black on_white"
 
 ## ag
-export AG_ARGS="-S --color-match=\"47;1;30\" \
-    --color-line-number=\"0;37\" --color-path=\"0;32\""
+export AG_ARGS="-S "
+AG_ARGS+="--color-match=\"47;1;30\" "
+AG_ARGS+="--color-line-number=\"0;37\" "
+AG_ARGS+="--color-path=\"0;32\""
 
 ## grep
-if [[ -n $(\grep --help 2>&1 | \grep -Eis "color") ]]; then
-    export GREP_CLR="--color=always"
+if [[ -n $(grep --help 2>&1 | grep -Eis "color") ]]; then
+    export GREP_CLR="--color=auto"
 fi
-export GREP_ARGS="$GREP_CLR -EHIinrs --exclude-dir=.bzr \
-    --exclude-dir=.git --exclude-dir=.git-crypt --exclude-dir=.svn"
+export GREP_ARGS="$GREP_CLR -Iis "
+GREP_ARGS+="--exclude-dir=.bzr "
+GREP_ARGS+="--exclude-dir=.git "
+GREP_ARGS+="--exclude-dir=.git-crypt "
+GREP_ARGS+="--exclude-dir=.svn"
 export GREP_COLORS="fn=1;32:ln=0;37:ms=47;1;30:mc=47;1;30"
-export GREP_COLORS="${GREP_COLORS}:sl=:cx=:bn=:se="
+GREP_COLORS+=":sl=:cx=:bn=:se="
 
 ## ls
-export LS_ARGS="-F --color"
+export LS_ARGS="--color -F"
 
 ## ps
 export PS_ARGS="-o pid,user,%cpu,cmd --sort=-%cpu"
 
 ## rg
-export RG_ARGS="-S --colors \"line:fg:white\" \
-    --colors \"match:bg:white\" --colors \"match:fg:black\" \
-    --colors \"path:fg:green\""
+export RG_ARGS="-S "
+RG_ARGS+="--colors \"line:fg:white\" "
+RG_ARGS+="--colors \"match:bg:white\" "
+RG_ARGS+="--colors \"match:fg:black\" "
+RG_ARGS+="--colors \"path:fg:green\""
 
 # macOS
 case "$(uname -s)" in
@@ -346,7 +353,7 @@ done; unset dir
 
 # Find missing from PATH
 for dir in $(echo "$PATH" | sed "s|:| |g"); do
-    [[ -n $(echo "$PTH" | \grep "$dir") ]] || PTH="$PTH:$dir"
+    [[ -n $(echo "$PTH" | grep "$dir") ]] || PTH="$PTH:$dir"
 done; unset dir
 
 # Set PATH
@@ -360,41 +367,41 @@ unset PTH
 
 # {{{ Aliases
 if [[ -n $(installed ack-grep) ]]; then
-    alias ack="\ack-grep $ACK_ARGS"
+    alias ack="ack-grep $ACK_ARGS"
 elif [[ -n $(installed ack) ]]; then
     alias ack="\ack $ACK_ARGS"
 fi
 [[ -z $(installed ag) ]] || alias ag="\ag $AG_ARGS"
-alias c="mycd"
 alias cd="mycd"
 alias cp="\cp -i"
 alias dt="tmux -2 new -d -s"
-alias emacs="emacs -nw"
-alias envg="env | \grep $GREP_CLR -Eis"
+[[ -z $(installed egrep) ]] || alias egrep="\egrep $GREP_ARGS"
+alias emacs="\emacs -nw"
+alias envg="env | grep -E"
 alias et="exec tmux -2 new -A -s"
 alias f="sudo"
-[[ -z $(installed gdb) ]] || alias gdb="gdb -q"
+[[ -z $(installed gdb) ]] || alias gdb="\gdb -q"
 [[ -z $(installed grep) ]] || alias grep="\grep $GREP_ARGS"
 alias j="\cd \$(cat $HOME/.proj 2>/dev/null)"
-[[ -z $(installed less) ]] || alias l="\less"
-[[ -n $(installed less) ]] || alias l="\more"
-alias la="\ls $LS_ARGS -A"
-alias lag="\ls $LS_ARGS -A | \grep $GREP_CLR -Eis"
-alias ll="\ls $LS_ARGS -lh"
-alias lla="\ls $LS_ARGS -lhA"
-alias llag="\ls $LS_ARGS -lhA | \grep $GREP_CLR -Eis"
-alias llg="\ls $LS_ARGS -lh | \grep $GREP_CLR -Eis"
+[[ -z $(installed less) ]] || alias l="less"
+[[ -n $(installed less) ]] || alias l="more"
+alias la="ls -A"
+alias lag="la | grep -E"
+alias ll="ls -hl"
+alias lla="ll -A"
+alias llag="lla | grep -E"
+alias llg="ll | grep -E"
 alias ls="\ls $LS_ARGS"
-alias lsg="\ls $LS_ARGS | \grep $GREP_CLR -Eis"
+alias lsg="ls | grep -E"
 alias mv="\mv -i"
 alias off="sudo shutdown -h now"
 alias ps="\ps $PS_ARGS"
-alias psf="\ps $PS_ARGS -e --forest"
-alias psg="\ps $PS_ARGS -e | \grep -v \"grep\" | \grep $GREP_CLR -Eis"
-alias psme="\ps $PS_ARGS -u $USER"
-alias psmef="\ps $PS_ARGS -u $USER --forest"
+alias psf="ps -e --forest"
+alias psg="ps -e | grep -v \"grep\" | grep -E"
+alias psme="ps -u $USER"
+alias psmef="psme --forest"
 alias q="exit"
-alias r="\reset"
+alias r="reset"
 [[ -z $(installed rg) ]] || alias rg="\rg $RG_ARGS"
 alias save="pwd >$HOME/.proj"
 case "$MILESRC_SHELL" in
@@ -406,11 +413,11 @@ if [[ -f /opt/sublime_text/sublime_text ]]; then
 fi
 [[ -z $(installed sudo) ]] || alias sume="sudo -Es"
 if [[ -n $(installed htop) ]]; then
-    alias t="\htop -d 10"
-    alias tu="\htop -d 10 -u $USER"
+    alias t="htop -d 10"
+    alias tu="htop -d 10 -u $USER"
 else
-    alias t="\top -d 10"
-    alias tu="\top -d 10 -u $USER"
+    alias t="top -d 10"
+    alias tu="top -d 10 -u $USER"
 fi
 [[ -z $(installed w3m) ]] || alias w3m="\w3m -cookie"
 alias which="command -v"
@@ -428,7 +435,7 @@ if [[ -n $(installed git) ]]; then
     alias gsh="git show -b --color-words=. --ignore-blank-lines --minimal"
 fi
 
-if [[ -z $(installed z | \grep "gem") ]]; then
+if [[ -z $(installed z | grep "gem") ]]; then
     if [[ -n $(installed rg) ]]; then
         alias z="\rg $RG_ARGS"
     elif [[ -n $(installed ag) ]]; then
@@ -438,9 +445,9 @@ if [[ -z $(installed z | \grep "gem") ]]; then
     elif [[ -n $(installed ack) ]]; then
         alias z="\ack $ACK_ARGS"
     else
-        alias z="\grep $GREP_ARGS"
+        alias z="\grep $GREP_ARGS -EHnr"
     fi
-    alias zf="find . -iname"
+    alias zf="\find . -iname"
 fi
 
 # Typos
@@ -529,10 +536,10 @@ function git_clone() {
 
 function ipa() {
     if [[ -n $(installed ip) ]]; then
-        if ip 2>&1 | \grep -Eq "c.olor"; then
-            ip -c -o $@ a | \grep -v "mtu" | awk '{print $2,$4}'
+        if ip 2>&1 | grep -Eq "c.olor"; then
+            ip -c -o $@ a | grep -v "mtu" | awk '{print $2,$4}'
         else
-            ip -o $@ a | \grep -v "mtu" | awk '{print $2,$4}'
+            ip -o $@ a | grep -v "mtu" | awk '{print $2,$4}'
         fi
     else
         local device
@@ -557,7 +564,7 @@ function ipa() {
 
 function ipr() {
     if [[ -n $(installed ip) ]]; then
-        if ip 2>&1 | \grep -Eq "c.olor"; then
+        if ip 2>&1 | grep -Eq "c.olor"; then
             ip -c -o $@ r
         else
             ip -o $@ r
@@ -597,7 +604,7 @@ function lsp() {
     # Find repos that are not archived and not submodules
     while read dir; do
         if [[ -z $prev ]] ||
-           [[ -z $(echo "${dir#$PROJS/}" | \grep -Es "$prev") ]]
+           [[ -z $(echo "${dir#$PROJS/}" | grep -E "$prev") ]]
         then
             let "count += 1"
             prev="${dir#$PROJS/}"
@@ -705,7 +712,7 @@ if [[ -n $(installed xdg-mime) ]]; then
         local type
         if [[ -f $1 ]]; then
             type="$(xdg-mime query filetype $1)"
-        elif [[ -n $(echo "$1" | \grep -E "https?:\/\/") ]]; then
+        elif [[ -n $(echo "$1" | grep -E "https?:\/\/") ]]; then
             type="text/html"
         fi
         [[ -n $type ]] || return 1
@@ -753,7 +760,7 @@ function remove_spaces_in_names() {
     fi
 
     # May need to cpan install File::Rename
-    if [[ -z $rnm ]] || [[ -z $($rnm -h | \grep "perl") ]]; then
+    if [[ -z $rnm ]] || [[ -z $($rnm -h | grep "perl") ]]; then
         echo "Please run \"sudo cpan File::Rename\""
         return
     fi
@@ -855,9 +862,9 @@ function tdump() {
         return
     fi
 
-    local cap="$(echo "$@" | \grep -Eo "[^ ]+\.pcap")"
+    local cap="$(echo "$@" | grep -Eo "[^ ]+\.pcap")"
     sudo tcpdump -n -vvv $@
-    [[ -z $(id | \grep "uid=0") ]] || return 0
+    [[ -z $(id | grep "uid=0") ]] || return 0
     [[ -z $cap ]] || [[ ! -f $cap ]] || sudo chown $USER:$USER $cap
 }
 
@@ -977,7 +984,7 @@ case "$MILESRC_SHELL" in
                 function _ruaur_install_complete() {
                     mapfile -t COMPREPLY < <(
                         ruaur -Ss "$2" --names-only | \
-                        \grep -E "^$2" | sort -u
+                        grep -E "^$2" | sort -u
                     )
                 }
                 complete -F _ruaur_install_complete gimme

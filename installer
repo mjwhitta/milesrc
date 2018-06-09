@@ -166,8 +166,8 @@ done
 [[ $# -eq 1 ]] || usage 1
 
 declare -a files
-files=($(\grep -Ev "^(\s*#|$)" files.default))
-[[ ! -f files ]] || files=($(\grep -Ev "^(\s*#|$)" files))
+files=($(grep -Ev "^(\s*#|$)" files.default))
+[[ ! -f files ]] || files=($(grep -Ev "^(\s*#|$)" files))
 
 case "$1" in
     "link") link ;;

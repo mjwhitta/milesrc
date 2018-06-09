@@ -93,7 +93,7 @@ function netstatplus() {
         esac
 
         pid="$(
-            echo "$line" | \grep -Eo "[0-9]+/.*" | cut -d "/" -f 1
+            echo "$line" | grep -Eo "[0-9]+/.*" | cut -d "/" -f 1
         )"
         echo -n "${pid:--}"
 

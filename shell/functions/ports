@@ -75,7 +75,7 @@ function ports() {
         oldfile="$newfile"
     done < <(
         LC_ALL=C find $hosts -type f -name "*.nmap" -exec \
-            \grep -EHs "[0-9]+\/.*open.*" {} +
+            grep -EHs "[0-9]+\/.*open.*" {} +
     ) | sed -r "s/# \.\//# /"
 
     # Host with no open ports
@@ -83,7 +83,7 @@ function ports() {
         echo -e "\n# $line\nNo open ports"
     done < <(
         LC_ALL=C find $hosts -type f -name "*.nmap" -exec \
-            \grep -EHLs "[0-9]+\/.*open.*" {} +
+            grep -EHLs "[0-9]+\/.*open.*" {} +
     ) | sed -r "s/# \.\//# /"
 
     ports_cleanup

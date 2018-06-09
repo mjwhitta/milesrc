@@ -36,7 +36,7 @@ function perms() {
     }
 
     perms_fix_file() {
-        if [[ -n $(file -b "$1" | \grep -o executable) ]]; then
+        if [[ -n $(file -b "$1" | grep -o executable) ]]; then
             [[ -n $group ]] || chmod u+x "$1"
             [[ -z $group ]] || chmod ug+x "$1"
         else

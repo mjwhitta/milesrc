@@ -63,7 +63,7 @@ function gits() {
     while read -r repo; do
         (
             echo -e "\e[37m$repo\e[0m"
-            cd "$repo"
+            \cd "$repo"
             case "$1" in
                 "do") shift; sh -c $@ ;;
                 *) git $@ ;;

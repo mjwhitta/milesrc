@@ -99,8 +99,8 @@ function netstatplus() {
 
         [[ -z $pid ]] && echo && continue
 
-        username="$(\ps -o user= --pid $pid)"
-        cmd="$(\ps -o cmd= --pid $pid)"
+        username="$(ps -o user= --pid $pid)"
+        cmd="$(ps -o cmd= --pid $pid)"
         echo "$username$cmd"
     done < <($sudo netstat -anptu 2>/dev/null) | column -s "" -t
 

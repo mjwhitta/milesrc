@@ -104,7 +104,7 @@ case "$MILESRC_SHELL" in
         zstyle ":completion:*" matcher-list "m:{a-zA-Z}={A-Za-z}"
         # Better completion for killall
         zstyle ":completion:*:killall:*" command \
-            "\ps -u $USER -o comm | grep -v \"COMMAND\""
+            "ps -ocomm -u $USER | grep -v \"COMMAND\""
 
         zstyle :compinstall filename "$HOME/.zshrc"
 
@@ -279,7 +279,7 @@ export GREP_COLORS="fn=1;32:ln=0;37:ms=47;1;30:mc=47;1;30"
 GREP_COLORS+=":sl=:cx=:bn=:se="
 
 ## ls
-export LS_ARGS="--color -F"
+export LS_ARGS="--color=auto -F"
 
 ## ps
 export PS_ARGS="-o pid,user,%cpu,cmd --sort=-%cpu"
@@ -319,7 +319,7 @@ export GOBIN="$GOPATH/bin"
 # Display
 if [[ -z $DISPLAY ]] &&
    [[ -d /tmp/.X11-unix ]] &&
-   [[ -n $(\ls /tmp/.X11-unix) ]]
+   [[ -n $(ls /tmp/.X11-unix) ]]
 then
     for x in /tmp/.X11-unix/X*; do
         export DISPLAY=":${x#/tmp/.X11-unix/X}" && break
@@ -372,7 +372,7 @@ elif [[ -n $(installed ack) ]]; then
     alias ack="\ack $ACK_ARGS"
 fi
 [[ -z $(installed ag) ]] || alias ag="\ag $AG_ARGS"
-alias cd="mycd"
+# alias cd="mycd"
 alias cp="\cp -i"
 alias dt="tmux -2 new -d -s"
 [[ -z $(installed egrep) ]] || alias egrep="\egrep $GREP_ARGS"
@@ -395,10 +395,10 @@ alias ls="\ls $LS_ARGS"
 alias lsg="ls | grep -E"
 alias mv="\mv -i"
 alias off="sudo shutdown -h now"
-alias ps="\ps $PS_ARGS"
-alias psf="ps -e --forest"
-alias psg="ps -e | grep -v \"grep\" | grep -E"
-alias psme="ps -u $USER"
+alias p="ps $PS_ARGS"
+alias psf="p -e --forest"
+alias psg="p -e | grep -v \"grep\" | grep -E"
+alias psme="p -u $USER"
 alias psmef="psme --forest"
 alias q="exit"
 alias r="reset"

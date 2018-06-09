@@ -52,7 +52,7 @@ function nmapplus() {
 
         mkdir -p nmap_scans/$dir
         (
-            cd nmap_scans/$dir
+            \cd nmap_scans/$dir
             if [[ -f ${prot}.nmap ]] && [[ -z $force ]]; then
                 echo "Already done, skipping"
             else

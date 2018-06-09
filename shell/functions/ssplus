@@ -99,8 +99,8 @@ function ssplus() {
                 echo -n "$line" | sed -r -e "s/users:.*//g" \
                     -e "s/ +\$//g" -e "s/ +//g"
                 echo -n "$pid"
-                username="$(\ps -o user= --pid $pid)"
-                cmd="$(\ps -o cmd= --pid $pid)"
+                username="$(ps -o user= --pid $pid)"
+                cmd="$(ps -o cmd= --pid $pid)"
                 echo "$username$cmd"
             done
         fi

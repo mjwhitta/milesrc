@@ -234,7 +234,7 @@ list_displays() {
     local dir="/tmp/.X11-unix"
     local x
 
-    if [[ -d $dir ]] && [[ -n $(\ls $dir) ]]; then
+    if [[ -d $dir ]] && [[ -n $(ls $dir) ]]; then
         for x in $dir/X*; do
             echo ":${x#$dir/X}"
         done

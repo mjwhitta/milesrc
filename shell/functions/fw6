@@ -44,11 +44,15 @@ function fw6() {
         for tbl in "${tbls[@]}"; do
             while read chain; do
                 sudo ip6tables -t $tbl -P $chain ACCEPT
-            done < <(sudo ip6tables -S -t $tbl | awk '/-P/ {print $2}')
+            done < <(
+                sudo ip6tables -S -t $tbl | awk '/-P/ {print $2}'
+            )
             sudo ip6tables -t $tbl -F
             while read chain; do
                 sudo ip6tables -t $tbl -X $chain
-            done < <(sudo ip6tables -S -t $tbl | awk '/-N/ {print $2}')
+            done < <(
+                sudo ip6tables -S -t $tbl | awk '/-N/ {print $2}'
+            )
         done
     }
 

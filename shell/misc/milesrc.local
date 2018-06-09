@@ -47,7 +47,7 @@ case "$MILESRC_SHELL" in
         if [[ -n $(installed arTTY) ]]; then
             _arTTY_complete() {
                 mapfile -t COMPREPLY < <(
-                    arTTY --ls | grep -E "^$2" | sort -u
+                    arTTY --ls | grep -Es "^$2" | sort -u
                 )
             }
             complete -F _arTTY_complete arTTY

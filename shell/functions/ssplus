@@ -87,7 +87,7 @@ function ssplus() {
 
         pids=($(
             echo "$line" | sed "s/pid=//g" | \
-            grep -Eo "\([^()]+\)" | cut -d "," -f 2
+            grep -Eos "\([^()]+\)" | cut -d "," -f 2
         ))
 
         if [[ ${#pids[@]} -eq 0 ]]; then

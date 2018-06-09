@@ -1,0 +1,63 @@
+# Untested
+
+# macOS
+case "$(uname -s)" in
+    "Darwin")
+        # Env
+        if [[ -f /usr/libexec/java_home ]]; then
+            export JAVA_HOME="$(/usr/libexec/java_home 2>/dev/null)"
+        fi
+
+        # Aliases
+        alias ls="\ls -F -G"
+        alias md5sum="md5"
+        alias nano="\nano -m"
+        alias p="ps -o pid,user,%cpu,command -r"
+        alias sha1sum="shasum -a 1"
+        alias sha256sum="shasum -a 256"
+        alias sha384sum="shasum -a 384"
+        alias sha512sum="shasum -a 512"
+
+        # Fix some dumb things
+        local gfind ggrep gobjdump gsed
+        gfind="$(which gfind)$MILESRC_ACKNOWLEDGE_MACOS_IS_DUMB"
+        ggrep="$(which ggrep)$MILESRC_ACKNOWLEDGE_MACOS_IS_DUMB"
+        gobjdump="$(which gobjdump)$MILESRC_ACKNOWLEDGE_MACOS_IS_DUMB"
+        gsed="$(which gsed)$MILESRC_ACKNOWLEDGE_MACOS_IS_DUMB"
+
+        if [[ -z $gfind ]] ||
+           [[ -z $ggrep ]] ||
+           [[ -z $gobjdump ]] ||
+           [[ -z $gsed ]]
+        then
+            echo "*** WARNING ***"
+            echo "macOS is dumb! The following may be required:"
+            echo
+            [[ -n $gfind ]] || echo "    brew install findutils"
+            [[ -n $ggrep ]] || echo "    brew install grep"
+            [[ -n $gobjdump ]] || echo "    brew install binutils"
+            [[ -n $gsed ]] || echo "    brew install gnu-sed"
+            echo
+            echo "You'll then want to symlink the following into"
+            echo "$HOME/bin:"
+            echo
+            if [[ -z $gfind ]]; then
+                echo "  ln -s \$(which gfind) find"
+                echo "  ln -s \$(which glocate) locate"
+                echo "  ln -s \$(which gupdatedb) updatedb"
+                echo "  ln -s \$(which gxargs) xargs"
+            fi
+            [[ -n $ggrep ]] || echo "    ln -s \$(which ggrep) grep"
+            if [[ -z $gobjdump ]]; then
+                echo "    ln -s \$(which gobjdump) objdump"
+            fi
+            [[ -n $gsed ]] || echo "    ln -s \$(which gsed) sed"
+            echo
+            echo "Add the following to $HOME/.milesrc.local to hide"
+            echo "these warnings:"
+            echo
+            echo "  export MILESRC_ACKNOWLEDGE_MACOS_IS_DUMB=\"true\""
+            echo
+        fi
+        ;;
+esac

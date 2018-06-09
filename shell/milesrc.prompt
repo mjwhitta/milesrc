@@ -78,7 +78,7 @@ function __milesrc_cwd() {
     local cwd="$(
         pwd | sed -r -e "s#$HOME#\~#" -e "s#/# / #g" -e "s/^ //"
     )"
-    local fmt="$(echo -n "$1" | grep -Eo "cwd(;[^;]+){2}")"
+    local fmt="$(echo -n "$1" | grep -Eios "cwd(;[^;]+){2}")"
     local length="$(echo -n "$cwd" | wc -m)"
     local offset="0"
     local width="$2"
@@ -112,14 +112,14 @@ function __milesrc_cwd() {
 function __milesrc_exit_status() {
     [[ $# -eq 2 ]] || return
 
-    local fmt="$(echo -n "$1" | grep -Eo "exit(;[^;]+){2}")"
+    local fmt="$(echo -n "$1" | grep -Eios "exit(;[^;]+){2}")"
     local status_symbol="$2"
     [[ $status_symbol -ne 130 ]] || status_symbol="0" # Ignore ^C
 
     case "$1" in
         *"emotes"*)
             if [[ status_symbol -eq 0 ]]; then
-                fmt="$(echo -n "$1" | grep -Eo "emotes(;[^;]+){2}")"
+                fmt="$(echo -n "$1" | grep -Eios "emotes(;[^;]+){2}")"
                 case "$(__milesrc_rand_status 3)" in
                     "0")   status_symbol="=)" ;;
                     "1") status_symbol="(^ت^)" ;;
@@ -142,7 +142,7 @@ function __milesrc_exit_status() {
         *"unsupported"*)
             if [[ status_symbol -eq 0 ]]; then
                 fmt="$(
-                    echo -n "$1" | grep -Eo "unsupported(;[^;]+){2}"
+                    echo -n "$1" | grep -Eios "unsupported(;[^;]+){2}"
                 )"
                 case "$(__milesrc_rand_status 6)" in
                     "0")   status_symbol="=)" ;;
@@ -212,7 +212,7 @@ function __milesrc_git_status() {
     [[ -n $(installed git) ]] || return
     [[ -n $(installed perl) ]] || return
 
-    local fmt="$(echo -n "$1" | grep -Eo "git(;[^;]+){2}")"
+    local fmt="$(echo -n "$1" | grep -Eios "git(;[^;]+){2}")"
 
     local git_dir="$(git rev-parse --show-toplevel 2>/dev/null)"
     [[ -n $git_dir ]] || return
@@ -241,10 +241,10 @@ function __milesrc_git_status() {
     [[ -z $behind ]] || git="$git ↓$behind"
 
     local num_diffs="$(
-        echo -n "$git_status" | grep -cEv "^ *(##|\?\?|st)"
+        echo -n "$git_status" | grep -cEsv "^ *(##|\?\?|st)"
     )"
     local untracked="$(
-        echo -n "$git_status" | grep -cE "^ *(\?\?|st)"
+        echo -n "$git_status" | grep -cEs "^ *(\?\?|st)"
     )"
     case "$num_diffs" in
         "0") ;;
@@ -273,15 +273,15 @@ function __milesrc_git_status() {
 function __milesrc_host() {
     [[ $# -eq 1 ]] || return
 
-    local fmt="$(echo -n "$1" | grep -Eo "host(;[^;]+){2}")"
-    local hide_local="$(echo -n "$1" | grep -Eo "hide_local;[^;]+")"
+    local fmt="$(echo -n "$1" | grep -Eios "host(;[^;]+){2}")"
+    local hide_local="$(echo -n "$1" | grep -Eios "hide_local;[^;]+")"
     [[ -z $SSH_CLIENT ]] || unset hide_local
 
-    local remote="$(echo -n "$1" | grep -Eo "remote(;[^;]+){2}")"
+    local remote="$(echo -n "$1" | grep -Eios "remote(;[^;]+){2}")"
     [[ -z $SSH_CLIENT ]] || [[ -z $remote ]] || fmt="$remote"
 
-    local root="$(echo -n "$1" | grep -Eo "root(;[^;]+){2}")"
-    [[ -z $(id | grep "uid=0") ]] || [[ -z $root ]] || fmt="$root"
+    local root="$(echo -n "$1" | grep -Eios "root(;[^;]+){2}")"
+    [[ -z $(id | grep -s "uid=0") ]] || [[ -z $root ]] || fmt="$root"
 
     local host="$USER@$(uname -n | awk -F "." '{print $1}')"
     case "$hide_local" in
@@ -370,7 +370,7 @@ function __milesrc_prompt_ps1() {
 
     # CWD
     local fmt="$(
-        echo -n "${MILESRC_PROMPT[@]}" | grep -Eo "cwd[^ ]+"
+        echo -n "${MILESRC_PROMPT[@]}" | grep -Eios "cwd[^ ]+"
     )"
     p[cwd]="$(__milesrc_cwd $fmt $width)"
 
@@ -418,9 +418,9 @@ function __milesrc_prompt_ps1() {
 function __milesrc_prompt_sym() {
     [[ $# -eq 1 ]] || return
 
-    local fmt="$(echo -n "$1" | grep -Eo "prompt(;[^;]+){2}")"
+    local fmt="$(echo -n "$1" | grep -Eios "prompt(;[^;]+){2}")"
     local sym="\$"
-    [[ -z $(id | grep "uid=0") ]] || sym="#"
+    [[ -z $(id | grep -s "uid=0") ]] || sym="#"
 
     __milesrc_format "$fmt" "$sym"
 }
@@ -432,7 +432,7 @@ function __milesrc_prompt_sym() {
 function __milesrc_python_venv() {
     [[ $# -eq 1 ]] || return
 
-    local fmt="$(echo -n "$1" | grep -Eo "venv(;[^;]+){2}")"
+    local fmt="$(echo -n "$1" | grep -Eios "venv(;[^;]+){2}")"
     local venv="$(echo -n "$VIRTUAL_ENV" | awk -F "/" '{print $NF}')"
     [[ -z $venv ]] || venv="($venv)"
 
@@ -446,7 +446,7 @@ function __milesrc_python_venv() {
 function __milesrc_rand_status() {
     local rand="0"
     RANDOM="$(
-        xxd -p /dev/urandom | grep -Eos "[0-9]{1,16}" | head -n 1
+        xxd -p /dev/urandom | grep -Eios "[0-9]{1,16}" | head -n 1
     )"
     [[ $# -ne 1 ]] || let "rand = RANDOM % $1"
     echo -n "$rand"
@@ -463,10 +463,10 @@ function __milesrc_vi_mode() {
         *) return ;;
     esac
 
-    local fmt="$(echo -n "$1" | grep -Eo "vi_ins(;[^;]+){2}")"
+    local fmt="$(echo -n "$1" | grep -Eios "vi_ins(;[^;]+){2}")"
     case "$MILESRC_MODE" in
         $VI_CMD)
-            fmt="$(echo -n "$1" | grep -Eo "vi_cmd(;[^;]+){2}")"
+            fmt="$(echo -n "$1" | grep -Eios "vi_cmd(;[^;]+){2}")"
             ;;
     esac
 
@@ -502,7 +502,7 @@ case "$MILESRC_SHELL" in
                 esac
                 local fmt="$(
                     echo -n "${MILESRC_PROMPT[@]}" | \
-                    grep -Eo "(vi_cmd|vi_ins)[^ ]+"
+                    grep -Eios "(vi_cmd|vi_ins)[^ ]+"
                 )"
                 if [[ -n $fmt ]]; then
                     local mode="$(__milesrc_vi_mode $fmt)"

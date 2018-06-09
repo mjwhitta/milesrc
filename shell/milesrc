@@ -5,7 +5,7 @@
 
 # {{{ Helper utils
 function installed() {
-    type -a $1 2>&1 | grep -Em 1 "$1 is /" | \
+    type -a $1 2>&1 | grep -Em 1 -s "$1 is /" | \
         awk '{print $3}' 2>/dev/null
 }
 
@@ -17,7 +17,7 @@ case "$MILESRC_SHELL" in
     *"bash")
         # {{{ Bash setup
         BASHV="$(
-            bash --version | grep -Eo "[0-9]+\.[0-9]+" | head -n 1
+            bash --version | grep -Eos "[0-9]+\.[0-9]+" | head -n 1
         )"
 
         # History settings
@@ -66,7 +66,7 @@ case "$MILESRC_SHELL" in
         bind '"^U":kill-line'
         bind '"^W":backward-kill-word'
 
-        if [[ -n $(bind -P | grep "history-substring-searc") ]]; then
+        if [[ -n $(bind -P | grep -s "history-substring-sea") ]]; then
             bind -m vi-move '"k":history-substring-search-backward'
             bind -m vi-move '"j":history-substring-search-forward'
         else
@@ -81,7 +81,7 @@ case "$MILESRC_SHELL" in
     *"zsh")
         # {{{ Zsh setup
         ZSHV="$(
-            zsh --version | grep -Eo "[0-9]+\.[0-9]+" | head -n 1
+            zsh --version | grep -Eos "[0-9]+\.[0-9]+" | head -n 1
         )"
 
         # History settings
@@ -235,7 +235,7 @@ done; unset dir
 
 # Secure perms
 # Don't touch umask EVER
-# [[ -n $(id | grep "uid=0") ]] || umask 077
+# [[ -n $(id | grep -s "uid=0") ]] || umask 077
 # Instead do something like:
 # setfacl -m d:u::rwX,g::-,o::- -R $HOME
 
@@ -278,30 +278,12 @@ GREP_ARGS+="--exclude-dir=.svn"
 export GREP_COLORS="fn=1;32:ln=0;37:ms=47;1;30:mc=47;1;30"
 GREP_COLORS+=":sl=:cx=:bn=:se="
 
-## ls
-export LS_ARGS="--color=auto -F"
-
-## ps
-export PS_ARGS="-o pid,user,%cpu,cmd --sort=-%cpu"
-
 ## rg
 export RG_ARGS="-S "
 RG_ARGS+="--colors \"line:fg:white\" "
 RG_ARGS+="--colors \"match:bg:white\" "
 RG_ARGS+="--colors \"match:fg:black\" "
 RG_ARGS+="--colors \"path:fg:green\""
-
-# macOS
-case "$(uname -s)" in
-    "Darwin")
-        if [[ -f /usr/libexec/java_home ]]; then
-            export JAVA_HOME="$(/usr/libexec/java_home 2>/dev/null)"
-        fi
-        export LS_ARGS="-F -G"
-        export NANO_ARGS="-m"
-        export PS_ARGS="-o pid,user,%cpu,command -r"
-        ;;
-esac
 
 # Ruby
 export GEM_HOME="$HOME/.gem/ruby"
@@ -353,7 +335,7 @@ done; unset dir
 
 # Find missing from PATH
 for dir in $(echo "$PATH" | sed "s|:| |g"); do
-    [[ -n $(echo "$PTH" | grep "$dir") ]] || PTH="$PTH:$dir"
+    [[ -n $(echo "$PTH" | grep -s "$dir") ]] || PTH="$PTH:$dir"
 done; unset dir
 
 # Set PATH
@@ -391,22 +373,21 @@ alias ll="ls -hl"
 alias lla="ll -A"
 alias llag="lla | grep -E"
 alias llg="ll | grep -E"
-alias ls="\ls $LS_ARGS"
+alias ls="\ls --color=auto -F"
 alias lsg="ls | grep -E"
 alias mv="\mv -i"
-alias off="sudo shutdown -h now"
-alias p="ps $PS_ARGS"
+alias p="ps -o pid,user,%cpu,cmd --sort=-%cpu"
 alias psf="p -e --forest"
 alias psg="p -e | grep -v \"grep\" | grep -E"
-alias psme="p -u $USER"
+alias psme="p -u \$USER"
 alias psmef="psme --forest"
 alias q="exit"
 alias r="reset"
 [[ -z $(installed rg) ]] || alias rg="\rg $RG_ARGS"
-alias save="pwd >$HOME/.proj"
+alias save="pwd >\$HOME/.proj"
 case "$MILESRC_SHELL" in
-    *"bash") alias srcmilesrc=". $HOME/.bashrc" ;;
-    *"zsh") alias srcmilesrc=". $HOME/.zshrc" ;;
+    *"bash") alias srcmilesrc=". \$HOME/.bashrc" ;;
+    *"zsh") alias srcmilesrc=". \$HOME/.zshrc" ;;
 esac
 if [[ -f /opt/sublime_text/sublime_text ]]; then
     alias sublime="/opt/sublime_text/sublime_text"
@@ -414,28 +395,34 @@ fi
 [[ -z $(installed sudo) ]] || alias sume="sudo -Es"
 if [[ -n $(installed htop) ]]; then
     alias t="htop -d 10"
-    alias tu="htop -d 10 -u $USER"
+    alias tu="htop -d 10 -u \$USER"
 else
     alias t="top -d 10"
-    alias tu="top -d 10 -u $USER"
+    alias tu="top -d 10 -u \$USER"
 fi
 [[ -z $(installed w3m) ]] || alias w3m="\w3m -cookie"
 alias which="command -v"
 
 # Git aliases
 if [[ -n $(installed git) ]]; then
-    alias diff="git diff -b --color-words=. --ignore-blank-lines --minimal"
-    alias gd="git diff -b --color-words=. --ignore-blank-lines --minimal"
-    alias gl="git log --date=relative --graph --pretty=tformat:\"%Cred%h%Creset %s %Cgreen%cd %Cblue%an\""
-    alias gld="git log --date=local --graph --pretty=tformat:\"%Cred%h%Creset %s %Cgreen%cd %Cblue%an\""
+    full="--date=relative --full-history"
+    minimal="-b --color-words=. --ignore-blank-lines --minimal"
+    tformat="tformat:\"%Cred%h%Creset %s %Cgreen%cd %Cblue%an\""
+
+    alias diff="git diff $minimal"
+    alias gd="git diff $minimal"
+    alias gl="git log --date=relative --graph --pretty=$tformat"
+    alias gld="git log --date=local --graph --pretty=$tformat"
     alias gp="git pull -r origin master"
-    alias grevs="git log --date=relative --full-history --pretty=tformat:\"%Cred%H%Creset %s %Cgreen%cd %Cblue%an\" --"
+    alias grevs="git log $full --pretty=$tformat --"
     alias grh="git reset --hard"
     alias gs="git status -b -s"
-    alias gsh="git show -b --color-words=. --ignore-blank-lines --minimal"
+    alias gsh="git show $minimal"
+
+    unset full minimal tformat
 fi
 
-if [[ -z $(installed z | grep "gem") ]]; then
+if [[ -z $(installed z | grep -s "gem") ]]; then
     if [[ -n $(installed rg) ]]; then
         alias z="\rg $RG_ARGS"
     elif [[ -n $(installed ag) ]]; then
@@ -456,17 +443,7 @@ alias clea="clear"
 alias clae="clear"
 alias gimpe="gimp"
 alias got="git"
-alias vm="\mv -i"
-
-case "$(uname -s)" in
-    "Darwin")
-        alias md5sum="md5"
-        alias sha1sum="shasum -a 1"
-        alias sha256sum="shasum -a 256"
-        alias sha384sum="shasum -a 384"
-        alias sha512sum="shasum -a 512"
-        ;;
-esac
+alias vm="mv"
 # }}}
 
 # {{{ Functions
@@ -604,7 +581,7 @@ function lsp() {
     # Find repos that are not archived and not submodules
     while read dir; do
         if [[ -z $prev ]] ||
-           [[ -z $(echo "${dir#$PROJS/}" | grep -E "$prev") ]]
+           [[ -z $(echo "${dir#$PROJS/}" | grep -Es "$prev") ]]
         then
             let "count += 1"
             prev="${dir#$PROJS/}"
@@ -642,10 +619,10 @@ function milesrc() {
     echo "        If set, hide warnings about missing gnu utilities"
     echo "        on macOS."
     echo "    MILESRC_LS_AFTER_CD"
-    echo "        If set, ls will be automatically run after each cd."
-    echo "        You likely don't want this if you're looking at"
-    echo "        large directory trees with numerous files in each"
-    echo "        directory."
+    echo "        If set, and you alias cd to mycd, ls will be"
+    echo "        automatically run after each cd. You likely don't"
+    echo "        want this if you're looking at large directory"
+    echo "        trees with numerous files in each directory."
     echo "    MILESRC_PROMPT"
     echo "        Should be an array, and, if set, will theme the"
     echo "        prompt. Unsetting should immediately untheme the"
@@ -675,15 +652,16 @@ function milesrc() {
 }
 
 function mycd() {
+    local ls_args="--color=auto -F"
     if [[ $# -eq 0 ]] || [[ -d "$@" ]] || [[ $@ == "-" ]]; then
         \cd "$@" >/dev/null
         if [[ $? -eq 0 ]] && [[ -n $MILESRC_LS_AFTER_CD ]]; then
-            eval \ls $LS_ARGS
+            ls $ls_args
         fi
     elif [[ -d $(echo "$PWD/$@" | sed -r "s|[^/]+/\.\.||g") ]]; then
         \cd "$@" >/dev/null
         if [[ $? -eq 0 ]] && [[ -n $MILESRC_LS_AFTER_CD ]]; then
-            eval \ls $LS_ARGS
+            ls $ls_args
         fi
     else
         echo "Directory doesn't exist: $@"
@@ -698,7 +676,7 @@ function mycd() {
             echo
             \cd $possible >/dev/null
             if [[ $? -eq 0 ]] && [[ -n $MILESRC_LS_AFTER_CD ]]; then
-                eval \ls $LS_ARGS
+                ls $ls_args
             fi
         fi
     fi
@@ -712,7 +690,7 @@ if [[ -n $(installed xdg-mime) ]]; then
         local type
         if [[ -f $1 ]]; then
             type="$(xdg-mime query filetype $1)"
-        elif [[ -n $(echo "$1" | grep -E "https?:\/\/") ]]; then
+        elif [[ -n $(echo "$1" | grep -Es "https?:\/\/") ]]; then
             type="text/html"
         fi
         [[ -n $type ]] || return 1
@@ -760,7 +738,7 @@ function remove_spaces_in_names() {
     fi
 
     # May need to cpan install File::Rename
-    if [[ -z $rnm ]] || [[ -z $($rnm -h | grep "perl") ]]; then
+    if [[ -z $rnm ]] || [[ -z $($rnm -h | grep -s "perl") ]]; then
         echo "Please run \"sudo cpan File::Rename\""
         return
     fi
@@ -862,9 +840,9 @@ function tdump() {
         return
     fi
 
-    local cap="$(echo "$@" | grep -Eo "[^ ]+\.pcap")"
+    local cap="$(echo "$@" | grep -Eos "[^ ]+\.pcap")"
     sudo tcpdump -n -vvv $@
-    [[ -z $(id | grep "uid=0") ]] || return 0
+    [[ -z $(id | grep -s "uid=0") ]] || return 0
     [[ -z $cap ]] || [[ ! -f $cap ]] || sudo chown $USER:$USER $cap
 }
 
@@ -984,7 +962,7 @@ case "$MILESRC_SHELL" in
                 function _ruaur_install_complete() {
                     mapfile -t COMPREPLY < <(
                         ruaur -Ss "$2" --names-only | \
-                        grep -E "^$2" | sort -u
+                        grep -Es "^$2" | sort -u
                     )
                 }
                 complete -F _ruaur_install_complete gimme
@@ -1084,58 +1062,4 @@ fi
 
 # Local stuff
 [[ ! -f $HOME/.milesrc.local ]] || . $HOME/.milesrc.local
-# }}}
-
-# {{{ Fix Mac stuff
-case "$(uname -s)" in
-    "Darwin")
-        local gfind="ignore"
-        local ggrep="ignore"
-        local gobjdump="ignore"
-        local gsed="ignore"
-
-        # Check for missing (sane) utilities
-        if [[ -z $MILESRC_ACKNOWLEDGE_MACOS_IS_DUMB ]]; then
-            gfind="$(which gfind)"
-            ggrep="$(which ggrep)"
-            gobjdump="$(which gobjdump)"
-            gsed="$(which gsed)"
-        fi
-
-        if [[ -z $gfind ]] ||
-           [[ -z $ggrep ]] ||
-           [[ -z $gobjdump ]] ||
-           [[ -z $gsed ]]
-        then
-            echo "*** WARNING ***"
-            echo "macOS is dumb! The following may be required:"
-            echo
-            [[ -n $gfind ]] || echo "    brew install findutils"
-            [[ -n $ggrep ]] || echo "    brew install grep"
-            [[ -n $gobjdump ]] || echo "    brew install binutils"
-            [[ -n $gsed ]] || echo "    brew install gnu-sed"
-            echo
-            echo "You'll then want to symlink the following into"
-            echo "$HOME/bin:"
-            echo
-            if [[ -z $gfind ]]; then
-                echo "  ln -s \$(which gfind) find"
-                echo "  ln -s \$(which glocate) locate"
-                echo "  ln -s \$(which gupdatedb) updatedb"
-                echo "  ln -s \$(which gxargs) xargs"
-            fi
-            [[ -n $ggrep ]] || echo "    ln -s \$(which ggrep) grep"
-            if [[ -z $gobjdump ]]; then
-                echo "    ln -s \$(which gobjdump) objdump"
-            fi
-            [[ -n $gsed ]] || echo "    ln -s \$(which gsed) sed"
-            echo
-            echo "Add the following to $HOME/.milesrc.local to hide"
-            echo "these warnings:"
-            echo
-            echo "  export MILESRC_ACKNOWLEDGE_MACOS_IS_DUMB=\"true\""
-            echo
-        fi
-        ;;
-esac
 # }}}

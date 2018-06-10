@@ -411,17 +411,16 @@ if [[ -n $(installed git) ]]; then
 
     alias diff="git diff $minimal"
     alias gd="git diff $minimal"
-    alias gl="git log --date=relative --graph --pretty=$tformat"
-    alias gld="git log --date=local --graph --pretty=$tformat"
-    alias gp="git pull -r origin master"
-    alias grevs="git log $full --pretty=$tformat --"
+    alias gl="git log $full --pretty=$tformat"
+    alias glg="git log $full --graph --pretty=$tformat"
     alias grh="git reset --hard"
-    alias gs="git status -b -s"
-    alias gsh="git show $minimal"
+    alias gs="git status -bs"
+    alias gsm="git show $minimal"
 
     unset full minimal tformat
 fi
 
+# I like ruby-zoom, but in case it's not installed, create alias
 if [[ -z $(installed z | grep -s "gem") ]]; then
     if [[ -n $(installed rg) ]]; then
         alias z="\rg $RG_ARGS"
@@ -615,9 +614,14 @@ function milesrc() {
     echo "        handle your ssh-agent."
     echo
     echo "Configuration via ENV vars"
-    echo "    MILESRC_ACKNOWLEDGE_MACOS_IS_DUMB"
-    echo "        If set, hide warnings about missing gnu utilities"
-    echo "        on macOS."
+    case "$(uname -s)" in
+        "Darwin")
+            echo "    MILESRC_ACKNOWLEDGE_MACOS_IS_DUMB"
+            echo -n "        If set, hide warnings about missing gnu "
+            echo "utilities"
+            echo "        on macOS."
+        ;;
+    esac
     echo "    MILESRC_LS_AFTER_CD"
     echo "        If set, and you alias cd to mycd, ls will be"
     echo "        automatically run after each cd. You likely don't"

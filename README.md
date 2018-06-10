@@ -20,34 +20,37 @@ Configuration via files
         handle your ssh-agent.
 
 Configuration via ENV vars
-    MILESRC_ACKNOWLEDGE_MACOS_IS_DUMB
-        If set, hide warnings about missing gnu utilities
-        on macOS.
     MILESRC_LS_AFTER_CD
-        If set, ls will be automatically run after each cd.
-        You likely don't want this if you're looking at
-        large directory trees with numerous files in each
-        directory.
+        If set, and you alias cd to mycd, ls will be
+        automatically run after each cd. You likely don't
+        want this if you're looking at large directory
+        trees with numerous files in each directory.
     MILESRC_PROMPT
         Should be an array, and, if set, will theme the
         prompt. Unsetting should immediately untheme the
         prompt. Example below:
             delcare -a MILESRC_PROMPT
-            MILESRC_PROMPT+=(host;white;blue)
-            MILESRC_PROMPT+=(cwd;white;light_black)
-            MILESRC_PROMPT+=(exit;white;red)
-            MILESRC_PROMPT+=(mode;white;green;white;blue)
-            MILESRC_PROMPT+=(prompt;white;light_black)
+            MILESRC_PROMPT=(
+                "host;white;blue;root;white;160"
+                "venv;white;166"
+                "git;light_black;white"
+                "cwd;white;light_black"
+                "vi_ins;white;green;vi_cmd;white;blue"
+                "newline"
+                "exit;white;red"
+                "prompt;white;light_black"
+            )
             export MILESRC_PROMPT
-        These are of the form:
+        These are generally of the form:
             section;fg_color;bg_color
         where section is one of:
-            host, git, cwd, exit, mode, prompt
+            cwd, exit, git, host, newline, prompt, venv,
+            or vi_ins|vi_cmd
         and valid colors are:
             black, red, green, yellow, blue, magenta, cyan,
             white, light_black, light_red, light_green,
             light_yellow, light_blue, light_magenta,
-            light_cyan, light_white
+            light_cyan, light_white, or any number in 0-255
 ```
 
 Below are some commands to install or uninstall my configs.
@@ -80,8 +83,7 @@ $ ./installer -f -v link
 
 #### Unintall
 
-This will restore any backups that exist or create empty
-directories/files if not:
+This will unlink configs and restore any backups that exist:
 
 ```
 $ ./installer unlink
@@ -90,5 +92,4 @@ $ ./installer unlink
 #### Configure
 
 To configure, simply copy `files.default` to `files` and comment or
-delete the entries you don't want. Deleting all vim related entries
-will prevent vim plugins from automatically being installed.
+delete the entries you don't want.

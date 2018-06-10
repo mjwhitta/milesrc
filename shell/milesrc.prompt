@@ -89,7 +89,7 @@ function __milesrc_cwd() {
         let "offset = $width - $length - 1"
         cwd="$(
             echo -n "$cwd"
-            for i in {0..$offset}; do echo -n " "; done; unset i
+            for i in $(seq 0 $offset); do echo -n " "; done; unset i
         )"
     else
         let "offset = $length - $width"

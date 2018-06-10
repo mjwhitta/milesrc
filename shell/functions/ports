@@ -62,7 +62,7 @@ function ports() {
 
     # Hosts with open ports
     unset oldfile
-    while read line; do
+    while read -r line; do
         match="${line/*:/}"
         newfile="${line/:*/}"
 
@@ -79,7 +79,7 @@ function ports() {
     ) | sed -r "s/# \.\//# /"
 
     # Host with no open ports
-    while read line; do
+    while read -r line; do
         echo -e "\n# $line\nNo open ports"
     done < <(
         LC_ALL=C find $hosts -type f -name "*.nmap" -exec \

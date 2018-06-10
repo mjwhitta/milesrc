@@ -42,13 +42,13 @@ function fw6() {
 
     fw6_clear() {
         for tbl in "${tbls[@]}"; do
-            while read chain; do
+            while read -r chain; do
                 sudo ip6tables -t $tbl -P $chain ACCEPT
             done < <(
                 sudo ip6tables -S -t $tbl | awk '/-P/ {print $2}'
             )
             sudo ip6tables -t $tbl -F
-            while read chain; do
+            while read -r chain; do
                 sudo ip6tables -t $tbl -X $chain
             done < <(
                 sudo ip6tables -S -t $tbl | awk '/-N/ {print $2}'

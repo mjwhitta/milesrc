@@ -23,7 +23,7 @@ if [[ -n $(command -v ssh-agent) ]] && [[ -f $HOME/.ssh-agent ]]; then
     unset pidchk
 
     # Add missing keys
-    for key in $(grep -lrs "PRIVATE KEY" $HOME/.ssh); do
+    while read -r key; do
         [[ -n $(ssh-add -l | grep -s " $key ") ]] || ssh-add $key
-    done; unset key
+    done < <(grep -lrs "PRIVATE KEY" $HOME/.ssh); unset key
 fi

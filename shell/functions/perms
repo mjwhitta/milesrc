@@ -49,7 +49,7 @@ function perms() {
         if [[ -f $1 ]]; then
             perms_fix_file "$1"
         elif [[ -d $1 ]]; then
-            while read line; do
+            while read -r line; do
                 perms_fix_file "$line"
             done < <(find $dir -type f)
         fi

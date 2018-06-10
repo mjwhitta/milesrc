@@ -74,7 +74,7 @@ function netstatplus() {
 
     [[ $# -ne 0 ]] && netstatplus_usage && return 1
 
-    while read line; do
+    while read -r line; do
         case "$line" in
             *"Active Internet connections"*) continue ;;
             *"PID/Program name"*)

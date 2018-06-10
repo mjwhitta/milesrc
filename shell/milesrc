@@ -334,9 +334,9 @@ do
 done; unset dir
 
 # Find missing from PATH
-for dir in $(echo "$PATH" | sed "s|:| |g"); do
+while read -r dir; do
     [[ -n $(echo "$PTH" | grep -s "$dir") ]] || PTH="$PTH:$dir"
-done; unset dir
+done < <(echo "$PATH" | sed "s|:| |g"); unset dir
 
 # Set PATH
 [[ -z $PTH ]] || export PATH="${PTH/:/}"
@@ -447,9 +447,9 @@ alias vm="mv"
 
 # {{{ Functions
 if [[ -d $HOME/.milesrc/shell/functions ]]; then
-    for f in $(find $HOME/.milesrc/shell/functions -type f); do
+    while read -r f; do
         . $f
-    done; unset f
+    done < <(find $HOME/.milesrc/shell/functions -type f); unset f
 fi
 
 function cpan5() {
@@ -520,7 +520,7 @@ function ipa() {
     else
         local device
         local inet
-        while read line; do
+        while read -r line; do
             case "$line" in
                 *encap*|*flags*)
                     device="$(echo "$line" | awk '{print $1}')"
@@ -578,7 +578,7 @@ function lsp() {
     local prev=""
 
     # Find repos that are not archived and not submodules
-    while read dir; do
+    while read -r dir; do
         if [[ -z $prev ]] ||
            [[ -z $(echo "${dir#$PROJS/}" | grep -Es "$prev") ]]
         then
@@ -672,7 +672,7 @@ function mycd() {
         local in="$(dirname "$@")"
         local seek="$(basename "$@")"
         local possible="$(
-            find -L $in -maxdepth 1 -type d -iname "${seek}*" \
+            find -L $in -maxdepth 1 -type d -iname "$seek*" \
             2>/dev/null | sort | head -n 1
         )"
         if [[ -n $possible ]] && [[ -d "$possible" ]]; then
@@ -754,9 +754,9 @@ case "$MILESRC_SHELL" in
     *"bash")
         function reset_completions() {
             [[ -d $HOME/.config/bash/complete ]] || return
-            for i in $(\ls $HOME/.config/bash/complete); do
-                . $HOME/.config/bash/complete/$i
-            done
+            while read -r c; do
+                . $HOME/.config/bash/complete/$c
+            done < <(\ls $HOME/.config/bash/complete); unset c
         }
         ;;
     *"zsh")
@@ -948,9 +948,9 @@ case "$MILESRC_SHELL" in
     *"bash")
         # {{{ Bash completions
         if [[ -d $HOME/.config/bash/complete ]]; then
-            for i in $(\ls $HOME/.config/bash/complete); do
-                . $HOME/.config/bash/complete/$i
-            done
+            while read -r c; do
+                . $HOME/.config/bash/complete/$c
+            done < <(\ls $HOME/.config/bash/complete); unset c
         fi
 
         # Complete gimme alias

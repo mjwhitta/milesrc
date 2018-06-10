@@ -124,14 +124,14 @@ add_to_path() {
 
     for arg in "$@"; do
         if [[ -d $arg ]]; then
-            for dir in $(
-                find -L $arg -name ".*" -prune -o -type d -print \
-                2>/dev/null
-            ); do
+            while read -r dir; do
                 \cd $dir
                 export PATH="$PATH:$(pwd)"
                 \cd - >/dev/null
-            done
+            done < <(
+                find -L $arg -name ".*" -prune -o -type d -print \
+                2>/dev/null
+            )
         fi
     done
 }

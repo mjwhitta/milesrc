@@ -42,11 +42,11 @@ function fw() {
 
     fw_clear() {
         for tbl in "${tbls[@]}"; do
-            while read chain; do
+            while read -r chain; do
                 sudo iptables -t $tbl -P $chain ACCEPT
             done < <(sudo iptables -S -t $tbl | awk '/-P/ {print $2}')
             sudo iptables -t $tbl -F
-            while read chain; do
+            while read -r chain; do
                 sudo iptables -t $tbl -X $chain
             done < <(sudo iptables -S -t $tbl | awk '/-N/ {print $2}')
         done

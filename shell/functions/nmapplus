@@ -50,9 +50,9 @@ function nmapplus() {
             *) dir="$host" ;;
         esac
 
-        mkdir -p nmap_scans/$dir
+        mkdir -p $output/$dir
         (
-            \cd nmap_scans/$dir
+            \cd $output/$dir
             if [[ -f ${prot}.nmap ]] && [[ -z $force ]]; then
                 echo "Already done, skipping"
             else
@@ -69,9 +69,9 @@ function nmapplus() {
 
     np_scan_hosts() {
         echo "Reading hosts from $1..."
-        for host in $(cat $1 | awk '{print $1}'); do
-            np_scan_host $host
-        done
+        while read -r host; do
+            np_scan_host ${host%% *}
+        done <$1
     }
 
     np_usage() {
@@ -90,6 +90,9 @@ function nmapplus() {
         echo "                            for scanning"
         echo "    -n, --topn=NUM          Only scan the top N ports"
         echo "    -o, --os                Enable OS detection"
+        echo "    --output=DIR            Output scans to specified"
+        echo "                            directory (default:"
+        echo "                            $output)"
         echo "    -p, --ports=PORTS       Only scan specified ports"
         echo "                            (default: all ports)"
         echo "    -s, --services          Identity running services"
@@ -105,6 +108,7 @@ function nmapplus() {
 
     declare -a args hosts
     unset force iface ipv6 os services technique timeout udp
+    output="nmap_scans"
     prot="tcp"
     ports="-p 1-65535"
 
@@ -154,6 +158,19 @@ function nmapplus() {
                 ports="--top-ports $arg"
                 ;;
             "-o"|"--os") os="-A" ;;
+            "--output"*)
+                case "$1" in
+                    "--"*"="*)
+                        arg="${1#*=}"
+                        [[ -z $arg ]] && np_usage && return 1
+                        ;;
+                    *)
+                        shift; [[ $# -eq 0 ]] && np_usage && return 1
+                        arg="$1"
+                        ;;
+                esac
+                output="$arg"
+                ;;
             "-p"|"--ports"*)
                 case "$1" in
                     "--"*"="*)

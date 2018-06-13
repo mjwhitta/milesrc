@@ -282,33 +282,7 @@ case "$(uname -s)" in
 esac
 
 # Logging
-# FIXME remove the delete escape sequences
 tmux bind "P" run "
-    pane_uid=$(tfstr "#{session_name}_#{window_index}_#{pane_index}")
-    case \"$(tlget @logging_\$pane_uid)\" in
-        \"true\")
-            tmux pipep
-            tmux set -u @logging_\$pane_uid
-            tmux display \"Logging disabled for \$pane_uid\"
-            ;;
-        *)
-            file=\"$(tfget -g @log_path)/$(tfget -g @log_all)\"
-            case \"\$(uname -s)\" in
-                \"Darwin\") tmux pipep \"cat - >\$file\" ;;
-                \"Linux\")
-                    tmux pipep \"
-                        cat - | sed -r \
-                        -e 's/\[[0-9;?]*[hJKlm]|//g' \
-                        -e 's/\s+$//g' >\$file
-                    \"
-                    ;;
-            esac
-            tmux set @logging_\$pane_uid \"true\"
-            tmux display \"Logging enabled for \$pane_uid\"
-            ;;
-    esac
-"
-tmux bind "M-p" run "
     file=\"$(tfget -g @log_path)/$(tfget -g @log_screen)\"
     case \"$(uname -s)\" in
         \"Darwin\") tmp=\"\$(tmux capturep -J -p)\" ;;
@@ -319,12 +293,8 @@ tmux bind "M-p" run "
     printf \"%s\n\" \"\$tmp\" >\$file
     tmux display \"Successfully logged screenshot to \$file\"
 "
-tmux bind "M-P" run "
+tmux bind "S" run "
     file=\"$(tfget -g @log_path)/$(tfget -g @log_all)\"
-    tmp=\"\$(
-        tmux capturep -J -p -S \"-$(tget -g history-limit)\" |
-        sed -r \"s/\s+$//\"
-    )\"
     case \"$(uname -s)\" in
         \"Darwin\")
             tmp=\"\$(

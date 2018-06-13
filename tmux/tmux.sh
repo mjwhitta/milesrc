@@ -74,7 +74,7 @@ tmux set -g display-time "4000"
 tmux set -s escape-time "0"
 tmux set -g focus-events "on"
 tmux set -u history-file
-tmux set -g history-limit "65536"
+tmux set -g history-limit "999999"
 tmux set -gw mode-keys "vi"
 tmux set -gw monitor-activity "on"
 tmux set -gqw monitor-bell "on"

@@ -13,6 +13,11 @@ export MILESRC_SHELL="$(installed zsh)"
 [[ -z $BASH ]] || export MILESRC_SHELL="$BASH"
 # }}}
 
+# {{{ User configs
+# Local stuff
+[[ ! -f $HOME/.milesrc.pre ]] || . $HOME/.milesrc.pre
+# }}}
+
 case "$MILESRC_SHELL" in
     *"bash")
         # {{{ Bash setup
@@ -52,26 +57,29 @@ case "$MILESRC_SHELL" in
         # update the values of LINES and COLUMNS.
         shopt -s checkwinsize
 
-        # vi keybindings
-        set -o vi
+        if [[ -n $MILESRC_VI_BINDINGS ]]; then
+            # vi keybindings
+            set -o vi
 
-        # Bind jk/kj to escape or vi-movement-mode
-        bind -m vi-insert '"jk":vi-movement-mode'
-        bind -m vi-insert '"kj":vi-movement-mode'
+            # Bind jk/kj to escape or vi-movement-mode
+            bind -m vi-insert "jk":vi-movement-mode
+            bind -m vi-insert "kj":vi-movement-mode
 
-        # Fix some vi keybindings
-        bind '"^?":backward-delete-char'
-        bind '"^H":backward-delete-char'
-        bind '"":clear-screen'
-        bind '"^U":kill-line'
-        bind '"^W":backward-kill-word'
+            # Fix some vi keybindings
+            bind "^?":backward-delete-char
+            bind "^H":backward-delete-char
+            bind "":clear-screen
+            bind "^U":kill-line
+            bind "^W":backward-kill-word
 
-        if [[ -n $(bind -P | grep -s "history-substring-sea") ]]; then
-            bind -m vi-move '"k":history-substring-search-backward'
-            bind -m vi-move '"j":history-substring-search-forward'
-        else
-            bind -m vi-move '"k":history-search-backward'
-            bind -m vi-move '"j":history-search-forward'
+            if [[ -n $(bind -P | grep -s "history-substring-sea") ]]
+            then
+                bind -m vi-move "k":history-substring-search-backward
+                bind -m vi-move "j":history-substring-search-forward
+            else
+                bind -m vi-move "k":history-search-backward
+                bind -m vi-move "j":history-search-forward
+            fi
         fi
 
         # Fix ^S
@@ -118,19 +126,21 @@ case "$MILESRC_SHELL" in
         # Make cd push the old directory onto the stack
         setopt autopushd
 
-        # vi keybindings
-        bindkey -v
+        if [[ -n $MILESRC_VI_BINDINGS ]]; then
+            # vi keybindings
+            bindkey -v
 
-        # Bind jk/kj to escape
-        bindkey -M viins "jk" vi-cmd-mode
-        bindkey -M viins "kj" vi-cmd-mode
+            # Bind jk/kj to escape
+            bindkey -M viins "jk" vi-cmd-mode
+            bindkey -M viins "kj" vi-cmd-mode
 
-        # Fix some vi keybindings
-        bindkey "^?" backward-delete-char
-        bindkey "^H" backward-delete-char
-        bindkey "^L" clear-screen
-        bindkey "^U" kill-line
-        bindkey "^W" backward-kill-word
+            # Fix some vi keybindings
+            bindkey "^?" backward-delete-char
+            bindkey "^H" backward-delete-char
+            bindkey "^L" clear-screen
+            bindkey "^U" kill-line
+            bindkey "^W" backward-kill-word
+        fi
 
         # Turn off terminal driver flow control (CTRL+S/CTRL+Q)
         setopt noflowcontrol
@@ -187,8 +197,10 @@ case "$MILESRC_SHELL" in
         autoload down-line-or-beginning-search
         zle -N up-line-or-beginning-search
         zle -N down-line-or-beginning-search
-        bindkey -M vicmd "k" up-line-or-beginning-search
-        bindkey -M vicmd "j" down-line-or-beginning-search
+        if [[ -n $MILESRC_VI_BINDINGS ]]; then
+            bindkey -M vicmd "k" up-line-or-beginning-search
+            bindkey -M vicmd "j" down-line-or-beginning-search
+        fi
 
         for dir in \
             $HOME/.config/zsh/plugins/zsh-history-substring-search \
@@ -196,8 +208,10 @@ case "$MILESRC_SHELL" in
         do
             if [[ -d $dir ]]; then
                 . $dir/zsh-history-substring-search.zsh
-                bindkey -M vicmd "k" history-substring-search-up
-                bindkey -M vicmd "j" history-substring-search-down
+                if [[ -n $MILESRC_VI_BINDINGS ]]; then
+                    bindkey -M vicmd "k" history-substring-search-up
+                    bindkey -M vicmd "j" history-substring-search-down
+                fi
                 break
             fi
         done; unset dir
@@ -261,29 +275,32 @@ export ACK_COLOR_LINENO="white"
 export ACK_COLOR_MATCH="black on_white"
 
 ## ag
-export AG_ARGS="-S "
+AG_ARGS="-S "
 AG_ARGS+="--color-match=\"47;1;30\" "
 AG_ARGS+="--color-line-number=\"0;37\" "
 AG_ARGS+="--color-path=\"0;32\""
+export AG_ARGS
 
 ## grep
 if [[ -n $(grep --help 2>&1 | grep -Eis "color") ]]; then
     export GREP_CLR="--color=auto"
 fi
-export GREP_ARGS="$GREP_CLR -Iis "
+GREP_ARGS="$GREP_CLR -Iis "
 GREP_ARGS+="--exclude-dir=.bzr "
 GREP_ARGS+="--exclude-dir=.git "
 GREP_ARGS+="--exclude-dir=.git-crypt "
 GREP_ARGS+="--exclude-dir=.svn"
-export GREP_COLORS="fn=1;32:ln=0;37:ms=47;1;30:mc=47;1;30"
-GREP_COLORS+=":sl=:cx=:bn=:se="
+export GREP_ARGS
+GREP_COLORS="fn=1;32:ln=0;37:ms=47;1;30:mc=47;1;30:sl=:cx=:bn=:se="
+export GREP_COLORS
 
 ## rg
-export RG_ARGS="-S "
+RG_ARGS="-S "
 RG_ARGS+="--colors \"line:fg:white\" "
 RG_ARGS+="--colors \"match:bg:white\" "
 RG_ARGS+="--colors \"match:fg:black\" "
 RG_ARGS+="--colors \"path:fg:green\""
+export RG_ARGS
 
 # Ruby
 export GEM_HOME="$HOME/.gem/ruby"
@@ -356,11 +373,9 @@ fi
 [[ -z $(installed ag) ]] || alias ag="\ag $AG_ARGS"
 # alias cd="mycd"
 alias cp="\cp -i"
-alias dt="tmux -2 new -d -s"
 [[ -z $(installed egrep) ]] || alias egrep="\egrep $GREP_ARGS"
 alias emacs="\emacs -nw"
 alias envg="env | grep -E"
-alias et="exec tmux -2 new -A -s"
 alias f="sudo"
 [[ -z $(installed gdb) ]] || alias gdb="\gdb -q"
 [[ -z $(installed grep) ]] || alias grep="\grep $GREP_ARGS"
@@ -403,41 +418,9 @@ fi
 [[ -z $(installed w3m) ]] || alias w3m="\w3m -cookie"
 alias which="command -v"
 
-# Git aliases
-if [[ -n $(installed git) ]]; then
-    full="--date=relative --full-history"
-    minimal="-b --color-words=. --ignore-blank-lines --minimal"
-    tformat="tformat:\"%Cred%h%Creset %s %Cgreen%cd %Cblue%an\""
-
-    alias diff="git diff $minimal"
-    alias gd="git diff $minimal"
-    alias gl="git log $full --pretty=$tformat"
-    alias glg="git log $full --graph --pretty=$tformat"
-    alias grh="git reset --hard"
-    alias gs="git status -bs"
-    alias gsm="git show $minimal"
-
-    unset full minimal tformat
-fi
-
-# I like ruby-zoom, but in case it's not installed, create alias
-if [[ -z $(installed z | grep -s "gem") ]]; then
-    if [[ -n $(installed rg) ]]; then
-        alias z="\rg $RG_ARGS"
-    elif [[ -n $(installed ag) ]]; then
-        alias z="\ag $AG_ARGS"
-    elif [[ -n $(installed ack-grep) ]]; then
-        alias z="\ack-grep $ACK_ARGS"
-    elif [[ -n $(installed ack) ]]; then
-        alias z="\ack $ACK_ARGS"
-    else
-        alias z="\grep $GREP_ARGS -EHnr"
-    fi
-    alias zf="\find . -iname"
-fi
-
 # Typos
 alias claer="clear"
+alias clar="clear"
 alias clea="clear"
 alias clae="clear"
 alias gimpe="gimp"
@@ -447,9 +430,9 @@ alias vm="mv"
 
 # {{{ Functions
 if [[ -d $HOME/.milesrc/shell/functions ]]; then
-    while read -r f; do
-        . $f
-    done < <(find $HOME/.milesrc/shell/functions -type f); unset f
+    while read -r func; do
+        . $func
+    done < <(find $HOME/.milesrc/shell/functions -type f); unset func
 fi
 
 function cpan5() {
@@ -600,12 +583,16 @@ function lsp() {
 
 function milesrc() {
     echo "Configuration via files"
+    echo
     echo "    ~/.git.nostatus"
     echo "        Prompt will not show any git status for paths in"
     echo "        this file. One path per line."
     echo "    ~/.milesrc.local"
     echo "        Sourced last. Put your custom bash/zsh settings"
     echo "        here."
+    echo "    ~/.milesrc.pre"
+    echo "        Sourced first. Put specified ENV vars here (see"
+    echo "        below)"
     echo "    ~/.proj"
     echo "        Created by save alias. Stores a directory to be"
     echo "        used by j alias."
@@ -613,7 +600,9 @@ function milesrc() {
     echo "        If it exists, milesrc will automatically create and"
     echo "        handle your ssh-agent."
     echo
-    echo "Configuration via ENV vars"
+    echo "Configuration via ENV vars (put in ~/.milesrc.local unless"
+    echo "otherwise specified)"
+    echo
     case "$(uname -s)" in
         "Darwin")
             echo "    MILESRC_ACKNOWLEDGE_MACOS_IS_DUMB"
@@ -653,6 +642,9 @@ function milesrc() {
     echo "            white, light_black, light_red, light_green,"
     echo "            light_yellow, light_blue, light_magenta,"
     echo "            light_cyan, light_white, or any number in 0-255"
+    echo "    MILESRC_VI_BINDINGS"
+    echo "        If set, use vi keybindings. Put this in"
+    echo "        ~/.milesrc.pre"
 }
 
 function mycd() {
@@ -754,16 +746,17 @@ case "$MILESRC_SHELL" in
     *"bash")
         function reset_completions() {
             [[ -d $HOME/.config/bash/complete ]] || return
-            while read -r c; do
-                . $HOME/.config/bash/complete/$c
-            done < <(\ls $HOME/.config/bash/complete); unset c
+            while read -r comp; do
+                . $HOME/.config/bash/complete/$comp
+            done < <(find $HOME/.config/bash/complete -type f)
+            unset comp
         }
         ;;
     *"zsh")
         function reset_completions() {
-            local f=($HOME/.config/zsh/complete/_*)
-            unfunction $f:t 2>/dev/null
-            autoload -U $f:t
+            local comps=($HOME/.config/zsh/complete/_*)
+            unfunction $comps:t 2>/dev/null
+            autoload -U $comps:t
         }
         ;;
 esac
@@ -948,9 +941,10 @@ case "$MILESRC_SHELL" in
     *"bash")
         # {{{ Bash completions
         if [[ -d $HOME/.config/bash/complete ]]; then
-            while read -r c; do
-                . $HOME/.config/bash/complete/$c
-            done < <(\ls $HOME/.config/bash/complete); unset c
+            while read -r comp; do
+                . $HOME/.config/bash/complete/$comp
+            done < <(find $HOME/.config/bash/complete -type f)
+            unset comp
         fi
 
         # Complete gimme alias
@@ -1016,8 +1010,6 @@ case "$MILESRC_SHELL" in
                 autoload -Uz compinit && compinit -u
             fi
         fi
-
-        compdef _gnu_generic z zc zf zg zl zr
 
         # Complete gimme alias
         if [[ -n $(installed apt-get) ]]; then

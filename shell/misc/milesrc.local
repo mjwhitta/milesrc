@@ -33,8 +33,43 @@ export MILESRC_PROMPT
 # }}}
 
 # {{{ Aliases
+alias dt="tmux -2 new -d -s"
+alias et="exec tmux -2 new -A -s"
 [[ -z $(installed pwsh) ]] || alias powershell="TERM=xterm pwsh"
 alias weather="clear; curl -s wttr.in/~Lafayette,IN | head -n -2"
+
+# Git aliases
+if [[ -n $(installed git) ]]; then
+    full="--date=relative --full-history"
+    minimal="-b --color-words=. --ignore-blank-lines --minimal"
+    tformat="tformat:\"%Cred%h%Creset %s %Cgreen%cd %Cblue%an\""
+
+    alias diff="git diff $minimal"
+    alias gd="git diff $minimal"
+    alias gl="git log $full --pretty=$tformat"
+    alias glg="git log $full --graph --pretty=$tformat"
+    alias grh="git reset --hard"
+    alias gs="git status -bs"
+    alias gsm="git show $minimal"
+
+    unset full minimal tformat
+fi
+
+# I like ruby-zoom, but in case it's not installed, create alias
+if [[ -z $(installed z | grep -s "gem") ]]; then
+    if [[ -n $(installed rg) ]]; then
+        alias z="\rg $RG_ARGS"
+    elif [[ -n $(installed ag) ]]; then
+        alias z="\ag $AG_ARGS"
+    elif [[ -n $(installed ack-grep) ]]; then
+        alias z="\ack-grep $ACK_ARGS"
+    elif [[ -n $(installed ack) ]]; then
+        alias z="\ack $ACK_ARGS"
+    else
+        alias z="\grep $GREP_ARGS -EHnr"
+    fi
+    alias zf="\find . -iname"
+fi
 # }}}
 
 # {{{ Functions
@@ -56,6 +91,9 @@ case "$MILESRC_SHELL" in
         ;;
     *zsh)
         # {{{ Zsh completions
+        # Complete ruby-zoom commands
+        compdef _gnu_generic z zc zf zg zl zr
+
         # Complete arTTY
         if [[ -n $(installed arTTY) ]]; then
             compdef _gnu_generic arTTY
@@ -67,6 +105,9 @@ case "$MILESRC_SHELL" in
         # }}}
         ;;
 esac
+
+# Config for this host
+[[ ! -f $HOME/.milesrc.$(uname -n) ]] || . $HOME/.milesrc.$(uname -n)
 
 if [[ -n $(installed arTTY) ]]; then
     alias nt="arTTY \$(head -n 1 \$HOME/.config/arTTY/rc)"

@@ -217,6 +217,16 @@ tmux bind "-" split-window -v -c "#{pane_current_path}"
 tmux bind '"' split-window -v -c "#{pane_current_path}"
 tmux bind "c" new-window -c "#{pane_current_path}"
 
+# Set "d" to base64 the selection
+tmux bind -T copy-mode-vi "d" send -X copy-pipe-and-cancel "
+    cd $(tfstr "#{pane_current_path}")
+    args=\"\$(xargs -I {} echo \"{}\")\"
+    echo "\$args" | base64 -d; echo
+    tmux display \"\$(
+        echo \"\$args\" | base64 -d | sed \"s/\#/\#\#/g\"
+    )\"
+"
+
 # Set "v" to begin selection as in Vim
 tmux bind -T copy-mode-vi "v" send -X begin-selection
 

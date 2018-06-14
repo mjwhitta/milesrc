@@ -448,7 +448,7 @@ nnoremap <silent> <C-s> :w<cr>
 nnoremap <silent> <C-a> ggVG
 
 " Format all
-nnoremap <silent> <C-f> ggVG=
+nnoremap <silent> <leader>F ggVG=
 
 " Open vimrc in new tab
 nnoremap <silent> <leader>ev :e $HOME/.vimrc<cr>

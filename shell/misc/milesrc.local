@@ -27,6 +27,11 @@ MILESRC_PROMPT=(
     "prompt;white;light_black"
 )
 export MILESRC_PROMPT
+
+# Let's make an educated guess
+for dir in code projs projects src; do
+    [[ -d $HOME/$dir ]] && export PROJS="$HOME/$dir" && break
+done; unset dir
 # }}}
 
 # {{{ PATH
@@ -35,7 +40,9 @@ export MILESRC_PROMPT
 # {{{ Aliases
 alias dt="tmux -2 new -d -s"
 alias et="exec tmux -2 new -A -s"
+alias j="\cd \$(cat $HOME/.proj 2>/dev/null)"
 [[ -z $(installed pwsh) ]] || alias powershell="TERM=xterm pwsh"
+alias save="pwd >\$HOME/.proj"
 alias weather="clear; curl -s wttr.in/~Lafayette,IN | head -n -2"
 
 # Git aliases
@@ -73,6 +80,12 @@ fi
 # }}}
 
 # {{{ Functions
+# List directories reachable from CDPATH
+function lscd() {
+    while read -r dir; do
+        ls $dir
+    done < <(echo "$CDPATH" | sed "s/:/\n/g"); unset dir
+}
 # }}}
 
 case "$MILESRC_SHELL" in

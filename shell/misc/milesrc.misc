@@ -148,8 +148,6 @@ if [[ -n $(installed docker) ]]; then
             sed "\$!N;s/\n/\t/"
     }
 
-    alias dps="docker ps -a"
-
     dsh() {
         dsh_usage() {
             echo "Usage: ${0/*\//} [OPTIONS] <name> [image]"
@@ -241,6 +239,34 @@ list_displays() {
     else
         echo "X11 dir does not exist!"
     fi
+}
+
+# Lists directories in PROJS and allows quick cd'ing to them
+function lsp() {
+    [[ -d $PROJS ]] || return 0
+
+    local count="0"
+    local prev=""
+
+    # Find repos that are not archived and not submodules
+    while read -r dir; do
+        if [[ -z $prev ]] ||
+           [[ -z $(echo "${dir#$PROJS/}" | grep -Es "$prev") ]]
+        then
+            let "count += 1"
+            prev="${dir#$PROJS/}"
+
+            if [[ $# -eq 0 ]]; then
+                printf "%03d %s\n" $count $prev
+            elif [[ $count -eq $1 ]]; then
+                \cd $dir
+                return 0
+            fi
+        fi
+    done < <(
+        find -L $PROJS -mindepth 1 -path "*archived*" -prune -o \
+        -name ".git" -exec dirname {} + 2>/dev/null | sort
+    ); unset dir
 }
 
 q() {

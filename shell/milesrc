@@ -249,11 +249,6 @@ export EDITOR="vim"
 # GPG
 [[ -z $(installed tty) ]] || export GPG_TTY="$(tty)"
 
-# Let's make an educated guess
-for dir in code projs projects src; do
-    [[ -d $HOME/$dir ]] && export PROJS="$HOME/$dir" && break
-done; unset dir
-
 # Secure perms
 # Don't touch umask EVER
 # [[ -n $(id | grep -s "uid=0") ]] || umask 077
@@ -386,7 +381,6 @@ alias envg="env | grep -E"
 alias f="sudo"
 [[ -z $(installed gdb) ]] || alias gdb="\gdb -q"
 [[ -z $(installed grep) ]] || alias grep="\grep $GREP_ARGS"
-alias j="\cd \$(cat $HOME/.proj 2>/dev/null)"
 [[ -z $(installed less) ]] || alias l="less"
 [[ -n $(installed less) ]] || alias l="more"
 alias la="ls -A"
@@ -406,7 +400,6 @@ alias psmef="psme --forest"
 alias q="exit"
 alias r="reset"
 [[ -z $(installed rg) ]] || alias rg="\rg $RG_ARGS"
-alias save="pwd >\$HOME/.proj"
 case "$MILESRC_SHELL" in
     *"bash") alias srcmilesrc=". \$HOME/.bashrc" ;;
     *"zsh") alias srcmilesrc=". \$HOME/.zshrc" ;;
@@ -560,34 +553,6 @@ function iso2usb() {
     sudo dd if="$1" of="$2" bs="4M"
 }
 
-# Lists directories in PROJS and allows quick cd'ing to them
-function lsp() {
-    [[ -d $PROJS ]] || return 0
-
-    local count="0"
-    local prev=""
-
-    # Find repos that are not archived and not submodules
-    while read -r dir; do
-        if [[ -z $prev ]] ||
-           [[ -z $(echo "${dir#$PROJS/}" | grep -Es "$prev") ]]
-        then
-            let "count += 1"
-            prev="${dir#$PROJS/}"
-
-            if [[ $# -eq 0 ]]; then
-                printf "%03d %s\n" $count $prev
-            elif [[ $count -eq $1 ]]; then
-                \cd $dir
-                return 0
-            fi
-        fi
-    done < <(
-        find -L $PROJS -mindepth 1 -path "*archived*" -prune -o \
-        -name ".git" -exec dirname {} + 2>/dev/null | sort
-    ); unset dir
-}
-
 function milesrc() {
     echo "Configuration via files"
     echo
@@ -600,9 +565,6 @@ function milesrc() {
     echo "    ~/.milesrc.pre"
     echo "        Sourced first. Put specified ENV vars here (see"
     echo "        below)"
-    echo "    ~/.proj"
-    echo "        Created by save alias. Stores a directory to be"
-    echo "        used by j alias."
     echo "    ~/.ssh-agent"
     echo "        If it exists, milesrc will automatically create and"
     echo "        handle your ssh-agent."

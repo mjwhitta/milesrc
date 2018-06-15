@@ -62,23 +62,24 @@ case "$MILESRC_SHELL" in
             set -o vi
 
             # Bind jk/kj to escape or vi-movement-mode
-            bind -m vi-insert "jk":vi-movement-mode
-            bind -m vi-insert "kj":vi-movement-mode
+            bind -m vi-insert '"jk":vi-movement-mode'
+            bind -m vi-insert '"kj":vi-movement-mode'
 
             # Fix some vi keybindings
-            bind "^?":backward-delete-char
-            bind "^H":backward-delete-char
-            bind "":clear-screen
-            bind "^U":kill-line
-            bind "^W":backward-kill-word
+            bind '"^?":backward-delete-char'
+            bind '"^H":backward-delete-char'
+            bind '"":clear-screen'
+            bind '"^U":kill-line'
+            bind '"^W":backward-kill-word'
 
-            if [[ -n $(bind -P | grep -s "history-substring-sea") ]]
+            if [[ -n $(bind -P | grep -s "history-substring-searc") ]]
             then
-                bind -m vi-move "k":history-substring-search-backward
-                bind -m vi-move "j":history-substring-search-forward
+                bind -m vi-move \
+                    '"k":history-substring-search-backward'
+                bind -m vi-move '"j":history-substring-search-forward'
             else
-                bind -m vi-move "k":history-search-backward
-                bind -m vi-move "j":history-search-forward
+                bind -m vi-move '"k":history-search-backward'
+                bind -m vi-move '"j":history-search-forward'
             fi
         fi
 

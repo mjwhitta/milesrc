@@ -82,6 +82,7 @@ fi
 # {{{ Functions
 # List directories reachable from CDPATH
 function lscd() {
+    [[ -n $CDPATH ]] || return
     while read -r dir; do
         ls $dir
     done < <(echo "$CDPATH" | sed "s/:/\n/g"); unset dir

@@ -445,9 +445,11 @@ function __milesrc_python_venv() {
 # $1 = rand range
 function __milesrc_rand_status() {
     local rand="0"
-    RANDOM="$(
-        xxd -p /dev/urandom | grep -Eios "[0-9]{1,16}" | head -n 1
-    )"
+    if [[ -n $(installed xxd) ]]; then
+        RANDOM="$(
+            xxd -p /dev/urandom | grep -Eios "[0-9]{1,16}" | head -n 1
+        )"
+    fi
     [[ $# -ne 1 ]] || let "rand = RANDOM % $1"
     echo -n "$rand"
 }

@@ -298,27 +298,14 @@ function __milesrc_prompt() {
     local exit_status="$?"
     if [[ -n ${MILESRC_PROMPT[@]} ]]; then
         case "$MILESRC_SHELL" in
-            *"bash")
-                if [[ -z $MILESRC_OLD_PROMPT ]]; then
-                    export MILESRC_OLD_PROMPT="$PS1"
-                fi
-                export PS1="$(__milesrc_prompt_ps1 $exit_status)"
-                ;;
-            *"zsh")
-                if [[ -z $MILESRC_OLD_PROMPT ]]; then
-                    export MILESRC_OLD_PROMPT="$PROMPT"
-                fi
-                export MILESRC_MODE="$VI_INS"
-                export PROMPT="$(__milesrc_prompt_ps1 $exit_status)"
-                ;;
+            *"zsh") export MILESRC_MODE="$VI_INS" ;;
         esac
+        [[ -n $MILESRC_OLD_PS1 ]] || export MILESRC_OLD_PS1="$PS1"
+        export PS1="$(__milesrc_prompt_ps1 $exit_status)"
     else
-        if [[ -n $MILESRC_OLD_PROMPT ]]; then
-            case "$MILESRC_SHELL" in
-                *"bash") export PS1="$MILESRC_OLD_PROMPT" ;;
-                *"zsh") export PROMPT="$MILESRC_OLD_PROMPT" ;;
-            esac
-            unset MILESRC_OLD_PROMPT
+        if [[ -n $MILESRC_OLD_PS1 ]]; then
+            export PS1="$MILESRC_OLD_PS1"
+            unset MILESRC_OLD_PS1
         fi
     fi
 }
@@ -510,10 +497,10 @@ case "$MILESRC_SHELL" in
                     local mode="$(__milesrc_vi_mode $fmt)"
                     mode="${mode#*|}"
                     local new_prompt="$(
-                        echo -n "$PROMPT" | \
+                        echo -n "$PS1" | \
                         sed -r "s/ ($VI_CMD|$VI_INS) /$mode/"
                     )"
-                    export PROMPT="$new_prompt"
+                    export PS1="$new_prompt"
                 fi
             fi
             zle reset-prompt
@@ -524,7 +511,7 @@ case "$MILESRC_SHELL" in
         #    local exit_status="$?"
         #    if [[ -n ${MILESRC_PROMPT[@]} ]]; then
         #        export MILESRC_MODE="$VI_INS"
-        #        export PROMPT="$(__milesrc_prompt_ps1 $exit_status)"
+        #        export PS1="$(__milesrc_prompt_ps1 $exit_status)"
         #    fi
         #}
         #zle -N zle-line-finish

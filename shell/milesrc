@@ -809,7 +809,9 @@ function tdump() {
     local cap="$(echo "$@" | grep -Eos "[^ ]+\.pcap")"
     sudo tcpdump -n -vvv $@
     [[ -z $(id | grep -s "uid=0") ]] || return 0
-    [[ -z $cap ]] || [[ ! -f $cap ]] || sudo chown $USER:$USER $cap
+    local name="$(id -nu)"
+    local group="$(id -gn)"
+    [[ -z $cap ]] || [[ ! -f $cap ]] || sudo chown $name:$group $cap
 }
 
 function update_grub() {

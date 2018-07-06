@@ -312,6 +312,14 @@ if [[ -d $HOME/.gem ]] && [[ ! -f $HOME/.gemrc ]]; then
     echo "gem: --no-user-install" >$HOME/.gemrc
 fi
 
+# Python
+if [[ ! -f $HOME/.config/pip/pip.conf ]]; then
+    mkdir -p $HOME/.config/pip
+    echo "[install]" >$HOME/.config/pip/pip.conf
+    echo "user = yes" >>$HOME/.config/pip/pip.conf
+    echo "no-binary = :all:" >>$HOME/.config/pip/pip.conf
+fi
+
 # Go
 export GOPATH="$HOME/.go"
 export GOBIN="$GOPATH/bin"
@@ -393,6 +401,8 @@ alias ls="\ls --color=auto -F"
 alias lsg="ls | grep -E"
 alias mv="\mv -i"
 alias p="ps -o pid,user,%cpu,cmd --sort=-%cpu"
+alias pip2="python2 -m pip"
+alias pip3="python3 -m pip"
 alias psf="p -e --forest"
 alias psg="p -e | grep -v \"grep\" | grep -E"
 alias psme="p -u \$USER"
@@ -435,10 +445,11 @@ if [[ -d $HOME/.milesrc/shell/functions ]]; then
     done < <(find $HOME/.milesrc/shell/functions -type f); unset func
 fi
 
-function cpan5() {
-    [[ ! -w /usr/local ]] || cpan $@
-    [[ -w /usr/local ]] || sudo cpan $@
-}
+# FIXME
+# function cpan5() {
+#     [[ ! -w /usr/local ]] || cpan $@
+#     [[ -w /usr/local ]] || sudo cpan $@
+# }
 
 function git_clone() {
     if [[ -n $(installed git) ]]; then
@@ -672,16 +683,6 @@ fi
 function os() {
     cat /etc/os-release | sed -r -e "s/^NAME=\"?|\"?$//g" \
         -e "/^[^=]+$/p" -n
-}
-
-function pip2() {
-    [[ ! -w /usr/local ]] || python2 -m pip $@
-    [[ -w /usr/local ]] || sudo python2 -m pip $@
-}
-
-function pip3() {
-    [[ ! -w /usr/local ]] || python3 -m pip $@
-    [[ -w /usr/local ]] || sudo python3 -m pip $@
 }
 
 function remove_spaces_in_names() {

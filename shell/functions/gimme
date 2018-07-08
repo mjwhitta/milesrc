@@ -138,8 +138,8 @@ function gimme() {
             case "$action" in
                 "install") sudo pacman -S "$@" --noconfirm ;;
                 "remove")
-                    [[ -n $nosave ]] || sudo pacman -R "$@"
-                    [[ -z $nosave ]] || sudo pacman -Rn "$@"
+                    [[ -n $nosave ]] || sudo pacman -Rs "$@"
+                    [[ -z $nosave ]] || sudo pacman -Rns "$@"
                     ;;
                 "search") pacman -Ss "$@" ;;
                 "update")

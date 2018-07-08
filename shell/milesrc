@@ -919,7 +919,7 @@ case "$MILESRC_SHELL" in
             unset comp
         fi
 
-        # Complete gimme alias
+        # Complete gimme function
         if [[ -n $(installed apt-get) ]]; then
             function _apt_install_complete() {
                 mapfile -t COMPREPLY < <(
@@ -983,7 +983,7 @@ case "$MILESRC_SHELL" in
             fi
         fi
 
-        # Complete gimme alias
+        # Complete gimme function
         if [[ -n $(installed apt-get) ]]; then
             function _apt_install_complete() {
                 reply=($(apt-cache --no-generate pkgnames "$1"))

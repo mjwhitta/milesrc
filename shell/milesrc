@@ -483,7 +483,9 @@ function git_clone() {
         case "$git_url" in
             "github.com")
                 curl -LO "$url/archive/master.zip"
+                [[ $? -eq 0 ]] || return 3
                 unzip master.zip >/dev/null && rm -f master.zip
+                [[ $? -eq 0 ]] || return 4
                 if [[ $# -eq 1 ]]; then
                     mv $repo-master $repo
                 else
@@ -492,7 +494,9 @@ function git_clone() {
                 ;;
             "gitlab.com")
                 curl -LO "$url/repository/master/archive.tar"
+                [[ $? -eq 0 ]] || return 3
                 tar -xf archive.tar && rm -f archive.tar
+                [[ $? -eq 0 ]] || return 4
                 if [[ $# -eq 1 ]]; then
                     mv $repo-master-* $repo
                 else

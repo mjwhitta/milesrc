@@ -324,6 +324,8 @@ export GOPATH="$HOME/.go"
 export GOBIN="$GOPATH/bin"
 [[ -z $(installed go) ]] || mkdir -p $GOBIN
 
+[[ -n $USER ]] || export USER="$(id -nu)"
+
 # Display
 if [[ -z $DISPLAY ]] &&
    [[ -d /tmp/.X11-unix ]] &&

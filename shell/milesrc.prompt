@@ -79,6 +79,7 @@ function __milesrc_cwd() {
         pwd | sed -r -e "s#$HOME#\~#" -e "s#/# / #g" -e "s/^ //"
     )"
     local fmt="$(echo -n "$1" | grep -Eios "cwd(;[^;]+){2}")"
+    local i
     local length="$(echo -n "$cwd" | wc -m)"
     local offset="0"
     local width="$2"
@@ -319,6 +320,7 @@ function __milesrc_prompt_ps1() {
 
     local -A p
     local exit_status="$1"
+    local i
     local subtract="true"
     local width="$COLUMNS"
     let "width -= 1"

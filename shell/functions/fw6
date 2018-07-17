@@ -35,12 +35,18 @@ function fw6() {
     fi
 
     fw6_cleanup() {
-        unset action arg args chain tbl tbls
+        unset action all arg args chain tbl tbls
         unset -f fw6_cleanup fw6_clear fw6_close fw6_list fw6_open
         unset -f fw6_reset fw6_usage
     }
 
     fw6_clear() {
+        # Ignore Docker as those should be managed by docker.service
+
+        # Save Docker rules
+        sudo ip6tables-save | grep -Ei "^\*|^commit$|docker" \
+            >/tmp/fw6.docker.rules
+
         for tbl in "${tbls[@]}"; do
             while read -r chain; do
                 sudo ip6tables -t $tbl -P $chain ACCEPT
@@ -54,6 +60,10 @@ function fw6() {
                 sudo ip6tables -S -t $tbl | awk '/-N/ {print $2}'
             )
         done
+
+        # Restore Docker rules
+        sudo ip6tables-restore </tmp/fw6.docker.rules
+        rm -f /tmp/fw6.docker.rules
     }
 
     fw6_close() {
@@ -64,7 +74,12 @@ function fw6() {
     fw6_list() {
         for tbl in "${tbls[@]}"; do
             echo "### $tbl ###"
-            sudo ip6tables -S -t $tbl
+            # Ignore Docker
+            if [[ $# -eq 0 ]]; then
+                sudo ip6tables -S -t $tbl | grep -iv "docker"
+            else
+                sudo ip6tables -S -t $tbl
+            fi
         done
     }
 
@@ -75,7 +90,8 @@ function fw6() {
 
     fw6_reset() {
         if [[ -f /etc/iptables/ip6tables.rules ]]; then
-            sudo ip6tables-restore </etc/iptables/ip6tables.rules
+            fw6_clear
+            sudo ip6tables-restore -n </etc/iptables/ip6tables.rules
         fi
     }
 
@@ -85,6 +101,7 @@ function fw6() {
         echo "Makes some ip6tables commands easier"
         echo
         echo "Options:"
+        echo "    -a, --all           Include Docker rules in output"
         echo "    -h, --help          Display this help message"
         echo "    -c, --close=PORT    Close a previously opened port"
         echo "    --clear             Clear ip6tables rules"
@@ -98,6 +115,7 @@ function fw6() {
 
     declare -a args tbls
     action="list"
+    unset all
     tbls=($(lsmod | perl -lne '/^ip6table_(\S+)/ && print $1' | sort))
     case "${tbls}" in
         *"filter"*) ;;
@@ -107,6 +125,7 @@ function fw6() {
     while [[ $# -gt 0 ]]; do
         case "$1" in
             "--") shift && args+=("$@") && break ;;
+            "-a"|"--all") all="true" ;;
             "-c"|"--close"*)
                 case "$1" in
                     "--"*"="*)
@@ -150,7 +169,7 @@ function fw6() {
     case "$action" in
         "close") fw6_close $port ;;
         "clear") fw6_clear ;;
-        "list") fw6_list ;;
+        "list") fw6_list $all ;;
         "open") fw6_open $port ;;
         "reset") fw6_reset ;;
     esac

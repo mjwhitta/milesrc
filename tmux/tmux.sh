@@ -62,7 +62,7 @@ version="$(tmux -V | awk '{print $2}' | tr -d ".")"
 tmux set -gw aggressive-resize "on"
 tmux set -gw allow-rename "on"
 tmux set -gw alternate-screen "on"
-tmux set -gw automatic-rename "on"
+tmux set -gw automatic-rename "off"
 tmux set -gw clock-mode-style "12"
 tmux set -g default-command "$(tget -g @shell)"
 if [[ -n $(command -v reattach-to-user-namespace) ]]; then

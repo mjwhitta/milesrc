@@ -323,7 +323,7 @@ function __milesrc_prompt_ps1() {
     local i
     local subtract="true"
     local width="$COLUMNS"
-    let "width -= 1"
+    # let "width -= 1"
 
     for i in "${MILESRC_PROMPT[@]}"; do
         local len="0"

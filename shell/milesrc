@@ -324,7 +324,15 @@ export GOPATH="$HOME/.go"
 export GOBIN="$GOPATH/bin"
 [[ -z $(installed go) ]] || mkdir -p $GOBIN
 
-[[ -n $USER ]] || export USER="$(id -nu)"
+# Perl
+export PERL_LOCAL_LIB_ROOT="$HOME/.cpan/perl5"
+export PERL5LIB="$PERL_LOCAL_LIB_ROOT/lib/perl5"
+export PERL_MB_OPT="--install_base \"$PERL_LOCAL_LIB_ROOT\""
+export PERL_MM_OPT="INSTALL_BASE=$PERL_LOCAL_LIB_ROOT"
+[[ -z $(installed perl) ]] || mkdir -p $PERL_LOCAL_LIB_ROOT
+
+# Fix USER if not defined
+export USER="${USER:-$(id -nu)}"
 
 # Display
 if [[ -z $DISPLAY ]] &&
@@ -342,16 +350,18 @@ fi
 unset PTH
 for dir in \
     $HOME/bin \
-    $HOME/.local/bin \
     $GEM_HOME/bin \
+    $HOME/.local/bin \
     $GOPATH \
     $GOPATH/bin \
+    $PERL_LOCAL_LIB_ROOT/bin \
     /usr/local/bin \
     /usr/local/sbin \
     /usr/bin \
     /usr/sbin \
     /bin \
     /sbin \
+    /usr/bin/core_perl \
     $HOME/Android/Sdk/platform-tools \
     $HOME/Android/Sdk/tools \
     $HOME/Android/Sdk/tools/bin \
@@ -445,12 +455,6 @@ if [[ -d $HOME/.milesrc/shell/functions ]]; then
         . $func
     done < <(find $HOME/.milesrc/shell/functions -type f); unset func
 fi
-
-# FIXME
-# function cpan5() {
-#     [[ ! -w /usr/local ]] || cpan $@
-#     [[ -w /usr/local ]] || sudo cpan $@
-# }
 
 function git_clone() {
     if [[ -n $(installed git) ]]; then

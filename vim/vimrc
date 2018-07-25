@@ -678,7 +678,7 @@ if exists(':function')
             if l:uname =~ 'Darwin'
                 call system('open ' . l:preview_file)
             else
-                call system('xdg-open ' . l:preview_file)
+                call system('mimeopen ' . l:preview_file)
             endif
         else
             echo 'You need to provide g:gh_token'

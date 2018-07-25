@@ -412,6 +412,7 @@ alias llg="ll | grep -E"
 alias ls="\ls --color=auto -F"
 alias lsg="ls | grep -E"
 alias mv="\mv -i"
+alias open="mimeopen"
 alias p="ps -o pid,user,%cpu,cmd --sort=-%cpu"
 alias pip2="python2 -m pip"
 alias pip3="python3 -m pip"
@@ -668,27 +669,6 @@ function mycd() {
     fi
     return 0
 }
-
-if [[ -n $(installed xdg-mime) ]]; then
-    function open() {
-        [[ $# -ne 0 ]] || return 0
-
-        local type
-        if [[ -f $1 ]]; then
-            type="$(xdg-mime query filetype $1)"
-        elif [[ -n $(echo "$1" | grep -Es "https?:\/\/") ]]; then
-            type="text/html"
-        fi
-        [[ -n $type ]] || return 1
-
-        local exe="$(
-            xdg-mime query default $type | sed "s/.desktop//g"
-        )"
-        [[ -n $exe ]] || return 2
-
-        $exe "$@"
-    }
-fi
 
 function os() {
     cat /etc/os-release | sed -r -e "s/^NAME=\"?|\"?$//g" \

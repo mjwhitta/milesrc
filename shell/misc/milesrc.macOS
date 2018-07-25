@@ -12,6 +12,7 @@ case "$(uname -s)" in
         alias ls="\ls -F -G"
         alias md5sum="md5"
         alias nano="\nano -m"
+        unalias open
         alias p="ps -o pid,user,%cpu,command -r"
         alias sha1sum="shasum -a 1"
         alias sha256sum="shasum -a 256"

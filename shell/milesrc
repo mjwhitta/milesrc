@@ -369,16 +369,16 @@ for dir in \
     $HOME/Android/Ndk \
     $HOME/.rvm/bin
 do
-    [[ ! -d $dir ]] || PTH="$PTH:$dir"
+    [[ ! -d $dir ]] || PTH="${PTH:+$PTH:}$dir"
 done; unset dir
 
 # Find missing from PATH
 while read -r dir; do
-    [[ -n $(echo "$PTH" | grep -s "$dir") ]] || PTH="$PTH:$dir"
-done < <(echo "$PATH" | sed "s|:| |g"); unset dir
+    [[ ! -d $dir ]] || PTH="${PTH:+$PTH:}$dir"
+done < <(echo "${PATH//:/\n}" | grep -Ev "${PTH//:/|}"); unset dir
 
 # Set PATH
-[[ -z $PTH ]] || export PATH="${PTH/:/}"
+[[ -z $PTH ]] || export PATH="$PTH"
 unset PTH
 # }}}
 

@@ -362,6 +362,7 @@ for dir in \
     /bin \
     /sbin \
     /usr/bin/core_perl \
+    /usr/bin/vendor_perl \
     $HOME/Android/Sdk/platform-tools \
     $HOME/Android/Sdk/tools \
     $HOME/Android/Sdk/tools/bin \

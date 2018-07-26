@@ -1,18 +1,6 @@
 # If not running interactively, don't do anything
 [[ $- == *i* ]] || return
 
-# I source this file from my $HOME/.milesrc.local so that I can
-# version control the non-host-specific stuff.
-
-# Start tmux if ssh connection
-if [[ -n $(installed tmux) ]] &&
-   [[ ! -f $HOME/.notmux ]] &&
-   [[ -z $TMUX ]] &&
-   [[ -n $SSH_CLIENT ]]
-then
-    exec tmux -2 new -A -s main
-fi
-
 # {{{ Env Vars
 declare -a MILESRC_PROMPT
 MILESRC_PROMPT=(
@@ -104,9 +92,6 @@ case "$MILESRC_SHELL" in
         ;;
     *zsh)
         # {{{ Zsh completions
-        # Complete ruby-zoom commands
-        compdef _gnu_generic z zc zf zg zl zr
-
         # Complete arTTY
         if [[ -n $(installed arTTY) ]]; then
             compdef _gnu_generic arTTY
@@ -115,6 +100,9 @@ case "$MILESRC_SHELL" in
             }
             compctl -K _arTTY_complete arTTY
         fi
+
+        # Complete ruby-zoom commands
+        compdef _gnu_generic z zc zf zg zl zr
         # }}}
         ;;
 esac

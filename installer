@@ -79,7 +79,7 @@ link_status() {
 
     if [[ -d $here/vim ]]; then
         if [[ -d $here/vim/plugs ]]; then
-            info "vim plugins are installed"
+            good "vim plugins are installed"
         else
             warn "vim plugins are not installed"
         fi

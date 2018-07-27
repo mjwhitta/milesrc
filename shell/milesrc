@@ -9,11 +9,7 @@ function installed() {
         awk '{print $3}' 2>/dev/null
 }
 
-function join_with() {
-    local IFS="$1"
-    shift
-    echo "$*"
-}
+function join_with() { local IFS="$1"; echo "${*:2}"; }
 
 export MILESRC_SHELL="$(installed zsh)"
 [[ -z $BASH ]] || export MILESRC_SHELL="$BASH"

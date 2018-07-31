@@ -35,7 +35,7 @@ alias weather="clear; curl -s wttr.in/~Lafayette,IN | head -n -2"
 
 # Git aliases
 if [[ -n $(installed git) ]]; then
-    full="--date=format-local:\"%F_%I:%M:%S_%P\" --full-history"
+    full="--date=format-local:\"%F_%H%M%S\" --full-history"
     minimal="-b --color-words=. --ignore-blank-lines --minimal"
     tformat="tformat:\"%Cred%h %Cgreen%cd %Cblue%an%Creset %s\""
 

@@ -382,7 +382,7 @@ function __milesrc_prompt_ps1() {
                 len="${p[host]%%|*}"
                 [[ $len -eq 0 ]] || echo -n "${p[host]#*|}"
                 ;;
-            "newline") echo ;;
+            "newline") ;;
             "prompt"*)
                 len="${p[prompt]%%|*}"
                 [[ $len -eq 0 ]] || echo -n "${p[prompt]#*|}"

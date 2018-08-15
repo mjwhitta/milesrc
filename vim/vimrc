@@ -828,6 +828,7 @@ if exists(':function') && exists(':let')
 
         " Easy align
         vmap <cr> <plug>(EasyAlign)
+        nnoremap <leader>eat vip:EasyAlign<space>*\|<cr>
 
         " Easymotion
         " let g:EasyMotion_do_mapping = 0 " Disable default mappings

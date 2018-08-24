@@ -23,7 +23,15 @@ if [[ -n $(command -v ssh-agent) ]] && [[ -f $HOME/.ssh-agent ]]; then
     unset pidchk
 
     # Add missing keys
+    declare -a ssh_keys
     while read -r key; do
-        [[ -n $(ssh-add -l | grep -s " $key ") ]] || ssh-add $key
-    done < <(grep -lrs "PRIVATE KEY" $HOME/.ssh); unset key
+        fingerprint="$(ssh-keygen -f $key -l 2>/dev/null)"
+        [[ -n $fingerprint ]] || continue
+        if [[ -z $(ssh-add -l | grep -s "$fingerprint") ]]; then
+            ssh_keys+=($key)
+        fi
+        unset fingerprint
+    done < <(grep -lrs "PRIVATE KEY" $HOME/.ssh | sort); unset key
+    ssh-add ${ssh_keys[@]}
+    unset ssh_keys
 fi

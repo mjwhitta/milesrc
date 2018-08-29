@@ -27,11 +27,9 @@ if [[ -n $(command -v ssh-agent) ]] && [[ -f $HOME/.ssh-agent ]]; then
     while read -r key; do
         fp="$(ssh-keygen -f $key -l 2>/dev/null | awk '{print $2}')"
         [[ -n $fp ]] || continue
-        if [[ -z $(ssh-add -l | grep -s "$fp") ]]; then
-            ssh_keys+=($key)
-        fi
+        [[ -n $(ssh-add -l | grep -s "$fp") ]] || ssh_keys+=($key)
         unset fp
     done < <(grep -lrs "PRIVATE KEY" $HOME/.ssh | sort); unset key
-    ssh-add ${ssh_keys[@]}
+    [[ -z ${ssh_keys[@]} ]] || ssh-add ${ssh_keys[@]}
     unset ssh_keys
 fi

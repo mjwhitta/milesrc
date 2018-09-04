@@ -4,6 +4,18 @@
 # My custom prompt. I've separated this so I can easily customize and
 # share it.
 
+# {{{ Helper utils
+export MILESRC_PROMPT_SHELL="$(command -v zsh)"
+[[ -z $BASH ]] || export MILESRC_PROMPT_SHELL="$BASH"
+case "$MILESRC_PROMPT_SHELL" in
+    *"zsh")
+        export MILESRC_PROMPT_ZSHV="$(
+            zsh --version | grep -Em 1 -os "[0-9]+\.[0-9]+"
+        )"
+        ;;
+esac
+# }}}
+
 # {{{ Functions
 # {{{ __milesrc_colors
 # Get color escape codes
@@ -61,7 +73,7 @@ function __milesrc_colors() {
         esac
     fi
 
-    case "$MILESRC_SHELL" in
+    case "$MILESRC_PROMPT_SHELL" in
         *"bash") echo -n "\\[$fgcode$bgcode\\]" ;;
         *"zsh") echo -n "%{$fgcode$bgcode%}" ;;
     esac
@@ -83,17 +95,17 @@ function __milesrc_cwd() {
     local length="$(echo -n "$cwd" | wc -m)"
     local offset="0"
     local width="$2"
-    let "width -= 2" # leading and trailing spaces
-    [[ $width -ge 0 ]] || let "width = 0"
+    ((width -= 2)) # leading and trailing spaces
+    [[ $width -ge 0 ]] || width="0"
 
     if [[ $length -le $width ]]; then
-        let "offset = $width - $length - 1"
+        ((offset = width - length - 1))
         cwd="$(
             echo -n "$cwd"
             for i in $(seq 0 $offset); do echo -n " "; done; unset i
         )"
     else
-        let "offset = $length - $width"
+        ((offset = length - width))
         cwd="$(
             echo -n "${cwd:$offset:$width} " | \
             sed -r "s/^.... ?/\.\.\. /"
@@ -190,7 +202,7 @@ function __milesrc_format() {
     local -a conf=($(echo -n "${1//;/ }"))
     local bgclr="${conf[2]}"
     local fgclr="${conf[1]}"
-    case "$MILESRC_SHELL" in
+    case "$MILESRC_PROMPT_SHELL" in
         *"zsh") # zsh is dumb and 1-indexed... wtf...
             bgclr="${conf[3]}"
             fgclr="${conf[2]}"
@@ -210,8 +222,8 @@ function __milesrc_format() {
 # $1 = format in the form of git;fgclr;bgclr
 function __milesrc_git_status() {
     [[ $# -eq 1 ]] || return
-    [[ -n $(installed git) ]] || return
-    [[ -n $(installed perl) ]] || return
+    [[ -n $(command -v git) ]] || return
+    [[ -n $(command -v perl) ]] || return
 
     local fmt="$(echo -n "$1" | grep -Eios "git(;[^;]+){2}")"
 
@@ -298,8 +310,8 @@ function __milesrc_host() {
 function __milesrc_prompt() {
     local exit_status="$?"
     if [[ -n ${MILESRC_PROMPT[@]} ]]; then
-        case "$MILESRC_SHELL" in
-            *"zsh") export MILESRC_MODE="$VI_INS" ;;
+        case "$MILESRC_PROMPT_SHELL" in
+            *"zsh") export MILESRC_PROMPT_MODE="$VI_INS" ;;
         esac
         [[ -n $MILESRC_OLD_PS1 ]] || export MILESRC_OLD_PS1="$PS1"
         export PS1="$(__milesrc_prompt_ps1 $exit_status)"
@@ -323,7 +335,11 @@ function __milesrc_prompt_ps1() {
     local i
     local subtract="true"
     local width="$COLUMNS"
-    # let "width -= 1"
+    case "$MILESRC_PROMPT_SHELL" in
+        *"zsh")
+            [[ $MILESRC_PROMPT_ZSHV -ge 5.5 ]] || ((width -= 1))
+            ;;
+    esac
 
     for i in "${MILESRC_PROMPT[@]}"; do
         local len="0"
@@ -354,7 +370,7 @@ function __milesrc_prompt_ps1() {
                 len="${p[mode]%%|*}"
                 ;;
         esac
-        [[ -z $subtract ]] || let "width -= ${len:-0}"
+        [[ -z $subtract ]] || ((width -= ${len:-0}))
     done; unset i
 
     # CWD
@@ -434,12 +450,13 @@ function __milesrc_python_venv() {
 # $1 = rand range
 function __milesrc_rand_status() {
     local rand="0"
-    if [[ -n $(installed xxd) ]]; then
+    if [[ -n $(command -v xxd) ]]; then
         RANDOM="$(
-            xxd -p /dev/urandom | grep -Eios "[0-9]{1,16}" | head -n 1
+            xxd -p /dev/urandom | grep -Eos "[1-9][0-9]{0,15}" | \
+            head -n 1
         )"
     fi
-    [[ $# -ne 1 ]] || let "rand = RANDOM % $1"
+    [[ $# -ne 1 ]] || ((rand = RANDOM % $1))
     echo -n "$rand"
 }
 # }}}
@@ -449,19 +466,19 @@ function __milesrc_rand_status() {
 # $1 = format in the form of vi_cmd;fgclr;bgclr;vi_ins;fgclr;bgclr
 function __milesrc_vi_mode() {
     [[ $# -eq 1 ]] || return
-    case "$MILESRC_SHELL" in
+    case "$MILESRC_PROMPT_SHELL" in
         *"zsh") ;;
         *) return ;;
     esac
 
     local fmt="$(echo -n "$1" | grep -Eios "vi_ins(;[^;]+){2}")"
-    case "$MILESRC_MODE" in
+    case "$MILESRC_PROMPT_MODE" in
         $VI_CMD)
             fmt="$(echo -n "$1" | grep -Eios "vi_cmd(;[^;]+){2}")"
             ;;
     esac
 
-    __milesrc_format "$fmt" "$MILESRC_MODE"
+    __milesrc_format "$fmt" "$MILESRC_PROMPT_MODE"
 }
 # }}}
 # }}}
@@ -472,7 +489,7 @@ export VI_CMD="   NORMAL   "
 export VI_INS="-- INSERT --"
 
 # Enable prompt
-case "$MILESRC_SHELL" in
+case "$MILESRC_PROMPT_SHELL" in
     *"bash")
         # set vi-cmd-mode-string "    NORMAL    "
         # set vi-ins-mode-string " -- INSERT -- "
@@ -488,8 +505,10 @@ case "$MILESRC_SHELL" in
             local exit_status="$?"
             if [[ -n ${MILESRC_PROMPT[@]} ]]; then
                 case "$KEYMAP" in
-                    "main"|"viins") export MILESRC_MODE="$VI_INS" ;;
-                    "vicmd") export MILESRC_MODE="$VI_CMD" ;;
+                    "main"|"viins")
+                        export MILESRC_PROMPT_MODE="$VI_INS"
+                        ;;
+                    "vicmd") export MILESRC_PROMPT_MODE="$VI_CMD" ;;
                 esac
                 local fmt="$(
                     echo -n "${MILESRC_PROMPT[@]}" | \
@@ -512,7 +531,7 @@ case "$MILESRC_SHELL" in
         #function zle-line-finish() {
         #    local exit_status="$?"
         #    if [[ -n ${MILESRC_PROMPT[@]} ]]; then
-        #        export MILESRC_MODE="$VI_INS"
+        #        export MILESRC_PROMPT_MODE="$VI_INS"
         #        export PS1="$(__milesrc_prompt_ps1 $exit_status)"
         #    fi
         #}

@@ -23,15 +23,15 @@ export MILESRC_SHELL="$(installed zsh)"
 case "$MILESRC_SHELL" in
     *"bash")
         # {{{ Bash setup
-        BASHV="$(
-            bash --version | grep -Eos "[0-9]+\.[0-9]+" | head -n 1
-        )"
+        # export BASHV="$(
+        #     bash --version | grep -Em 1 -os "[0-9]+\.[0-9]+"
+        # )"
 
         # History settings
-        HISTFILE="$HOME/.histfile.bash"
-        HISTSIZE="1000"
-        HISTFILESIZE="2000"
-        HISTCONTROL="ignoreboth"
+        export HISTFILE="$HOME/.histfile.bash"
+        export HISTSIZE="1000"
+        export HISTFILESIZE="2000"
+        export HISTCONTROL="ignoreboth"
         shopt -s histappend histverify
 
         # Don't need to type cd
@@ -91,14 +91,14 @@ case "$MILESRC_SHELL" in
         ;;
     *"zsh")
         # {{{ Zsh setup
-        ZSHV="$(
-            zsh --version | grep -Eos "[0-9]+\.[0-9]+" | head -n 1
+        export ZSHV="$(
+            zsh --version | grep -Em 1 -os "[0-9]+\.[0-9]+"
         )"
 
         # History settings
-        HISTFILE="$HOME/.histfile.zsh"
-        HISTSIZE="1000"
-        SAVEHIST="$HISTSIZE"
+        export HISTFILE="$HOME/.histfile.zsh"
+        export HISTSIZE="1000"
+        export SAVEHIST="$HISTSIZE"
         setopt incappendhistory histexpiredupsfirst histignorealldups
         setopt histreduceblanks sharehistory
 
@@ -231,7 +231,7 @@ esac
 # export TERM="screen-256color"
 # But this appears safe
 export TERM="xterm-256color"
-[[ -z $TMUX ]] || TERM="tmux-256color"
+[[ -z $TMUX ]] || export TERM="tmux-256color"
 
 # Java
 export JAVA_HOME="$(

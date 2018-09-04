@@ -253,7 +253,7 @@ function lsp() {
         if [[ -z $prev ]] ||
            [[ -z $(echo "${dir#$PROJS/}" | grep -Es "$prev") ]]
         then
-            let "count += 1"
+            ((count += 1))
             prev="${dir#$PROJS/}"
 
             if [[ $# -eq 0 ]]; then

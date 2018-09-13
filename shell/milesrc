@@ -585,9 +585,6 @@ function milesrc() {
     echo "    ~/.milesrc.pre"
     echo "        Sourced first. Put specified ENV vars here (see"
     echo "        below)"
-    echo "    ~/.ssh-agent"
-    echo "        If it exists, milesrc will automatically create and"
-    echo "        handle your ssh-agent."
     echo
     echo "Configuration via ENV vars (put in ~/.milesrc.local unless"
     echo "otherwise specified)"
@@ -631,9 +628,10 @@ function milesrc() {
     echo "            white, light_black, light_red, light_green,"
     echo "            light_yellow, light_blue, light_magenta,"
     echo "            light_cyan, light_white, or any number in 0-255"
+    echo "    MILESRC_SSH_AGENT"
+    echo "        If set (in ~/.milesrc.pre), start an ssh-agent."
     echo "    MILESRC_VI_BINDINGS"
-    echo "        If set, use vi keybindings. Put this in"
-    echo "        ~/.milesrc.pre"
+    echo "        If set (in ~/.milesrc.pre), use vi keybindings."
 }
 
 function mycd() {

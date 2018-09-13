@@ -1,12 +1,11 @@
 # If not running interactively, don't do anything
 [[ $- == *i* ]] || return
 
-# This simply starts an ssh-agent if $HOME/.ssh-agent exists. I'm
-# using a file b/c this is before $HOME/.milesrc.local is sourced so
-# users can't just set an env var.
+# This simply starts an ssh-agent if MILESRC_SSH_AGENT is set.
 
 # SSH agent
-if [[ -n $(command -v ssh-agent) ]] && [[ -f $HOME/.ssh-agent ]]; then
+if [[ -n $(command -v ssh-agent) ]] && [[ -n $MILESRC_SSH_AGENT ]]
+then
     # Start agent if needed
     mkdir -p $HOME/.ssh/agent
     [[ -f $HOME/.ssh/agent/env ]] || ssh-agent >$HOME/.ssh/agent/env

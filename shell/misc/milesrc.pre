@@ -1,3 +1,6 @@
+# Run ssh-agent
+export MILESRC_SSH_AGENT="true"
+
 # Use vi keybindings
 export MILESRC_VI_BINDINGS="true"
 

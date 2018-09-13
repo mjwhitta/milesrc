@@ -18,6 +18,7 @@ export MILESRC_SHELL="$(installed zsh)"
 # {{{ User configs
 # Local stuff
 [[ ! -f $HOME/.milesrc.pre ]] || . $HOME/.milesrc.pre
+. $HOME/.milesrc/shell/milesrc.ssh_agent
 # }}}
 
 case "$MILESRC_SHELL" in

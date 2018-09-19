@@ -199,7 +199,7 @@ if [[ -n $(installed docker) ]]; then
             esac
             shift
         done
-        [[ -z ${args[@]} ]] || set -- "${args[@]}"
+        [[ ${#args[@]} -eq 0 ]] || set -- "${args[@]}"
 
         if [[ $# -eq 0 ]] || [[ $# -gt 2 ]]; then
             dsh_usage && return 2
@@ -219,7 +219,7 @@ if [[ -n $(installed docker) ]]; then
 
         local shell="bash"
         for s in /usr/bin/zsh /bin/zsh /bin/bash /bin/sh; do
-            docker exec -it $name test -f $s
+            docker exec -it "$name" test -f "$s"
             [[ $# -eq 0 ]] && shell="$s" && break
         done; unset s
 

@@ -73,7 +73,7 @@ function sync_milesrc() {
         esac
         shift
     done
-    [[ -z ${args[@]} ]] || set -- "${args[@]}"
+    [[ ${#args[@]} -eq 0 ]] || set -- "${args[@]}"
 
     [[ $# -eq 0 ]] && sync_milesrc_usage && return 1
 
@@ -83,7 +83,7 @@ function sync_milesrc() {
             --exclude ${skip_plugs:-IGNORE_THIS} \
             --exclude ${sync_tmux:-IGNORE_THIS} \
             --exclude ${sync_vim:-IGNORE_THIS} \
-            -lrtv ~/.milesrc/ $host:.milesrc
+            -lrtv ~/.milesrc/ "$host:.milesrc"
     done
 
     sync_milesrc_cleanup

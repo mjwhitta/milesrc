@@ -223,7 +223,6 @@ function __milesrc_format() {
 function __milesrc_git_status() {
     [[ $# -eq 1 ]] || return
     [[ -n $(command -v git) ]] || return
-    [[ -n $(command -v perl) ]] || return
 
     local fmt="$(echo -n "$1" | grep -Eios "git(;[^;]+){2}")"
 
@@ -235,21 +234,16 @@ function __milesrc_git_status() {
     local git_status="$(git status -b --porcelain $ignore)"
 
     local branch_name="$(
-        echo -n "$git_status" | \
-        perl -lne '/^##(.*\s+on)?\s+([^.]+)/ && print $2'
+        echo -n "$git_status" | grep -oP "^##(.*\s+on)?\s+\K[^.]+"
     )"
     [[ -n $branch_name ]] || return
     local git="$branch_name"
 
-    local ahead="$(
-        echo -n "$git_status" | \
-        perl -lne '/ahead ([0-9]+)/ && print $1'
-    )"
+    local ahead="$(echo -n "$git_status" | grep -oP "ahead \K[0-9]+")"
     [[ -z $ahead ]] || git="$git ↑$ahead"
 
     local behind="$(
-        echo -n "$git_status" | \
-        perl -lne '/behind ([0-9]+)/ && print $1'
+        echo -n "$git_status" | grep -oP "behind \K[0-9]+"
     )"
     [[ -z $behind ]] || git="$git ↓$behind"
 

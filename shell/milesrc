@@ -5,8 +5,7 @@
 
 # {{{ Helper utils
 function installed() {
-    type -a $1 2>&1 | grep -Em 1 -s "$1 is /" | \
-        awk '{print $3}' 2>/dev/null
+    type -a $1 2>&1 | grep -m 1 -oPs "$1 is \K/.+"
 }
 
 function join_with() { local IFS="$1"; echo "${*:2}"; }
@@ -24,9 +23,7 @@ export MILESRC_SHELL="$(installed zsh)"
 case "$MILESRC_SHELL" in
     *"bash")
         # {{{ Bash setup
-        # export BASHV="$(
-        #     bash --version | grep -Em 1 -os "[0-9]+\.[0-9]+"
-        # )"
+        # export BASHV="$(bash --version | grep -m 1 -oPs "\d+\.\d+")"
 
         # History settings
         export HISTFILE="$HOME/.histfile.bash"
@@ -92,9 +89,7 @@ case "$MILESRC_SHELL" in
         ;;
     *"zsh")
         # {{{ Zsh setup
-        export ZSHV="$(
-            zsh --version | grep -Em 1 -os "[0-9]+\.[0-9]+"
-        )"
+        export ZSHV="$(zsh --version | grep -m 1 -oPs "\d+\.\d+")"
 
         # History settings
         export HISTFILE="$HOME/.histfile.zsh"
@@ -116,7 +111,7 @@ case "$MILESRC_SHELL" in
         zstyle ":completion:*" matcher-list "m:{a-zA-Z}={A-Za-z}"
         # Better completion for killall
         zstyle ":completion:*:killall:*" command \
-            "ps -ocomm -u $USER | grep -v \"COMMAND\""
+            "ps -ocomm -u $USER | grep -sv \"COMMAND\""
 
         zstyle :compinstall filename "$HOME/.zshrc"
 
@@ -281,7 +276,7 @@ AG_ARGS+="--color-path=\"0;32\""
 export AG_ARGS
 
 ## grep
-if [[ -n $(grep --help 2>&1 | grep -Eis "color") ]]; then
+if [[ -n $(grep --help 2>&1 | grep -is "color") ]]; then
     export GREP_CLR="--color=auto"
 fi
 GREP_ARGS="$GREP_CLR -Iis "
@@ -372,7 +367,7 @@ done; unset dir
 # Find missing from PATH
 while read -r dir; do
     [[ ! -d $dir ]] || PTH="${PTH:+$PTH:}$dir"
-done < <(echo "${PATH//:/\n}" | grep -Ev "${PTH//:/|}"); unset dir
+done < <(echo "${PATH//:/\n}" | grep -Psv "${PTH//:/|}"); unset dir
 
 # Set PATH
 [[ -z $PTH ]] || export PATH="$PTH"
@@ -394,21 +389,21 @@ fi
 alias cp="\cp -i"
 [[ -z $(installed egrep) ]] || alias egrep="\egrep $GREP_ARGS"
 alias emacs="\emacs -nw"
-alias envg="env | grep -E"
+alias envg="env | grep -P"
 alias f="sudo"
 [[ -z $(installed gdb) ]] || alias gdb="\gdb -q"
 [[ -z $(installed grep) ]] || alias grep="\grep $GREP_ARGS"
 [[ -z $(installed less) ]] || alias l="less"
 [[ -n $(installed less) ]] || alias l="more"
 alias la="ls -A"
-alias lag="la | grep -E"
+alias lag="la | grep -P"
 alias ll="ls -hl"
 alias lla="ll -A"
-alias llag="lla | grep -E"
-alias llg="ll | grep -E"
+alias llag="lla | grep -P"
+alias llg="ll | grep -P"
 alias locate="\locate -e --regex"
 alias ls="\ls --color=auto -F"
-alias lsg="ls | grep -E"
+alias lsg="ls | grep -P"
 alias mv="\mv -i"
 [[ -z $(installed mimeopen) ]] || alias open="mimeopen"
 alias nocolor="sed -r \"s/\[[0-9;]*[AKm]//g\""
@@ -416,7 +411,7 @@ alias p="ps -o pid,user,%cpu,cmd --sort=-%cpu"
 alias pip2="python2 -m pip"
 alias pip3="python3 -m pip"
 alias psf="p -e --forest"
-alias psg="p -e | grep -v \"grep\" | grep -E"
+alias psg="p -e | grep -sv \"grep\" | grep -P"
 alias psme="p -u \$USER"
 alias psmef="psme --forest"
 alias q="exit"
@@ -516,10 +511,10 @@ function git_clone() {
 
 function ipa() {
     if [[ -n $(installed ip) ]]; then
-        if ip 2>&1 | grep -Eq "c.olor"; then
-            ip -c -o $@ a | grep -v "mtu" | awk '{print $2,$4}'
+        if ip 2>&1 | grep -Pq "c.olor"; then
+            ip -c -o $@ a | grep -sv "mtu" | awk '{print $2,$4}'
         else
-            ip -o $@ a | grep -v "mtu" | awk '{print $2,$4}'
+            ip -o $@ a | grep -sv "mtu" | awk '{print $2,$4}'
         fi
     else
         local device
@@ -544,7 +539,7 @@ function ipa() {
 
 function ipr() {
     if [[ -n $(installed ip) ]]; then
-        if ip 2>&1 | grep -Eq "c.olor"; then
+        if ip 2>&1 | grep -Pq "c.olor"; then
             ip -c -o $@ r
         else
             ip -o $@ r
@@ -794,7 +789,7 @@ function tdump() {
         return
     fi
 
-    local cap="$(echo "$@" | grep -Eos "[^ ]+\.pcap")"
+    local cap="$(echo "$@" | grep -oPs "\S+\.pcap")"
     sudo tcpdump -n -vvv $@
     [[ -z $(id | grep -s "uid=0") ]] || return 0
     local name="$(id -nu)"
@@ -919,21 +914,18 @@ case "$MILESRC_SHELL" in
                 function _ruaur_install_complete() {
                     mapfile -t COMPREPLY < <(
                         ruaur -Ss "$2" --names-only | \
-                        grep -Es "^$2" | sort -u
+                        grep -Ps "^$2" | sort -u
                     )
                 }
                 complete -F _ruaur_install_complete gimme
             else
                 function _pacman_install_complete() {
                     mapfile -t COMPREPLY < <(
-                        pacman --color=never -Ss "$2" | perl -lne \
-                        '/^[^\/]+\/('$2'[^\s]+)/ && print $1' | \
-                        sort -u
+                        pacman --color=never -Ss "$2" | \
+                        grep -oPs "^[^/]+/\K$2\S*" | sort -u
                     )
                 }
-                if [[ -n $(installed perl) ]]; then
-                    complete -F _pacman_install_complete gimme
-                fi
+                complete -F _pacman_install_complete gimme
             fi
         elif [[ -n $(installed brew) ]]; then
             function _brew_install_complete() {
@@ -987,12 +979,10 @@ case "$MILESRC_SHELL" in
                 function _pacman_install_complete() {
                     reply=($(
                         pacman --color=never -Ss "$1" | \
-                        perl -lne '/^[^\/]+\/([^\s]+)/ && print $1'
+                        grep -oPs "^[^/]+/\K^\S*"
                     ))
                 }
-                if [[ -n $(installed perl) ]]; then
-                    compctl -K _pacman_install_complete gimme
-                fi
+                compctl -K _pacman_install_complete gimme
             fi
         elif [[ -n $(installed brew) ]]; then
             function _brew_install_complete() {

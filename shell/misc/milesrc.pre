@@ -10,5 +10,5 @@ if [[ -n $(installed tmux) ]] &&
    [[ -z $TMUX ]] &&
    [[ -n $SSH_CLIENT ]]
 then
-    exec tmux -2 new -A -s main
+    export MILESRC_TMUX="true"
 fi

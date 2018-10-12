@@ -18,6 +18,7 @@ export MILESRC_SHELL="$(installed zsh)"
 # Local stuff
 [[ ! -f $HOME/.milesrc.pre ]] || . $HOME/.milesrc.pre
 . $HOME/.milesrc/shell/milesrc.ssh_agent
+[[ -z $MILESRC_TMUX ]] || exec tmux -2 new -A -s main
 # }}}
 
 case "$MILESRC_SHELL" in
@@ -626,6 +627,8 @@ function milesrc() {
     echo "            light_cyan, light_white, or any number in 0-255"
     echo "    MILESRC_SSH_AGENT"
     echo "        If set (in ~/.milesrc.pre), start an ssh-agent."
+    echo "    MILESRC_TMUX"
+    echo "        If set (in ~/.milesrc.pre), attach to tmux session."
     echo "    MILESRC_VI_BINDINGS"
     echo "        If set (in ~/.milesrc.pre), use vi keybindings."
 }

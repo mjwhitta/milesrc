@@ -17,7 +17,10 @@ export MILESRC_SHELL="$(installed zsh)"
 # {{{ User configs
 # Local stuff
 [[ ! -f $HOME/.milesrc.pre ]] || . $HOME/.milesrc.pre
-if [[ -z $TMUX ]] && [[ -n $MILESRC_TMUX ]]; then
+if [[ -n $(installed tmux) ]] &&
+   [[ -z $TMUX ]] &&
+   [[ -n $MILESRC_TMUX ]]
+then
     exec tmux -2 new -A -s main
 fi
 . $HOME/.milesrc/shell/milesrc.ssh_agent

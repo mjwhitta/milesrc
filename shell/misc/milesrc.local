@@ -117,6 +117,8 @@ esac
 if [[ -n $(installed arTTY) ]]; then
     alias nt="arTTY \$(head -n 1 \$HOME/.config/arTTY/rc)"
     arTTY $(head -n 1 $HOME/.config/arTTY/rc)
+elif [[ -n $(installed nt) ]]; then
+    nt
 else
     clear
 fi

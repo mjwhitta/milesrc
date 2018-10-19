@@ -60,7 +60,7 @@ if [[ -z $(installed z | grep -s "gem") ]]; then
     elif [[ -n $(installed ack) ]]; then
         alias z="\ack $ACK_ARGS"
     else
-        alias z="\grep $GREP_ARGS -EHnr"
+        alias z="\grep $GREP_ARGS -HnPr"
     fi
     alias zf="\find . -iname"
 fi
@@ -83,7 +83,7 @@ case "$MILESRC_SHELL" in
         if [[ -n $(installed arTTY) ]]; then
             _arTTY_complete() {
                 mapfile -t COMPREPLY < <(
-                    arTTY --ls | grep -Es "^$2" | sort -u
+                    arTTY --ls | grep -Ps "^$2" | sort -u
                 )
             }
             complete -F _arTTY_complete arTTY
@@ -117,7 +117,7 @@ esac
 if [[ -n $(installed arTTY) ]]; then
     alias nt="arTTY \$(head -n 1 \$HOME/.config/arTTY/rc)"
     arTTY $(head -n 1 $HOME/.config/arTTY/rc)
-elif [[ -n $(installed nt) ]]; then
+elif [[ -n $(command -v nt) ]]; then
     nt
 else
     clear

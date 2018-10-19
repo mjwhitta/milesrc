@@ -29,7 +29,9 @@ fi
 case "$MILESRC_SHELL" in
     *"bash")
         # {{{ Bash setup
-        # export BASHV="$(bash --version | grep -m 1 -oPs "\d+\.\d+")"
+        # export BASHV="$(
+        #     bash --version | grep -m 1 -oPs "version \K\d+\.\d+"
+        # )"
 
         # History settings
         export HISTFILE="$HOME/.histfile.bash"
@@ -95,7 +97,9 @@ case "$MILESRC_SHELL" in
         ;;
     *"zsh")
         # {{{ Zsh setup
-        export ZSHV="$(zsh --version | grep -m 1 -oPs "\d+\.\d+")"
+        export ZSHV="$(
+            zsh --version | grep -m 1 -oPs "zsh \K\d+\.\d+"
+        )"
 
         # History settings
         export HISTFILE="$HOME/.histfile.zsh"
@@ -394,9 +398,9 @@ fi
 # alias cd="mycd"
 alias cp="\cp -i"
 [[ -z $(installed egrep) ]] || alias egrep="\egrep $GREP_ARGS"
-alias emacs="\emacs -nw"
+[[ -z $(installed emacs) ]] || alias emacs="\emacs -nw"
 alias envg="env | grep -P"
-alias f="sudo"
+[[ -z $(installed sudo) ]] || alias f="sudo"
 [[ -z $(installed gdb) ]] || alias gdb="\gdb -q"
 [[ -z $(installed grep) ]] || alias grep="\grep $GREP_ARGS"
 [[ -z $(installed less) ]] || alias l="less"
@@ -407,15 +411,15 @@ alias ll="ls -hl"
 alias lla="ll -A"
 alias llag="lla | grep -P"
 alias llg="ll | grep -P"
-alias locate="\locate -e --regex"
+[[ -z $(installed locate) ]] || alias locate="\locate -e --regex"
 alias ls="\ls --color=auto -F"
 alias lsg="ls | grep -P"
 alias mv="\mv -i"
 [[ -z $(installed mimeopen) ]] || alias open="mimeopen"
 alias nocolor="sed -r \"s/\[[0-9;]*[AKm]//g\""
 alias p="ps -o pid,user,%cpu,cmd --sort=-%cpu"
-alias pip2="python2 -m pip"
-alias pip3="python3 -m pip"
+[[ -z $(installed python2) ]] || alias pip2="python2 -m pip"
+[[ -z $(installed python3) ]] || alias pip3="python3 -m pip"
 alias psf="p -e --forest"
 alias psg="p -e | grep -sv \"grep\" | grep -P"
 alias psme="p -u \$USER"

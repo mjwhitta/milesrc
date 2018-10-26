@@ -323,8 +323,7 @@ fi
 
 # Go
 export GOPATH="$HOME/.go"
-export GOBIN="$GOPATH/bin"
-[[ -z $(installed go) ]] || mkdir -p $GOBIN
+[[ -z $(installed go) ]] || mkdir -p $GOPATH/bin
 
 # Perl
 export PERL_LOCAL_LIB_ROOT="$HOME/.cpan/perl5"

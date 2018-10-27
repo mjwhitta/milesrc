@@ -10,7 +10,7 @@ MILESRC_PROMPT=(
     "git;light_black;white"
     "cwd;white;light_black"
     "exit;red;light_black;emotes;green;light_black"
-    "vi_ins;white;green;vi_cmd;white;blue"
+    "vi_ins;white;green;vi_cmd;white;blue;vi_rep;white;124"
     "newline"
     "prompt;white;light_black"
 )

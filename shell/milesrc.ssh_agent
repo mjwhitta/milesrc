@@ -29,6 +29,6 @@ then
         [[ -n $(ssh-add -l | grep -s "$fp") ]] || ssh_keys+=($key)
         unset fp
     done < <(grep -lrs "PRIVATE KEY" $HOME/.ssh | sort); unset key
-    [[ -z ${ssh_keys[@]} ]] || ssh-add ${ssh_keys[@]}
+    [[ ${#ssh_keys[@]} -eq 0 ]] || ssh-add ${ssh_keys[@]}
     unset ssh_keys
 fi

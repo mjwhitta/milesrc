@@ -303,7 +303,7 @@ function __milesrc_host() {
 # Set prompt
 function __milesrc_prompt() {
     local exit_status="$?"
-    if [[ -n ${MILESRC_PROMPT[@]} ]]; then
+    if [[ ${#MILESRC_PROMPT[@]} -gt 0 ]]; then
         case "$MILESRC_PROMPT_SHELL" in
             *"zsh") export MILESRC_PROMPT_MODE="$VI_INS" ;;
         esac
@@ -457,7 +457,8 @@ function __milesrc_rand_status() {
 
 # {{{ __milesrc_vi_mode
 # Vi mode for the simulated right prompt
-# $1 = format in the form of vi_cmd;fgclr;bgclr;vi_ins;fgclr;bgclr
+# $1 = format in the form of
+#      vi_cmd;fgclr;bgclr;vi_ins;fgclr;bgclr;vi_rep;fgclr;bgclr
 function __milesrc_vi_mode() {
     [[ $# -eq 1 ]] || return
     case "$MILESRC_PROMPT_SHELL" in
@@ -470,6 +471,9 @@ function __milesrc_vi_mode() {
         $VI_CMD)
             fmt="$(echo -n "$1" | grep -ioPs "vi_cmd(;[^;]+){2}")"
             ;;
+        $VI_REP)
+            fmt="$(echo -n "$1" | grep -ioPs "vi_rep(;[^;]+){2}")"
+            ;;
     esac
 
     __milesrc_format "$fmt" "$MILESRC_PROMPT_MODE"
@@ -479,14 +483,15 @@ function __milesrc_vi_mode() {
 
 # {{{ Prompt
 # Vi mode strings
-export VI_CMD="   NORMAL   "
-export VI_INS="-- INSERT --"
+export VI_CMD=" NORMAL  "
+export VI_INS=" INSERT  "
+export VI_REP=" REPLACE "
 
 # Enable prompt
 case "$MILESRC_PROMPT_SHELL" in
     *"bash")
-        # set vi-cmd-mode-string "    NORMAL    "
-        # set vi-ins-mode-string " -- INSERT -- "
+        # set vi-cmd-mode-string $VI_CMD
+        # set vi-ins-mode-string $VI_INS
         # set show-mode-in-prompt on
 
         case "$PROMPT_COMMAND" in
@@ -497,23 +502,28 @@ case "$MILESRC_PROMPT_SHELL" in
     *"zsh")
         function zle-keymap-select() {
             local exit_status="$?"
-            if [[ -n ${MILESRC_PROMPT[@]} ]]; then
+            if [[ ${#MILESRC_PROMPT[@]} -gt 0 ]]; then
                 case "$KEYMAP" in
-                    "main"|"viins")
-                        export MILESRC_PROMPT_MODE="$VI_INS"
+                    "main")
+                        case "$ZLE_STATE" in
+                            *"insert"*)
+                                export MILESRC_PROMPT_MODE="$VI_INS"
+                                ;;
+                            *) export MILESRC_PROMPT_MODE="$VI_REP" ;;
+                        esac
                         ;;
-                    "vicmd") export MILESRC_PROMPT_MODE="$VI_CMD" ;;
+                    *) export MILESRC_PROMPT_MODE="$VI_CMD" ;;
                 esac
                 local fmt="$(
                     echo -n "${MILESRC_PROMPT[@]}" | \
-                    grep -ioPs "(vi_cmd|vi_ins)[^ ]+"
+                    grep -ioPs "(vi_cmd|vi_ins|vi_rep)[^ ]+"
                 )"
                 if [[ -n $fmt ]]; then
                     local mode="$(__milesrc_vi_mode $fmt)"
                     mode="${mode#*|}"
                     local new_prompt="$(
                         echo -n "$PS1" | \
-                        sed -r "s/ ($VI_CMD|$VI_INS) /$mode/"
+                        sed -r "s/ ($VI_CMD|$VI_INS|$VI_REP) /$mode/"
                     )"
                     export PS1="$new_prompt"
                 fi
@@ -521,15 +531,6 @@ case "$MILESRC_PROMPT_SHELL" in
             zle reset-prompt
         }
         zle -N zle-keymap-select
-
-        #function zle-line-finish() {
-        #    local exit_status="$?"
-        #    if [[ -n ${MILESRC_PROMPT[@]} ]]; then
-        #        export MILESRC_PROMPT_MODE="$VI_INS"
-        #        export PS1="$(__milesrc_prompt_ps1 $exit_status)"
-        #    fi
-        #}
-        #zle -N zle-line-finish
 
         case "${precmd_functions[(r)__milesrc_prompt]}" in
             "__milesrc_prompt") ;;

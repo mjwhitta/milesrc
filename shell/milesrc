@@ -23,7 +23,7 @@ if [[ -n $(installed tmux) ]] &&
 then
     exec tmux -2 new -A -s "$(hostname -s)"
 fi
-. $HOME/.milesrc/shell/milesrc.ssh_agent
+[[ ! -d $HOME/.milesrc ]] || . $HOME/.milesrc/shell/milesrc.ssh_agent
 # }}}
 
 case "$MILESRC_SHELL" in

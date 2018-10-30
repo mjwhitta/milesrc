@@ -866,7 +866,15 @@ if exists(':function') && exists(':let')
                 let g:syntastic_check_on_open = 1
             endif
             let g:syntastic_check_on_wq = 0
-            let g:syntastic_sh_shellcheck_args = "-e SC1117"
+            let g:syntastic_sh_shellcheck_args =
+                \ "
+                \ -e SC1117
+                \ -e SC2028
+                \ -e SC2143
+                \ -e SC2155
+                \ -e SC2164
+                \ -e SC2181
+                \ "
         endif
 
         " Tagbar

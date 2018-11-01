@@ -37,14 +37,16 @@ function gimme() {
     gimme_usage() {
         echo "Usage: gimme [OPTIONS] [pkg]..."
         echo
-        echo "Automatically uses the correct package manager"
+        echo "Automatically uses the correct package manager. Default"
+        echo "behavior is to install."
         echo
         echo "Options:"
-        echo "    -h, --help      Display this help message"
-        echo "    -n, --nosave    Also remove configs"
-        echo "    -R, --remove    Remove package(s)"
-        echo "    -s, --search    Search for matching packages"
-        echo "    -u, --update    Update installed packages"
+        echo "    -h, --help       Display this help message"
+        echo "    -i, --install    Install package(s) (default)"
+        echo "    -n, --nosave     Also remove configs"
+        echo "    -R, --remove     Remove package(s)"
+        echo "    -s, --search     Search for matching packages"
+        echo "    -u, --update     Update installed packages"
         echo
         gimme_cleanup
     }
@@ -58,6 +60,7 @@ function gimme() {
         case "$1" in
             "--") shift && args+=("$@") && break ;;
             "-h"|"--help") gimme_usage; return 0 ;;
+            "-i"|"--install") action="install" ;;
             "-n"|"--nosave") nosave="true" ;;
             "-R"|"--remove") action="remove" ;;
             "-Rn") action="remove"; nosave="true" ;;

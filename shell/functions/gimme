@@ -30,7 +30,7 @@
 
 function gimme() {
     gimme_cleanup() {
-        unset action args cask cmd nosave sudo
+        unset action aptget args cask cmd nosave sudo
         unset -f gimme_cleanup gimme_usage
     }
 
@@ -77,18 +77,19 @@ function gimme() {
     esac
 
     if [[ -n $(command -v apt-get) ]]; then
+        aptget="DEBIAN_FRONTEND=noninteractive apt-get"
         case "$action" in
-            "install") $sudo apt-get install -y "$@" ;;
+            "install") $sudo $aptget install -qy "$@" ;;
             "remove")
-                [[ -n $nosave ]] || $sudo apt-get remove "$@"
-                [[ -z $nosave ]] || $sudo apt-get purge "$@"
+                [[ -n $nosave ]] || $sudo $aptget remove "$@"
+                [[ -z $nosave ]] || $sudo $aptget purge "$@"
                 ;;
             "search") apt-cache search "$@" ;;
             "update")
                 for cmd in \
                     update upgrade dist-upgrade autoremove autoclean \
                 ; do
-                    $sudo apt-get $cmd -y
+                    $sudo $aptget $cmd -qy
                 done
                 ;;
         esac

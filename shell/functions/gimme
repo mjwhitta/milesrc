@@ -30,7 +30,7 @@
 
 function gimme() {
     gimme_cleanup() {
-        unset action args cask cmd nosave
+        unset action args cask cmd nosave sudo
         unset -f gimme_cleanup gimme_usage
     }
 
@@ -50,8 +50,9 @@ function gimme() {
     }
 
     declare -a args
-    action="install"
     unset nosave
+    action="install"
+    sudo="$(command -v sudo)"
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -77,17 +78,17 @@ function gimme() {
 
     if [[ -n $(command -v apt-get) ]]; then
         case "$action" in
-            "install") sudo apt-get install -y "$@" ;;
+            "install") $sudo apt-get install -y "$@" ;;
             "remove")
-                [[ -n $nosave ]] || sudo apt-get remove "$@"
-                [[ -z $nosave ]] || sudo apt-get purge "$@"
+                [[ -n $nosave ]] || $sudo apt-get remove "$@"
+                [[ -z $nosave ]] || $sudo apt-get purge "$@"
                 ;;
             "search") apt-cache search "$@" ;;
             "update")
                 for cmd in \
                     update upgrade dist-upgrade autoremove autoclean \
                 ; do
-                    sudo apt-get $cmd -y
+                    $sudo apt-get $cmd -y
                 done
                 ;;
         esac
@@ -115,10 +116,10 @@ function gimme() {
         esac
     elif [[ -n $(command -v dnf) ]]; then
         case "$action" in
-            "install") sudo dnf install -y "$@" ;;
-            "remove") sudo dnf remove "$@" ;;
+            "install") $sudo dnf install -y "$@" ;;
+            "remove") $sudo dnf remove "$@" ;;
             "search") dnf search -q "$@" ;;
-            "update") sudo dnf upgrade -y ;;
+            "update") $sudo dnf upgrade -y ;;
         esac
     elif [[ -n $(command -v pacman) ]]; then
         if [[ -n $(command -v ruaur) ]]; then
@@ -136,24 +137,24 @@ function gimme() {
             esac
         else
             case "$action" in
-                "install") sudo pacman -S "$@" --noconfirm ;;
+                "install") $sudo pacman -S "$@" --noconfirm ;;
                 "remove")
-                    [[ -n $nosave ]] || sudo pacman -Rs "$@"
-                    [[ -z $nosave ]] || sudo pacman -Rns "$@"
+                    [[ -n $nosave ]] || $sudo pacman -Rs "$@"
+                    [[ -z $nosave ]] || $sudo pacman -Rns "$@"
                     ;;
                 "search") pacman -Ss "$@" ;;
                 "update")
-                    sudo pacman -Syyu --noconfirm
-                    sudo pacman -Sc --noconfirm
+                    $sudo pacman -Syyu --noconfirm
+                    $sudo pacman -Sc --noconfirm
                     ;;
             esac
         fi
     elif [[ -n $(command -v yum) ]]; then
         case "$action" in
-            "install") sudo yum install -y "$@" ;;
-            "remove") sudo yum remove "$@" ;;
+            "install") $sudo yum install -y "$@" ;;
+            "remove") $sudo yum remove "$@" ;;
             "search") yum search "$@" ;;
-            "update") sudo yum update -y ;;
+            "update") $sudo yum update -y ;;
         esac
     else
         echo "Unsupported package manager!"

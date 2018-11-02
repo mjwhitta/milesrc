@@ -23,7 +23,7 @@ tmux set -g @ui_style "bg=blue,fg=white"
 
 # Let user override values before continuing
 if [[ -f $HOME/.tmux/tmux.override ]]; then
-    tmux source $HOME/.tmux/tmux.override
+    tmux source "$HOME/.tmux/tmux.override"
 fi
 # }}}
 
@@ -44,18 +44,16 @@ function fground() { tget -g @ui_style | grep -Eos "fg=[^,]+"; }
 function if_then_else() { echo "#{$1,$2,$3}"; }
 
 # Lazy get tmux option with format strings
-function tfget() { tfstr "$(tlget $@)"; }
+function tfget() { tfstr "$(tlget "$@")"; }
 
 # Get a tmux formatted string
-function tfstr() { echo -n "\$(tmux display -p \"$@\")"; }
+function tfstr() { echo -n "\$(tmux display -p \"$*\")"; }
 
 # Get tmux option
-function tget() { tmux show -qv $@; }
+function tget() { tmux show -qv "$@"; }
 
 # Lazy get tmux option (lazy-loading)
-function tlget() { echo "\$(tmux show -qv $@)"; }
-
-version="$(tmux -V | awk '{print $2}' | tr -d ".")"
+function tlget() { echo "\$(tmux show -qv \"$*\")"; }
 # }}}
 
 # {{{ Settings
@@ -221,7 +219,7 @@ tmux bind "c" new-window -c "#{pane_current_path}"
 tmux bind -T copy-mode-vi "d" send -X copy-pipe-and-cancel "
     cd $(tfstr "#{pane_current_path}")
     args=\"\$(xargs -I {} echo \"{}\")\"
-    echo "\$args" | base64 -d; echo
+    echo \"\$args\" | base64 -d; echo
     tmux display \"\$(
         echo \"\$args\" | base64 -d | sed \"s/\#/\#\#/g\"
     )\"
@@ -335,6 +333,6 @@ tmux bind "+" set -w synchronize-panes
 
 # {{{ Local file
 for file in $HOME/.tmux/tmux.local $HOME/.tmux.local; do
-    [[ ! -f $file ]] || tmux source $file
+    [[ ! -f $file ]] || tmux source "$file"
 done; unset file
 # }}}

@@ -79,7 +79,14 @@ function gimme() {
         "update") [[ $# -ne 0 ]] && gimme_usage && return 4 ;;
     esac
 
-    if [[ -n $(command -v apt-get) ]]; then
+    if [[ -n $(command -v zypper) ]]; then
+        case "$action" in
+            "install") $sudo zypper install -y "$@" ;;
+            "remove") $sudo zypper remove --clean-deps -y "$@" ;;
+            "search") zypper search "$@" ;;
+            "update") $sudo zypper update -y ;;
+        esac
+    elif [[ -n $(command -v apt-get) ]]; then
         case "$action" in
             "install")
                 DEBIAN_FRONTEND="noninteractive" \
@@ -168,13 +175,6 @@ function gimme() {
             "remove") $sudo yum remove "$@" ;;
             "search") yum search "$@" ;;
             "update") $sudo yum update -y ;;
-        esac
-    elif [[ -n $(command -v zypper) ]]; then
-        case "$action" in
-            "install") $sudo zypper install -y "$@" ;;
-            "remove") $sudo zypper remove --clean-deps -y "$@" ;;
-            "search") zypper search "$@" ;;
-            "update") $sudo zypper update -y ;;
         esac
     else
         echo "Unsupported package manager!"

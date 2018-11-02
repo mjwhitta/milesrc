@@ -100,7 +100,14 @@ function gimme() {
     }
 
     gimme_dnf() {
-        if [[ -n $(command -v dnf) ]]; then
+        if [[ -n $(command -v atomic) ]]; then
+            case "$action" in
+                "install") $sudo atomic host install "$@" ;;
+                "remove") $sudo atomic host uninstall "$@" ;;
+                "search") echo "Not supported" ;;
+                "update") $sudo atomic host upgrade ;;
+            esac
+        elif [[ -n $(command -v dnf) ]]; then
             case "$action" in
                 "install") $sudo dnf install -y "$@" ;;
                 "remove") $sudo dnf remove "$@" ;;

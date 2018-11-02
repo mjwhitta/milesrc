@@ -169,6 +169,13 @@ function gimme() {
             "search") yum search "$@" ;;
             "update") $sudo yum update -y ;;
         esac
+    elif [[ -n $(command -v zypper) ]]; then
+        case "$action" in
+            "install") $sudo zypper install -y "$@" ;;
+            "remove") $sudo zypper remove --clean-deps -y "$@" ;;
+            "search") zypper search "$@" ;;
+            "update") $sudo zypper update -y ;;
+        esac
     else
         echo "Unsupported package manager!"
     fi

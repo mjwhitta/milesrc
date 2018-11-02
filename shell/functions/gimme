@@ -29,9 +29,122 @@
 # --------------------------------------------------------------------
 
 function gimme() {
+    gimme_apt() {
+        if [[ -n $(command -v apt-get) ]]; then
+            case "$action" in
+                "install")
+                    DEBIAN_FRONTEND="noninteractive" \
+                        $sudo apt-get install -qy "$@"
+                    ;;
+                "remove")
+                    if [[ -z $nosave ]]; then
+                        DEBIAN_FRONTEND="noninteractive" \
+                            $sudo apt-get remove "$@"
+                    fi
+                    if [[ -n $nosave ]]; then
+                        DEBIAN_FRONTEND="noninteractive" \
+                            $sudo apt-get purge "$@"
+                    fi
+                    ;;
+                "search") apt-cache search "$@" ;;
+                "update")
+                    for cmd in \
+                        update \
+                        upgrade \
+                        dist-upgrade \
+                        autoremove \
+                        autoclean
+                    do
+                        DEBIAN_FRONTEND="noninteractive" \
+                            $sudo apt-get $cmd -qy
+                    done
+                    ;;
+            esac
+        fi
+    }
+
+    gimme_brew() {
+        if [[ -n $(command -v brew) ]]; then
+            case "$action" in
+                "install") brew install "$@" ;;
+                "remove") brew remove "$@" ;;
+                "search") brew search "$@" ;;
+                "update")
+                    for cmd in update upgrade cleanup; do
+                        brew $cmd
+                    done; unset cmd
+                    while read -r cask; do
+                        brew cask install "$cask"
+                    done < <(brew cask list); unset cask
+                    brew cask cleanup
+                    ;;
+            esac
+        fi
+    }
+
     gimme_cleanup() {
         unset action args cask cmd nosave sudo
-        unset -f gimme_cleanup gimme_usage
+        unset -f gimme_apt gimme_brew gimme_cleanup gimme_crew
+        unset -f gimme_dnf gimme_pacman gimme_usage gimme_zypper
+    }
+
+    gimme_crew() {
+        if [[ -n $(command -v crew) ]]; then
+            case "$action" in
+                "install") yes | crew install "$@" ;;
+                "remove") crew remove "$@" ;;
+                "search") crew search "$@" ;;
+                "update") crew update && yes | crew upgrade ;;
+            esac
+        fi
+    }
+
+    gimme_dnf() {
+        if [[ -n $(command -v dnf) ]]; then
+            case "$action" in
+                "install") $sudo dnf install -y "$@" ;;
+                "remove") $sudo dnf remove "$@" ;;
+                "search") dnf search -q "$@" ;;
+                "update") $sudo dnf upgrade -y ;;
+            esac
+        elif [[ -n $(command -v yum) ]]; then
+            case "$action" in
+                "install") $sudo yum install -y "$@" ;;
+                "remove") $sudo yum remove "$@" ;;
+                "search") yum search "$@" ;;
+                "update") $sudo yum update -y ;;
+            esac
+        fi
+    }
+
+    gimme_pacman() {
+        if [[ -n $(command -v ruaur) ]]; then
+            case "$action" in
+                "install") ruaur -S "$@" --noconfirm ;;
+                "remove")
+                    [[ -n $nosave ]] || ruaur -R "$@"
+                    [[ -z $nosave ]] || ruaur -Rn "$@"
+                    ;;
+                "search") ruaur -Ss "$@" ;;
+                "update")
+                    ruaur -Su --noconfirm
+                    ruaur -Sc --noconfirm
+                    ;;
+            esac
+        elif [[ -n $(command -v pacman) ]]; then
+            case "$action" in
+                "install") $sudo pacman -S "$@" --noconfirm ;;
+                "remove")
+                    [[ -n $nosave ]] || $sudo pacman -Rs "$@"
+                    [[ -z $nosave ]] || $sudo pacman -Rns "$@"
+                    ;;
+                "search") pacman -Ss "$@" ;;
+                "update")
+                    $sudo pacman -Syyu --noconfirm
+                    $sudo pacman -Sc --noconfirm
+                    ;;
+            esac
+        fi
     }
 
     gimme_usage() {
@@ -49,6 +162,17 @@ function gimme() {
         echo "    -u, --update     Update installed packages"
         echo
         gimme_cleanup
+    }
+
+    gimme_zypper() {
+        if [[ -n $(command -v zypper) ]]; then
+            case "$action" in
+                "install") $sudo zypper install -y "$@" ;;
+                "remove") $sudo zypper remove --clean-deps -y "$@" ;;
+                "search") zypper search "$@" ;;
+                "update") $sudo zypper update -y ;;
+            esac
+        fi
     }
 
     declare -a args
@@ -79,106 +203,20 @@ function gimme() {
         "update") [[ $# -ne 0 ]] && gimme_usage && return 4 ;;
     esac
 
-    if [[ -n $(command -v zypper) ]]; then
-        case "$action" in
-            "install") $sudo zypper install -y "$@" ;;
-            "remove") $sudo zypper remove --clean-deps -y "$@" ;;
-            "search") zypper search "$@" ;;
-            "update") $sudo zypper update -y ;;
-        esac
-    elif [[ -n $(command -v apt-get) ]]; then
-        case "$action" in
-            "install")
-                DEBIAN_FRONTEND="noninteractive" \
-                    $sudo apt-get install -qy "$@"
-                ;;
-            "remove")
-                if [[ -z $nosave ]]; then
-                    DEBIAN_FRONTEND="noninteractive" \
-                        $sudo apt-get remove "$@"
-                fi
-                if [[ -n $nosave ]]; then
-                    DEBIAN_FRONTEND="noninteractive" \
-                        $sudo apt-get purge "$@"
-                fi
-                ;;
-            "search") apt-cache search "$@" ;;
-            "update")
-                for cmd in \
-                    update upgrade dist-upgrade autoremove autoclean \
-                ; do
-                    DEBIAN_FRONTEND="noninteractive" \
-                        $sudo apt-get $cmd -qy
-                done
-                ;;
-        esac
-    elif [[ -n $(command -v brew) ]]; then
-        case "$action" in
-            "install") brew install "$@" ;;
-            "remove") brew remove "$@" ;;
-            "search") brew search "$@" ;;
-            "update")
-                for cmd in update upgrade cleanup; do
-                    brew $cmd
-                done
-                while read -r cask; do
-                    brew cask install "$cask"
-                done < <(brew cask list)
-                brew cask cleanup
-                ;;
-        esac
-    elif [[ -n $(command -v crew) ]]; then
-        case "$action" in
-            "install") yes | crew install "$@" ;;
-            "remove") crew remove "$@" ;;
-            "search") crew search "$@" ;;
-            "update") crew update && yes | crew upgrade ;;
-        esac
-    elif [[ -n $(command -v dnf) ]]; then
-        case "$action" in
-            "install") $sudo dnf install -y "$@" ;;
-            "remove") $sudo dnf remove "$@" ;;
-            "search") dnf search -q "$@" ;;
-            "update") $sudo dnf upgrade -y ;;
-        esac
-    elif [[ -n $(command -v pacman) ]]; then
-        if [[ -n $(command -v ruaur) ]]; then
-            case "$action" in
-                "install") ruaur -S "$@" --noconfirm ;;
-                "remove")
-                    [[ -n $nosave ]] || ruaur -R "$@"
-                    [[ -z $nosave ]] || ruaur -Rn "$@"
-                    ;;
-                "search") ruaur -Ss "$@" ;;
-                "update")
-                    ruaur -Su --noconfirm
-                    ruaur -Sc --noconfirm
-                    ;;
+    case "$(uname -s)" in
+        "Darwin") gimme_brew "$@" ;;
+        "Linux")
+            case "$(grep -oPs "ID\=\"?\K[^\"]+" /etc/os-release)" in
+                "arch") gimme_pacman "$@" ;;
+                "chrom"*"os") gimme_crew "$@" ;;
+                "debian") gimme_apt "$@" ;;
+                "fedora") gimme_dnf "$@" ;;
+                "opensuse"*) gimme_zypper "$@" ;;
+                *) echo "Unsupported package manager!" ;;
             esac
-        else
-            case "$action" in
-                "install") $sudo pacman -S "$@" --noconfirm ;;
-                "remove")
-                    [[ -n $nosave ]] || $sudo pacman -Rs "$@"
-                    [[ -z $nosave ]] || $sudo pacman -Rns "$@"
-                    ;;
-                "search") pacman -Ss "$@" ;;
-                "update")
-                    $sudo pacman -Syyu --noconfirm
-                    $sudo pacman -Sc --noconfirm
-                    ;;
-            esac
-        fi
-    elif [[ -n $(command -v yum) ]]; then
-        case "$action" in
-            "install") $sudo yum install -y "$@" ;;
-            "remove") $sudo yum remove "$@" ;;
-            "search") yum search "$@" ;;
-            "update") $sudo yum update -y ;;
-        esac
-    else
-        echo "Unsupported package manager!"
-    fi
+            ;;
+        *) echo "Unsupported package manager!" ;;
+    esac
 
     gimme_cleanup
 }

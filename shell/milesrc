@@ -311,7 +311,11 @@ export GEM_HOME="$HOME/.gem/ruby"
 export GEM_PATH="$GEM_HOME/gems"
 [[ -z $(installed ruby) ]] || mkdir -p $GEM_HOME/bin $GEM_HOME/gems
 if [[ -d $HOME/.gem ]] && [[ ! -f $HOME/.gemrc ]]; then
-    echo "gem: --no-format-executable --no-user-install" >$HOME/.gemrc
+    {
+        echo "gem: --no-format-executable --no-user-install"
+        echo "install: --no-format-executable --no-user-install"
+        echo "update: --no-format-executable --no-user-install"
+    } >"$HOME/.gemrc"
 fi
 
 # Python

@@ -172,7 +172,18 @@ function gimme() {
     }
 
     gimme_zypper() {
-        if [[ -n $(command -v zypper) ]]; then
+        if [[ -n $(command -v transactional-update) ]]; then
+            case "$action" in
+                "install")
+                    $sudo transactional-update pkg install -y "$@"
+                    ;;
+                "remove")
+                    $sudo transactional-update pkg remove -u -y "$@"
+                    ;;
+                "search") zypper search "$@" ;;
+                "update") $sudo transactional-update ;;
+            esac
+        elif [[ -n $(command -v zypper) ]]; then
             case "$action" in
                 "install") $sudo zypper install -y "$@" ;;
                 "remove") $sudo zypper remove --clean-deps -y "$@" ;;

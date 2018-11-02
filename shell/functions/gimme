@@ -206,7 +206,7 @@ function gimme() {
     case "$(uname -s)" in
         "Darwin") gimme_brew "$@" ;;
         "Linux")
-            case "$(grep -oPs "ID\=\"?\K[^\"]+" /etc/os-release)" in
+            case "$(grep -oPs "^ID\=\"?\K[^\"]+" /etc/os-release)" in
                 "arch") gimme_pacman "$@" ;;
                 "chrom"*"os") gimme_crew "$@" ;;
                 "debian") gimme_apt "$@" ;;

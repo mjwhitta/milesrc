@@ -1,0 +1,6 @@
+set -g @battery_bar_spacer " "
+set -g @battery_bar_surround "  "
+set -g @battery_charging "⚡️"
+set -g @battery_empty "♡"
+set -g @battery_filled "❤"
+set -g @default_ctrl_d "off"

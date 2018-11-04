@@ -22,7 +22,7 @@ tmux set -g @term "tmux-256color"
 tmux set -g @ui_style "bg=blue,fg=white"
 
 # Let user override values before continuing
-if [[ -f $HOME/.tmux/tmux.override ]]; then
+if [[ -f "$HOME/.tmux/tmux.override" ]]; then
     tmux source "$HOME/.tmux/tmux.override"
 fi
 # }}}
@@ -53,7 +53,7 @@ function tfstr() { echo -n "\$(tmux display -p \"$*\")"; }
 function tget() { tmux show -qv "$@"; }
 
 # Lazy get tmux option (lazy-loading)
-function tlget() { echo "\$(tmux show -qv \"$*\")"; }
+function tlget() { echo "\$(tmux show -qv $*)"; }
 # }}}
 
 # {{{ Settings
@@ -238,7 +238,7 @@ tmux bind -T copy-mode-vi "M-o" send -X copy-pipe-and-cancel "
     args=\"\$(xargs -I {} echo \"{}\")\"
     set -- \$args
     [[ \$# -ne 0 ]] || exit 0
-    if [[ -f \$1 ]]; then
+    if [[ -f \"\$1\" ]]; then
         type=\"\$(xdg-mime query filetype \$1)\"
     elif [[ -n \$(echo \"\$1\" | grep -Es \"https?:\/\/\") ]]; then
         type=\"text/html\"
@@ -333,6 +333,6 @@ tmux bind "+" set -w synchronize-panes
 
 # {{{ Local file
 for file in $HOME/.tmux/tmux.local $HOME/.tmux.local; do
-    [[ ! -f $file ]] || tmux source "$file"
+    [[ ! -f "$file" ]] || tmux source "$file"
 done; unset file
 # }}}

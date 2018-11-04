@@ -233,7 +233,7 @@ function gimme() {
                 *) echo "Unsupported package manager!" ;;
             esac
             ;;
-        *) echo "Unsupported package manager!" ;;
+        *) echo "Unsupported OS!" ;;
     esac
 
     gimme_cleanup

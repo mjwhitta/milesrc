@@ -917,13 +917,25 @@ case "$MILESRC_SHELL" in
         fi
 
         # Complete gimme function
-        if [[ -n $(installed apt-get) ]]; then
+        if [[ -n $(installed apt-cache) ]]; then
             function _apt_install_complete() {
                 mapfile -t COMPREPLY < <(
                     apt-cache --no-generate pkgnames "$2"
                 )
             }
             complete -F _apt_install_complete gimme
+        elif [[ -n $(installed brew) ]]; then
+            function _brew_install_complete() {
+                mapfile -t COMPREPLY < <(brew search "$2")
+            }
+            complete -F _brew_install_complete gimme
+        elif [[ -n $(installed crew) ]]; then
+            function _crew_install_complete() {
+                mapfile -t COMPREPLY < <(
+                    crew search "$2" | awk '{print $1}'
+                )
+            }
+            complete -F _crew_install_complete gimme
         elif [[ -n $(installed pacman) ]]; then
             if [[ -n $(installed ruaur) ]]; then
                 function _ruaur_install_complete() {
@@ -942,18 +954,6 @@ case "$MILESRC_SHELL" in
                 }
                 complete -F _pacman_install_complete gimme
             fi
-        elif [[ -n $(installed brew) ]]; then
-            function _brew_install_complete() {
-                mapfile -t COMPREPLY < <(brew search "$2")
-            }
-            complete -F _brew_install_complete gimme
-        elif [[ -n $(installed crew) ]]; then
-            function _crew_install_complete() {
-                mapfile -t COMPREPLY < <(
-                    crew search "$2" | awk '{print $1}'
-                )
-            }
-            complete -F _crew_install_complete gimme
         fi
         # }}}
         ;;
@@ -978,11 +978,21 @@ case "$MILESRC_SHELL" in
         fi
 
         # Complete gimme function
-        if [[ -n $(installed apt-get) ]]; then
+        if [[ -n $(installed apt-cache) ]]; then
             function _apt_install_complete() {
                 reply=($(apt-cache --no-generate pkgnames "$1"))
             }
             compctl -K _apt_install_complete gimme
+        elif [[ -n $(installed brew) ]]; then
+            function _brew_install_complete() {
+                reply=($(brew search "$1"))
+            }
+            compctl -K _brew_install_complete gimme
+        elif [[ -n $(installed crew) ]]; then
+            function _crew_install_complete() {
+                reply=($(crew search "$1" | awk '{print $1}'))
+            }
+            compctl -K _crew_install_complete gimme
         elif [[ -n $(installed pacman) ]]; then
             if [[ -n $(installed ruaur) ]]; then
                 compdef _gnu_generic ruaur
@@ -999,16 +1009,6 @@ case "$MILESRC_SHELL" in
                 }
                 compctl -K _pacman_install_complete gimme
             fi
-        elif [[ -n $(installed brew) ]]; then
-            function _brew_install_complete() {
-                reply=($(brew search "$1"))
-            }
-            compctl -K _brew_install_complete gimme
-        elif [[ -n $(installed crew) ]]; then
-            function _crew_install_complete() {
-                reply=($(crew search "$1" | awk '{print $1}'))
-            }
-            compctl -K _crew_install_complete gimme
         fi
         # }}}
         ;;

@@ -181,14 +181,20 @@ function gimme() {
                     $sudo transactional-update pkg remove -u -y "$@"
                     ;;
                 "search") zypper search "$@" ;;
-                "update") $sudo transactional-update ;;
+                "update")
+                    $sudo transactional-update up
+                    $sudo transactional-update dup
+                    ;;
             esac
         elif [[ -n $(command -v zypper) ]]; then
             case "$action" in
                 "install") $sudo zypper install -y "$@" ;;
                 "remove") $sudo zypper remove --clean-deps -y "$@" ;;
                 "search") zypper search "$@" ;;
-                "update") $sudo zypper update -y ;;
+                "update")
+                    $sudo zypper update -y
+                    $sudo zypper dist-upgrade -y
+                    ;;
             esac
         fi
     }

@@ -181,10 +181,7 @@ function gimme() {
                     $sudo transactional-update pkg remove -u -y "$@"
                     ;;
                 "search") zypper search "$@" ;;
-                "update")
-                    $sudo transactional-update up
-                    $sudo transactional-update dup
-                    ;;
+                "update") $sudo transactional-update up dup ;;
             esac
         elif [[ -n $(command -v zypper) ]]; then
             case "$action" in

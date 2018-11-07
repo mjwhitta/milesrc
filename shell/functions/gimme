@@ -172,16 +172,20 @@ function gimme() {
     }
 
     gimme_zypper() {
+        local type="$1" && shift
         if [[ -n $(command -v transactional-update) ]]; then
             case "$action" in
                 "install")
-                    $sudo transactional-update pkg install -y "$@"
-                    ;;
+                    $sudo transactional-update pkg in -y "$@" ;;
                 "remove")
-                    $sudo transactional-update pkg remove -u -y "$@"
-                    ;;
+                    $sudo transactional-update pkg rm -uy "$@" ;;
                 "search") zypper search "$@" ;;
-                "update") $sudo transactional-update up dup ;;
+                "update")
+                    case "$type" in
+                        "leap") $sudo transactional-update up ;;
+                        "tw") $sudo transactional-update dup ;;
+                    esac
+                    ;;
             esac
         elif [[ -n $(command -v zypper) ]]; then
             case "$action" in
@@ -232,7 +236,8 @@ function gimme() {
                 "chrom"*"os") gimme_crew "$@" ;;
                 "debian") gimme_apt "$@" ;;
                 "fedora") gimme_dnf "$@" ;;
-                "opensuse"*) gimme_zypper "$@" ;;
+                "opensuse"*"leap") gimme_zypper "leap" "$@" ;;
+                "opensuse"*"tumbleweed") gimme_zypper "tw" "$@" ;;
                 *) echo "Unsupported package manager!" ;;
             esac
             ;;

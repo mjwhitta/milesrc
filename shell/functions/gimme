@@ -176,7 +176,9 @@ function gimme() {
         if [[ -n $(command -v transactional-update) ]]; then
             case "$action" in
                 "install")
-                    $sudo transactional-update pkg in -y "$@" ;;
+                    $sudo transactional-update pkg in \
+                        --no-recommends -y "$@"
+                    ;;
                 "remove")
                     $sudo transactional-update pkg rm -uy "$@" ;;
                 "search") zypper search "$@" ;;
@@ -189,7 +191,8 @@ function gimme() {
             esac
         elif [[ -n $(command -v zypper) ]]; then
             case "$action" in
-                "install") $sudo zypper install -y "$@" ;;
+                "install")
+                    $sudo zypper install --no-recommnds -y "$@" ;;
                 "remove") $sudo zypper remove --clean-deps -y "$@" ;;
                 "search") zypper search "$@" ;;
                 "update")

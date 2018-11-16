@@ -192,7 +192,7 @@ function gimme() {
         elif [[ -n $(command -v zypper) ]]; then
             case "$action" in
                 "install")
-                    $sudo zypper install --no-recommnds -y "$@" ;;
+                    $sudo zypper install --no-recommends -y "$@" ;;
                 "remove") $sudo zypper remove --clean-deps -y "$@" ;;
                 "search") zypper search "$@" ;;
                 "update")

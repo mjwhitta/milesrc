@@ -48,22 +48,6 @@ if [[ -n $(installed git) ]]; then
 
     unset full minimal tformat
 fi
-
-# I like ruby-zoom, but in case it's not installed, create alias
-if [[ -z $(installed z | grep -s "gem") ]]; then
-    if [[ -n $(installed rg) ]]; then
-        alias z="\rg $RG_ARGS"
-    elif [[ -n $(installed ag) ]]; then
-        alias z="\ag $AG_ARGS"
-    elif [[ -n $(installed ack-grep) ]]; then
-        alias z="\ack-grep $ACK_ARGS"
-    elif [[ -n $(installed ack) ]]; then
-        alias z="\ack $ACK_ARGS"
-    else
-        alias z="\grep $GREP_ARGS -HnPr"
-    fi
-    alias zf="\find . -iname"
-fi
 # }}}
 
 # {{{ Functions
@@ -74,6 +58,26 @@ function lscd() {
         ls $dir
     done < <(echo "$CDPATH" | sed "s/:/\n/g"); unset dir
 }
+
+# I like ruby-zoom, but in case it's not installed, create functions
+if [[ -z $(installed z | grep -s "gem") ]]; then
+    function z() {
+        if [[ -n $(installed rg) ]]; then
+            rg $@
+        elif [[ -n $(installed ag) ]]; then
+            ag $@
+        elif [[ -n $(installed ack-grep) ]]; then
+            ack-grep $@
+        elif [[ -n $(installed ack) ]]; then
+            ack $@
+        else
+            grep -HnPr $@
+        fi
+    }
+    function zf() {
+        find . -regextype posix-extended -iregex ".*$*.*" -print
+    }
+fi
 # }}}
 
 case "$MILESRC_SHELL" in

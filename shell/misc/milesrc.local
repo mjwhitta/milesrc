@@ -29,6 +29,7 @@ done; unset dir
 alias dt="tmux -2 new -d -s"
 alias et="exec tmux -2 new -A -s"
 alias j="\cd \$(cat $HOME/.proj 2>/dev/null)"
+alias moon="clear; curl -s wttr.in/Moon | head -n -2"
 [[ -z $(installed pwsh) ]] || alias powershell="TERM=xterm pwsh"
 alias save="pwd >\$HOME/.proj"
 alias weather="clear; curl -s wttr.in/~Lafayette,IN | head -n -2"

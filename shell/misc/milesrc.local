@@ -59,6 +59,11 @@ function lscd() {
     done < <(echo "$CDPATH" | sed "s/:/\n/g"); unset dir
 }
 
+function wunder() {
+    echo -e "\nLAF\nX\n" | nc rainmaker.wunderground.com 23 | \
+    grep --color=none -A 2 "Temp(F)"
+}
+
 # I like ruby-zoom, but in case it's not installed, create functions
 if [[ -z $(installed z | grep -s "gem") ]]; then
     function z() {

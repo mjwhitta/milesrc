@@ -29,10 +29,8 @@ done; unset dir
 alias dt="tmux -2 new -d -s"
 alias et="exec tmux -2 new -A -s"
 alias j="\cd \$(cat $HOME/.proj 2>/dev/null)"
-alias moon="clear; curl -s wttr.in/Moon | head -n -2"
 [[ -z $(installed pwsh) ]] || alias powershell="TERM=xterm pwsh"
 alias save="pwd >\$HOME/.proj"
-alias weather="clear; curl -s wttr.in/~Lafayette,IN | head -n -2"
 
 # Git aliases
 if [[ -n $(installed git) ]]; then
@@ -58,6 +56,16 @@ function lscd() {
     while read -r dir; do
         ls $dir
     done < <(echo "$CDPATH" | sed "s/:/\n/g"); unset dir
+}
+
+function moon() { clear; curl -s wttr.in/Moon | head -n -2; }
+
+function weather() {
+    clear
+    url="wttr.in/~${1:-Lafayette,IN}?Q"
+    [[ $COLUMNS -ge 125 ]] || url="${url}n"
+    curl -s "$url" | head -n -2
+    unset url
 }
 
 function wunder() {

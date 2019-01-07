@@ -126,9 +126,6 @@ case "$MILESRC_SHELL" in
 esac
 
 # {{{ Wrap-up
-# My weechat configs
-[[ ! -f $HOME/.weechat/irc ]] || . $HOME/.weechat/irc
-
 # Config for this host
 [[ ! -f $HOME/.milesrc.$(uname -n) ]] || . $HOME/.milesrc.$(uname -n)
 

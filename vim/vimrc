@@ -792,6 +792,7 @@ if exists(':function') && exists(':let')
             Plug 'tpope/vim-fugitive'
             Plug 'airblade/vim-gitgutter'
         endif
+        Plug 'terryma/vim-multiple-cursors'
         " Plug 'vim-ruby/vim-ruby', { 'for': 'ruby' }
         Plug 'tmux-plugins/vim-tmux'
 

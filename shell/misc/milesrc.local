@@ -135,6 +135,7 @@ if [[ -n $(installed arTTY) ]]; then
 elif [[ -n $(command -v nt) ]]; then
     nt
 else
+    alias nt="clear"
     clear
 fi
 # }}}

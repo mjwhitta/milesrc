@@ -465,6 +465,11 @@ if [[ -d $HOME/.milesrc/shell/functions ]]; then
     done < <(find $HOME/.milesrc/shell/functions -type f); unset func
 fi
 
+function devexcuse() {
+    curl -s "http://developerexcuses.com" | \
+        grep --color=never -oPs "<a href.+>\K.+(?=</a>)"
+}
+
 function git_clone() {
     if [[ -n $(installed git) ]]; then
         git clone $1 $2

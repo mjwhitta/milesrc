@@ -355,6 +355,7 @@ fi
 unset PTH
 for dir in \
     $HOME/bin \
+    $HOME/.config/$(basename $MILESRC_SHELL)/scripts \
     $GEM_HOME/bin \
     $HOME/.local/bin \
     $GOPATH \
@@ -459,12 +460,6 @@ alias vm="mv"
 # }}}
 
 # {{{ Functions
-if [[ -d $HOME/.milesrc/shell/functions ]]; then
-    while read -r func; do
-        . $func
-    done < <(find $HOME/.milesrc/shell/functions -type f); unset func
-fi
-
 function devexcuse() {
     curl -s "http://developerexcuses.com" | \
         grep --color=never -oPs "<a href.+>\K.+(?=</a>)"

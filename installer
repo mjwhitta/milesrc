@@ -67,6 +67,7 @@ link() {
         else
             info "Installing vim plugins... "
             vim_plugins
+            info "done"
         fi
     fi
 }

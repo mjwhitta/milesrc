@@ -1,11 +1,22 @@
+# Bash
 shell/bash_zsh_profile:$HOME/.bash_profile
 shell/bash_zsh_rc:$HOME/.bashrc
 shell/complete/bash:$HOME/.config/bash/complete
+shell/scripts:$HOME/.config/bash/scripts
+
+# Zsh
 shell/bash_zsh_profile:$HOME/.zprofile
 shell/bash_zsh_rc:$HOME/.zshrc
 shell/complete/zsh:$HOME/.config/zsh/complete
+shell/scripts:$HOME/.config/zsh/scripts
+
+# Prompt
 shell/milesrc.prompt:$HOME/.milesrc.prompt
+
+# TMUX
 tmux:$HOME/.tmux
 tmux/tmux.conf:$HOME/.tmux.conf
+
+# VIM
 vim:$HOME/.vim
 vim/vimrc:$HOME/.vimrc

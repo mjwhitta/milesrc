@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-[[ $(tmux -V | awk '{print $2}' | tr -d ".") -ge 24 ]] || exit
+if [[ $(tmux -V | awk '{print $2}' | tr -d ".") -lt 24 ]]; then
+    echo "Your version of tmux is too old: $(tmux -V)"
+    echo "Please install something newer than or equal to 2.4"
+    exit
+fi
 
 # {{{ Default values
 tmux set -g @battery_bar_size "5"

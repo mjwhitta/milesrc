@@ -493,10 +493,10 @@ if exists(':augroup')
             autocmd BufReadPost .bashrc setlocal foldmethod=marker
             autocmd BufReadPost bashrc setlocal foldmethod=marker
             autocmd BufReadPost .milesrc.* setlocal foldmethod=marker
-            autocmd BufReadPost milesrc setlocal foldmethod=marker
             autocmd BufReadPost milesrc.* setlocal foldmethod=marker
-            autocmd BufReadPost tmux.* setlocal foldmethod=marker
+            autocmd BufReadPost milesrc setlocal foldmethod=marker
             autocmd BufReadPost .tmux.* setlocal foldmethod=marker
+            autocmd BufReadPost tmux.* setlocal foldmethod=marker
             autocmd BufReadPost .zshrc setlocal foldmethod=marker
             autocmd BufReadPost zshrc setlocal foldmethod=marker
         endif
@@ -511,7 +511,7 @@ if exists(':augroup')
     augroup END
 
     " Close QuickFix if only window left
-    augroup QFClose
+    augroup quickfixclose
         autocmd!
         autocmd WinEnter * if winnr('$') == 1 &&
             \ getbufvar(
@@ -529,6 +529,22 @@ if exists(':augroup')
             autocmd BufWritePost *.txt,*.md,*.markdown setlocal
                 \ spell spelllang=en_us
             autocmd FileType mail setlocal spell spelllang=en_us
+        endif
+    augroup END
+
+    augroup indentation
+        autocmd!
+        if exists('&shiftwidth')
+            autocmd FileType c,cpp,h,java,python,ruby,sh setlocal
+                \ shiftwidth=4
+        endif
+        if exists('&softtabstop')
+            autocmd FileType c,cpp,h,java,python,ruby,sh setlocal
+                \ softtabstop=4
+        endif
+        if exists('&tabstop')
+            autocmd FileType c,cpp,h,java,python,ruby,sh setlocal
+                \ tabstop=4
         endif
     augroup END
 

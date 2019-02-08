@@ -28,90 +28,102 @@
 # SOFTWARE.
 # --------------------------------------------------------------------
 
-function perms() {
-    perms_cleanup() {
-        unset args dir dirs fix group
-        unset -f perms_cleanup perms_fix_file perms_fix_files
-        unset -f perms_usage
-    }
+### Helpers begin
+check_deps() {
+    for d in "${deps[@]}"; do
+        [[ -n $(command -v "$d") ]] || errx 128 "$d is not installed"
+    done; unset d
+}
+err() { echo -e "${color:+\e[31m}[!] $*\e[0m"; }
+errx() { err "${*:2}"; exit "$1"; }
+good() { echo -e "${color:+\e[32m}[+] $*\e[0m"; }
+info() { echo -e "${color:+\e[37m}[*] $*\e[0m"; }
+long_opt() {
+    local arg shift="0"
+    case "$1" in
+        "--"*"="*) arg="${1#*=}"; [[ -n $arg ]] || usage 127 ;;
+        *) shift="1"; shift; [[ $# -gt 0 ]] || usage 127; arg="$1" ;;
+    esac
+    echo "$arg"
+    return $shift
+}
+subinfo() { echo -e "${color:+\e[36m}[=] $*\e[0m"; }
+warn() { echo -e "${color:+\e[33m}[-] $*\e[0m"; }
+### Helpers end
 
-    perms_fix_file() {
-        if [[ -n $(file -b "$1" | grep -os executable) ]]; then
-            [[ -n $group ]] || chmod u+x "$1"
-            [[ -z $group ]] || chmod ug+x "$1"
-        else
-            [[ -n $group ]] || chmod u-x "$1"
-            [[ -z $group ]] || chmod ug-x "$1"
-        fi
-    }
-
-    perms_fix_files() {
-        if [[ -f $1 ]]; then
-            perms_fix_file "$1"
-        elif [[ -d $1 ]]; then
-            while read -r line; do
-                perms_fix_file "$line"
-            done < <(find "$dir" -type f)
-        fi
-    }
-
-    perms_usage() {
-        echo "Usage: perms [OPTIONS] [file/dir]"
-        echo
-        echo "Automatically fix file permissions"
-        echo
-        echo "Options:"
-        echo "    -f, --fix      Fix the executable permissions"
-        echo "    -g, --group    Open up group permissions"
-        echo "    -h, --help     Display this help message"
-        echo
-        perms_cleanup
-    }
-
-    declare -a args
-    unset fix group
-
-    while [[ $# -gt 0 ]]; do
-        case "$1" in
-            "--") shift && args+=("$@") && break ;;
-            "-f"|"--fix")
-                if [[ -n $(command -v file) ]]; then
-                    fix="true"
-                else
-                    echo "You need the file command to use this flag!"
-                    return 1
-                fi
-                ;;
-            "-g"|"--group") group="true" ;;
-            "-h"|"--help") perms_usage; return 0 ;;
-            *) args+=("$1") ;;
-        esac
-        shift
-    done
-    [[ ${#args[@]} -eq 0 ]] || set -- "${args[@]}"
-
-    [[ $# -eq 0 ]] || dirs=($@)
-    [[ $# -gt 0 ]] || dirs=($(pwd))
-
-    for dir in "${dirs[@]}"; do
-        [[ ! -e $dir ]] && echo "$dir does not exist!" && continue
-
-        [[ -n $group ]] || chmod -R u+rwX,go-rwx "$dir"
-        [[ -z $group ]] || chmod -R ug+rwX,o-rwx "$dir"
-        [[ -z $fix ]] || perms_fix_files "$dir"
-    done
-
-    # Always fix some home directory things
-    [[ ! -d $HOME/.ssh/ ]] || chmod -R u+rwX,go-rwx "$HOME/.ssh"
-    [[ ! -d $HOME/.gnupg/ ]] || chmod -R u+rwX,go-rwx "$HOME/.gnupg"
-    chmod go-w "$HOME"
-
-    perms_cleanup
+fix_file() {
+    if [[ -n $(file -b "$1" | grep -os executable) ]]; then
+        [[ -n $group ]] || chmod u+x "$1"
+        [[ -z $group ]] || chmod ug+x "$1"
+    else
+        [[ -n $group ]] || chmod u-x "$1"
+        [[ -z $group ]] || chmod ug-x "$1"
+    fi
 }
 
-if [[ -n ${BASH_SOURCE[0]} ]]; then
-    case "$0" in
-        *"bash") ;;
-        *) perms "$@" ;;
+fix_files() {
+    if [[ -f $1 ]]; then
+        fix_file "$1"
+    elif [[ -d $1 ]]; then
+        while read -r line; do
+            fix_file "$line"
+        done < <(find "$dir" -type f)
+    fi
+}
+
+usage() {
+    cat <<EOF
+Usage: ${0##*/} [OPTIONS] [file/dir]
+
+Automatically fix file permissions
+
+Options:
+    -h, --help     Display this help message
+    -f, --fix      Fix the executable permissions"
+    -g, --group    Open up group permissions"
+    --nocolor      Disable colorized output
+
+EOF
+    exit "$1"
+}
+
+declare -a args deps
+unset fix group help
+color="true"
+deps+=("file")
+
+# Check for missing dependencies
+check_deps
+
+# Parse command line options
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        "--") shift && args+=("$@") && break ;;
+        "-f"|"--fix") fix="true" ;;
+        "-g"|"--group") group="true" ;;
+        "-h"|"--help") help="true" ;;
+        "--nocolor") unset color ;;
+        *) args+=("$1") ;;
     esac
-fi
+    shift
+done
+[[ ${#args[@]} -eq 0 ]] || set -- "${args[@]}"
+
+# Check for valid params
+[[ -z $help ]] || usage 0
+
+[[ $# -eq 0 ]] || dirs=("$@")
+[[ $# -gt 0 ]] || dirs=("$(pwd)")
+
+for dir in "${dirs[@]}"; do
+    [[ ! -e $dir ]] && echo "$dir does not exist!" && continue
+
+    [[ -n $group ]] || chmod -R u+rwX,go-rwx "$dir"
+    [[ -z $group ]] || chmod -R ug+rwX,o-rwx "$dir"
+    [[ -z $fix ]] || fix_files "$dir"
+done
+
+# Always fix some home directory things
+[[ ! -d $HOME/.ssh ]] || chmod -R u+rwX,go-rwx "$HOME/.ssh"
+[[ ! -d $HOME/.gnupg ]] || chmod -R u+rwX,go-rwx "$HOME/.gnupg"
+chmod go-w "$HOME"

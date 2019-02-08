@@ -182,6 +182,7 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         "--") shift && args+=("$@") && break ;;
         "-f"|"--force") force="true" ;;
+        "-fv") force="true"; install_vim_plugins="true" ;;
         "-h"|"--help") help="true" ;;
         "--nocolor") unset color ;;
         "-v"|"--vim") install_vim_plugins="true" ;;

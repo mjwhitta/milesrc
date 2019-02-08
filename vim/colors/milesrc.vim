@@ -15,46 +15,46 @@ let s:cterm0 = "000" " black
 let s:gui0 = "323232"
 
 let s:cterm1 = "001" " red
-let s:gui1 = "ff00aa"
+let s:gui1 = "ff50aa"
 
 let s:cterm2 = "002" " green
-let s:gui2 = "00aa00"
+let s:gui2 = "50aa00"
 
 let s:cterm3 = "003" " yellow
-let s:gui3 = "cccc00"
+let s:gui3 = "ccaa50"
 
 let s:cterm4 = "004" " blue
 let s:gui4 = "507fff"
 
 let s:cterm5 = "005" " magenta
-let s:gui5 = "aa50ff"
+let s:gui5 = "aa7fff"
 
 let s:cterm6 = "006" " cyan
 let s:gui6 = "50cccc"
 
 let s:cterm7 = "007" " white
-let s:gui7 = "eeeeee"
+let s:gui7 = "cccccc"
 
 let s:cterm8 = "008" " light_black
 let s:gui8 = "505050"
 
 let s:cterm9 = "009" " light_red
-let s:gui9 = "ff00aa"
+let s:gui9 = "ff7fff"
 
 let s:cterma = "010" " light_green
-let s:guia = "00aa00"
+let s:guia = "50cc50"
 
 let s:ctermb = "011" " light_yellow
-let s:guib = "cccc00"
+let s:guib = "cccc50"
 
 let s:ctermc = "012" " light_blue
-let s:guic = "507fff"
+let s:guic = "50aaff"
 
 let s:ctermd = "013" " light_magenta
-let s:guid = "aa50ff"
+let s:guid = "aaaaff"
 
 let s:cterme = "014" " light_cyan
-let s:guie = "50cccc"
+let s:guie = "50eecc"
 
 let s:ctermf = "015" " light_white
 let s:guif = "eeeeee"

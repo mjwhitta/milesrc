@@ -71,6 +71,7 @@ declare -a args deps
 unset help
 color="true"
 # deps+=("todo")
+USER="$(id -nu)"
 
 # Check for missing dependencies
 check_deps
@@ -95,7 +96,7 @@ done
 declare -a processes
 while read -r line; do
     processes+=("$line")
-done < <(pgrep -a -u "$(whoami)" "$1"); unset line
+done < <(pgrep -a -u "$USER" "$1"); unset line
 
 [[ ${#processes[@]} -gt 0 ]] || exit 0
 

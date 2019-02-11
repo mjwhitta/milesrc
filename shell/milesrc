@@ -829,7 +829,7 @@ function update_grub() {
 
 function x() {
     case "$1" in
-        *.tar*|*.tgz)
+        *.tar*|*.tgz|*.txz)
             if [[ -z $(installed tar) ]]; then
                 echo "tar is not installed"
             else

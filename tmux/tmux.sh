@@ -36,13 +36,13 @@ fi
 function bcolor() { bground | awk -F "=" '{print $2}'; }
 
 # Background style
-function bground() { tget -g @ui_style | grep -Eos "bg=[^,]+"; }
+function bground() { tget -g @ui_style | grep -oPs "bg=[^,]+"; }
 
 # Foreground color
 function fcolor() { fground | awk -F "=" '{print $2}'; }
 
 # Foreground style
-function fground() { tget -g @ui_style | grep -Eos "fg=[^,]+"; }
+function fground() { tget -g @ui_style | grep -oPs "fg=[^,]+"; }
 
 # Create a tmux if statement
 function if_then_else() { echo "#{$1,$2,$3}"; }
@@ -113,22 +113,18 @@ if [[ -n $(command -v acpi) ]] || [[ -n $(command -v pmset) ]]; then
     tmux set -ag status-right "#(
         if [[ -n \$(command -v acpi) ]]; then
             no_batt=\"\$(
-                acpi 2>&1 | grep -Es \"^No support.+power_supply$\"
+                acpi 2>&1 | grep -Ps \"^No support.+power_supply$\"
             )\"
             c=\"100\"
             if [[ -z \$no_batt ]]; then
-                c=\"\$(
-                    acpi -b | grep -Eos \"[0-9]+%\" | tr -d \"%\"
-                )\"
+                c=\"\$(acpi -b | grep -oPs \"[0-9]+(?=%)\")\"
             fi
         elif [[ -n \$(command -v pmset) ]]; then
-            c=\"\$(
-                pmset -g batt | grep -Eos \"[0-9]+%\" | tr -d \"%\"
-            )\"
+            c=\"\$(pmset -g batt | grep -oPs \"[0-9]+(?=%)\")\"
         fi
 
         if [[ -n \$c ]]; then
-            [[ \$c -eq 100 ]] || let \"c += 1\"
+            [[ \$c -eq 100 ]] || ((\"c += 1\"))
             echo -n \"\$c% \"
 
             bsize=\"$(tlget -g @battery_bar_size)\"
@@ -136,9 +132,9 @@ if [[ -n $(command -v acpi) ]] || [[ -n $(command -v pmset) ]]; then
                 empty=\"$(tlget -g @battery_empty)\"
                 filled=\"$(tlget -g @battery_filled)\"
 
-                let \"increment = 100 / bsize\"
-                let \"round = increment / 2\"
-                let \"c = (c + round) / increment\"
+                ((\"increment = 100 / bsize\"))
+                ((\"round = increment / 2\"))
+                ((\"c = (c + round) / increment\"))
 
                 echo -n \"$(tlget -g @battery_bar_surround)\" | \
                     head -c 1
@@ -244,7 +240,7 @@ tmux bind -T copy-mode-vi "M-o" send -X copy-pipe-and-cancel "
     [[ \$# -ne 0 ]] || exit 0
     if [[ -f \"\$1\" ]]; then
         type=\"\$(xdg-mime query filetype \$1)\"
-    elif [[ -n \$(echo \"\$1\" | grep -Es \"https?:\/\/\") ]]; then
+    elif [[ -n \$(echo \"\$1\" | grep -Ps \"https?:\/\/\") ]]; then
         type=\"text/html\"
     fi
     [[ -n \$type ]] || exit 1

@@ -835,6 +835,7 @@ function x() {
             else
                 tar -I "zstd -T0" -xf $@
             fi
+            ;;
         *".tar"*|*".tgz"|*".txz")
             if [[ -z $(installed tar) ]]; then
                 echo "tar is not installed"

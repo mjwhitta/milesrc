@@ -829,49 +829,55 @@ function update_grub() {
 
 function x() {
     case "$1" in
-        *.tar*|*.tgz|*.txz)
+        *".zst")
+            if [[ -z $(installed zstd) ]]; then
+                echo "zstd is not installed"
+            else
+                tar -I "zstd -T0" -xf $@
+            fi
+        *".tar"*|*".tgz"|*".txz")
             if [[ -z $(installed tar) ]]; then
                 echo "tar is not installed"
             else
                 tar -xf $@
             fi
             ;;
-        *.7z)
+        *".7z")
             if [[ -z $(installed 7z) ]]; then
                 echo "p7zip is not installed"
             else
                 7z x $@
             fi
             ;;
-        *.bz2)
+        *".bz2")
             if [[ -z $(installed bzip2) ]]; then
                 echo "bzip2 is not installed"
             else
                 bzip2 -dk $@
             fi
             ;;
-        *.gz)
+        *".gz")
             if [[ -z $(installed gzip) ]]; then
                 echo "gzip is not installed"
             else
                 gzip -dk $@
             fi
             ;;
-        *.jar)
+        *".jar")
             if [[ -z $(installed jar) ]]; then
                 echo "java is not installed"
             else
                 jar -xf $@
             fi
             ;;
-        *.rar)
+        *".rar")
             if [[ -z $(installed unrar) ]]; then
                 echo "unrar is not installed"
             else
                 unrar x $@
             fi
             ;;
-        *.rpm)
+        *".rpm")
             if [[ -z $(installed rpm2cpio) ]]; then
                 echo "rpm2cpio is not installed"
             elif [[ -z $(installed cpio) ]]; then
@@ -880,14 +886,14 @@ function x() {
                 rpm2cpio $@ | cpio -idmv
             fi
             ;;
-        *.xz)
+        *".xz")
             if [[ -z $(installed xz) ]]; then
                 echo "xz is not installed"
             else
                 xz -dk $@
             fi
             ;;
-        *.zip)
+        *".zip")
             if [[ -z $(installed unzip) ]]; then
                 echo "unzip is not installed"
             else

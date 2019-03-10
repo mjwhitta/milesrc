@@ -9,7 +9,7 @@ MILESRC_PROMPT=(
     "venv;white;166"
     "git;light_black;white"
     "cwd;white;light_black"
-    "exit;red;light_black;emotes;green;light_black"
+    "exit;red;light_black;green;light_black"
     "vi_ins;white;green;vi_cmd;white;blue;vi_rep;white;124"
     "newline"
     "prompt;white;light_black"
@@ -130,8 +130,8 @@ esac
 [[ ! -f $HOME/.milesrc.$(uname -n) ]] || . $HOME/.milesrc.$(uname -n)
 
 if [[ -n $(installed arTTY) ]]; then
-    alias nt="arTTY \$(head -n 1 \$HOME/.config/arTTY/rc)"
-    arTTY $(head -n 1 $HOME/.config/arTTY/rc)
+    alias nt="arTTY"
+    arTTY
 elif [[ -n $(command -v nt) ]]; then
     nt
 else

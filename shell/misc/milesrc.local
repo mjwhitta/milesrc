@@ -101,7 +101,7 @@ case "$MILESRC_SHELL" in
         if [[ -n $(installed arTTY) ]]; then
             _arTTY_complete() {
                 mapfile -t COMPREPLY < <(
-                    arTTY --ls | grep -iPs "^$2" | sort -u
+                    arTTY -e "^$" --ls -m "^$2" --no-fit
                 )
             }
             complete -F _arTTY_complete arTTY
@@ -114,7 +114,7 @@ case "$MILESRC_SHELL" in
         if [[ -n $(installed arTTY) ]]; then
             compdef _gnu_generic arTTY
             _arTTY_complete() {
-                reply=($(arTTY --ls))
+                reply=($(arTTY -e "^$" --ls --no-fit))
             }
             compctl -K _arTTY_complete arTTY
         fi

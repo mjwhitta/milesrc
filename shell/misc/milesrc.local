@@ -105,6 +105,7 @@ case "$MILESRC_SHELL" in
                 )
             }
             complete -F _arTTY_complete arTTY
+            complete -F _arTTY_complete artty
         fi
         # }}}
         ;;
@@ -113,10 +114,12 @@ case "$MILESRC_SHELL" in
         # Complete arTTY
         if [[ -n $(installed arTTY) ]]; then
             compdef _gnu_generic arTTY
+            compdef _gnu_generic artty
             _arTTY_complete() {
-                reply=($(arTTY -e "^$" --ls --no-fit))
+                reply=($(arTTY -e "^$" --ls -m . --no-fit))
             }
             compctl -K _arTTY_complete arTTY
+            compctl -K _arTTY_complete artty
         fi
 
         # Complete ruby-zoom commands

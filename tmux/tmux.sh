@@ -327,8 +327,11 @@ tmux bind "/" run "
         \"send -X search-backward '%%%'\"
 "
 
+# Tile layout
+tmux bind "+" select-layout tiled
+
 # Send to all panes
-tmux bind "+" set -w synchronize-panes
+tmux bind "=" set -w synchronize-panes
 # }}}
 
 # {{{ Local file

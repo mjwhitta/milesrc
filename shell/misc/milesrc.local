@@ -128,12 +128,11 @@ esac
 [[ ! -f $HOME/.milesrc.$(uname -n) ]] || . $HOME/.milesrc.$(uname -n)
 
 if [[ -n $(installed arTTY) ]]; then
-    alias nt="arTTY"
     arTTY
-elif [[ -n $(command -v nt) ]]; then
-    nt
 else
-    alias nt="clear"
+    alias art="clear"
+    alias artty="clear"
+    alias arTTY="clear"
     clear
 fi
 # }}}

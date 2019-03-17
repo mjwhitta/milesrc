@@ -100,12 +100,9 @@ case "$MILESRC_SHELL" in
         # Complete arTTY
         if [[ -n $(installed arTTY) ]]; then
             _arTTY_complete() {
-                mapfile -t COMPREPLY < <(
-                    arTTY -e "^$" --ls -m "^$2" --no-fit
-                )
+                mapfile -t COMPREPLY < <(arTTY -p --ls -m "^$2")
             }
-            complete -F _arTTY_complete arTTY
-            complete -F _arTTY_complete artty
+            complete -F _arTTY_complete art artty arTTY
         fi
         # }}}
         ;;
@@ -113,13 +110,11 @@ case "$MILESRC_SHELL" in
         # {{{ Zsh completions
         # Complete arTTY
         if [[ -n $(installed arTTY) ]]; then
-            compdef _gnu_generic arTTY
-            compdef _gnu_generic artty
+            compdef _gnu_generic art artty arTTY
             _arTTY_complete() {
-                reply=($(arTTY -e "^$" --ls -m . --no-fit))
+                reply=($(arTTY -p --ls))
             }
-            compctl -K _arTTY_complete arTTY
-            compctl -K _arTTY_complete artty
+            compctl -K _arTTY_complete art artty arTTY
         fi
 
         # Complete ruby-zoom commands

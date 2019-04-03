@@ -116,6 +116,19 @@ function __milesrc_cwd() {
 }
 # }}}
 
+# {{{ __milesrc_date
+# Timestamp
+# $1 = format in the form of date;fgclr;bgclr
+function __milesrc_date() {
+    [[ $# -eq 1 ]] || return
+
+    local fmt="$(echo -n "$1" | grep -ioPs "date(;[^;]+){2}")"
+    local date="$(date +%F_%H%M%S)"
+
+    __milesrc_format "$fmt" "$date"
+}
+#}}}
+
 # {{{ __milesrc_exit_status
 # Exit status
 # $1 = format in the form of
@@ -282,10 +295,10 @@ function __milesrc_host() {
 
     local fmt="$(echo -n "$1" | grep -ioPs "host(;[^;]+){2}")"
     local hide_local="$(echo -n "$1" | grep -ioPs "hide_local;[^;]+")"
-    [[ -z $SSH_CLIENT ]] || unset hide_local
+    [[ -z $SSH_CONNECTION ]] || unset hide_local
 
     local remote="$(echo -n "$1" | grep -ioPs "remote(;[^;]+){2}")"
-    [[ -z $SSH_CLIENT ]] || [[ -z $remote ]] || fmt="$remote"
+    [[ -z $SSH_CONNECTION ]] || [[ -z $remote ]] || fmt="$remote"
 
     local root="$(echo -n "$1" | grep -ioPs "root(;[^;]+){2}")"
     [[ -z $(id | grep -s "uid=0") ]] || [[ -z $root ]] || fmt="$root"
@@ -338,6 +351,10 @@ function __milesrc_prompt_ps1() {
     for i in "${MILESRC_PROMPT[@]}"; do
         local len="0"
         case "$i" in
+            "date"*)
+                p[date]="$(__milesrc_date $i)"
+                len="${p[date]%%|*}"
+                ;;
             "exit"*)
                 p[exit]="$(__milesrc_exit_status $i $exit_status)"
                 len="${p[exit]%%|*}"
@@ -376,6 +393,10 @@ function __milesrc_prompt_ps1() {
     # Put it together
     for i in "${MILESRC_PROMPT[@]}"; do
         case "$i" in
+            "date"*)
+                len="${p[date]%%|*}"
+                [[ $len -eq 0 ]] || echo -n "${p[date]#*|}"
+                ;;
             "cwd"*)
                 len="${p[cwd]%%|*}"
                 [[ $len -eq 0 ]] || echo -n "${p[cwd]#*|}"

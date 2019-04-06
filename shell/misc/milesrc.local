@@ -4,8 +4,8 @@
 # {{{ Env Vars
 declare -a MILESRC_PROMPT
 MILESRC_PROMPT=(
-    # "host;white;blue;remote;white;56;root;white;160;hide_local;true"
-    "host;white;blue;remote;white;56;root;white;160"
+    # "host;white;blue;remote;white;27;root;white;160;hide_local;true"
+    "host;white;blue;remote;white;27;root;white;160"
     "venv;white;166"
     "git;light_black;white"
     "cwd;white;light_black"

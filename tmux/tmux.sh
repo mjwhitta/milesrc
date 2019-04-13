@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 
-if [[ $(tmux -V | awk '{print $2}' | tr -d ".") -lt 24 ]]; then
+if [[ -z $TMUX ]]; then
+    echo "Not in a tmux session"
+    exit
+fi
+
+tvers="$(tmux -V | grep -ioPs "\d+\.\d+" | tr -d ".")"
+if [[ $tvers -lt 24 ]]; then
     echo "Your version of tmux is too old: $(tmux -V)"
     echo "Please install something newer than or equal to 2.4"
     exit

@@ -887,6 +887,7 @@ if exists(':function') && exists(':let')
                 \ "
                 \ -e SC1117
                 \ -e SC2028
+                \ -e SC2029
                 \ -e SC2143
                 \ -e SC2155
                 \ -e SC2164

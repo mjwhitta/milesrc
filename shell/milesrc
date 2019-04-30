@@ -747,7 +747,7 @@ function simplehttp() {
             ;;
         "php")
             if [[ -n $(installed php) ]]; then
-                php -S 127.0.0.1:${2:-8080}
+                php -S 0.0.0.0:${2:-8080}
             else
                 echo "php is not installed"
             fi
@@ -768,16 +768,16 @@ function simplehttp() {
             ;;
         "ruby")
             if [[ -n $(installed ruby) ]]; then
-                ruby -r un -e httpd . -p ${2:-8080}
+                ruby -r un -e httpd -- -p ${2:-8080} .
             else
                 echo "ruby is not installed"
             fi
             ;;
         "twisted")
             if [[ -n $(installed twistd) ]]; then
-                twistd -n web -p ${2:-8080} --path .
+                twistd -n web --listen tcp:${2:-8080} --path .
             else
-                echo "Please run: python2 -m pip install twisted"
+                echo "Please run: python3 -m pip install twisted"
             fi
             ;;
         *)
@@ -792,7 +792,7 @@ function simplehttp() {
             [[ -z $(installed python2) ]] || echo "    python2"
             [[ -z $(installed python3) ]] || echo "    python3"
             [[ -z $(installed ruby) ]] || echo "    ruby"
-            [[ -z $(installed python2) ]] || echo "    twisted"
+            [[ -z $(installed python3) ]] || echo "    twisted"
             ;;
     esac
 }

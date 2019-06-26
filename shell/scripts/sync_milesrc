@@ -59,7 +59,7 @@ Sync the milesrc to other hosts
 
 Options:
     -h, --help      Display this help message
-    --nocolor       Disable colorized output
+    --no-color      Disable colorized output
     --skip-plugs    Skip plugs directory when syncing vim configs
     -t, --tmux      Also sync tmux configs
     -v, --vim       Also sync vim configs
@@ -83,7 +83,7 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         "--") shift && args+=("$@") && break ;;
         "-h"|"--help") help="true" ;;
-        "--nocolor") unset color ;;
+        "--no-color") unset color ;;
         "--skip-plugs") skip_plugs="plugs" ;;
         "-t"|"--tmux") unset skip_tmux ;;
         "-v"|"--vim") unset skip_vim ;;

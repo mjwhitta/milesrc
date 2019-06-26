@@ -60,8 +60,9 @@ Usage: ${0##*/} [OPTIONS] <pattern>
 Interactively kill processes
 
 Options:
-    -h, --help    Display this help message
-    --nocolor     Disable colorized output
+    -h, --help          Display this help message
+    --no-color          Disable colorized output
+    -u, --uname=USER    Only list processes for specified user
 
 EOF
     exit "$1"
@@ -70,8 +71,8 @@ EOF
 declare -a args deps
 unset help
 color="true"
-# deps+=("todo")
-USER="$(id -nu)"
+deps+=("pgrep")
+uname="$(id -nu)"
 
 # Check for missing dependencies
 check_deps
@@ -81,7 +82,8 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         "--") shift && args+=("$@") && break ;;
         "-h"|"--help") help="true" ;;
-        "--nocolor") unset color ;;
+        "--no-color") unset color ;;
+        "-u"|"--user"*) uname="$(long_opt "$@")" || shift ;;
         *) args+=("$1") ;;
     esac
     shift
@@ -96,7 +98,7 @@ done
 declare -a processes
 while read -r line; do
     processes+=("$line")
-done < <(pgrep -a -u "$USER" "$1"); unset line
+done < <(pgrep -a ${uname:+-u $uname} "$1"); unset line
 
 [[ ${#processes[@]} -gt 0 ]] || exit 0
 
@@ -109,7 +111,7 @@ echo
 # Ask about killing each process
 ask_all="true"
 for process in "${processes[@]}"; do
-    pid="$(echo "$process" | perl -lne '/^ *(\d+)/ && print $1')"
+    pid="$(echo "$process" | grep -ioPs "^ *\K\d+")"
 
     if [[ -n $ask_all ]]; then
         while :; do

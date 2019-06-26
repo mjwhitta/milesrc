@@ -81,7 +81,7 @@ Options:
     -h, --help     Display this help message
     -f, --fix      Fix the executable permissions"
     -g, --group    Open up group permissions"
-    --nocolor      Disable colorized output
+    --no-color     Disable colorized output
 
 EOF
     exit "$1"
@@ -102,7 +102,7 @@ while [[ $# -gt 0 ]]; do
         "-f"|"--fix") fix="true" ;;
         "-g"|"--group") group="true" ;;
         "-h"|"--help") help="true" ;;
-        "--nocolor") unset color ;;
+        "--no-color") unset color ;;
         *) args+=("$1") ;;
     esac
     shift

@@ -212,7 +212,7 @@ install.
 Options:
     -h, --help       Display this help message
     -i, --install    Install package(s) (default)
-    --nocolor        Disable colorized output
+    --no-color       Disable colorized output
     -n, --nosave     Also remove configs
     -R, --remove     Remove package(s)
     -s, --search     Search for matching packages
@@ -238,7 +238,7 @@ while [[ $# -gt 0 ]]; do
         "--") shift && args+=("$@") && break ;;
         "-h"|"--help") help="true" ;;
         "-i"|"--install") action="install" ;;
-        "--nocolor") unset color ;;
+        "--no color") unset color ;;
         "-n"|"--nosave") nosave="true" ;;
         "-R"|"--remove") action="remove" ;;
         "-Rn") action="remove"; nosave="true" ;;

@@ -22,9 +22,8 @@ tmux set -g @battery_filled "■"
 # tmux set -g @battery_empty "♡"
 # tmux set -g @battery_filled "❤"
 tmux set -g @default_ctrl_d "on"
-tmux set -g @log_all "tmux-log_%F_%H%M%S.log"
+tmux set -g @log_name "tmux-%Y%m%d-%H%M%S.log"
 tmux set -g @log_path "#{pane_current_path}"
-tmux set -g @log_screen "tmux-screenshot_%F_%H%M%S.log"
 tmux set -g @prefix "C-a"
 tmux set -g @resize "5"
 tmux set -g @shell "$SHELL"
@@ -297,7 +296,7 @@ esac
 
 # Logging
 tmux bind "P" run "
-    file=\"$(tfget -g @log_path)/$(tfget -g @log_screen)\"
+    file=\"$(tfget -g @log_path)/$(tfget -g @log_name)\"
     case \"$(uname -s)\" in
         \"Darwin\") tmp=\"\$(tmux capturep -J -p)\" ;;
         \"Linux\")
@@ -308,7 +307,7 @@ tmux bind "P" run "
     tmux display \"Successfully logged screenshot to \$file\"
 "
 tmux bind "S" run "
-    file=\"$(tfget -g @log_path)/$(tfget -g @log_all)\"
+    file=\"$(tfget -g @log_path)/$(tfget -g @log_name)\"
     case \"$(uname -s)\" in
         \"Darwin\")
             tmp=\"\$(

@@ -61,7 +61,8 @@ endif
 
 " Colorscheme
 if exists(':colorscheme')
-    colorscheme milesrc
+    colorscheme solarized
+    " colorscheme milesrc
     " colorscheme grayscale
 endif
 

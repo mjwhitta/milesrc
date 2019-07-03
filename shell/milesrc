@@ -182,25 +182,6 @@ case "$MILESRC_SHELL" in
             _wanted files expl "local files" _files
         }
 
-        # Syntax highlighting
-        typeset -A ZSH_HIGHLIGHT_STYLES
-        ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
-        ZSH_HIGHLIGHT_STYLES[alias]="fg=white"
-        ZSH_HIGHLIGHT_STYLES[suffix-alias]="fg=white,underline"
-        ZSH_HIGHLIGHT_STYLES[builtin]="fg=white"
-        ZSH_HIGHLIGHT_STYLES[function]="fg=white"
-        ZSH_HIGHLIGHT_STYLES[command]="fg=white"
-        ZSH_HIGHLIGHT_STYLES[precommand]="fg=white,underline"
-        ZSH_HIGHLIGHT_STYLES[hashed-command]="fg=white"
-        for dir in \
-            $HOME/.config/zsh/plugins/zsh-syntax-highlighting \
-            /usr/share/zsh/plugins/zsh-syntax-highlighting \
-            /usr/share/zsh-syntax-highlighting
-        do
-            [[ ! -d $dir ]] || . $dir/zsh-syntax-highlighting.zsh
-            [[ ! -d $dir ]] || break
-        done; unset dir
-
         # History substring search
         autoload up-line-or-beginning-search
         autoload down-line-or-beginning-search
@@ -984,6 +965,32 @@ case "$MILESRC_SHELL" in
             fi
         fi
 
+        # Syntax highlighting (must come after all zle -N calls and
+        # compinit)
+        typeset -A ZSH_HIGHLIGHT_STYLES
+        ZSH_HIGHLIGHT_STYLES[alias]="fg=blue"
+        ZSH_HIGHLIGHT_STYLES[builtin]="fg=blue"
+        ZSH_HIGHLIGHT_STYLES[command]="fg=blue"
+        ZSH_HIGHLIGHT_STYLES[commandseparator]="fg=green"
+        ZSH_HIGHLIGHT_STYLES[comment]="fg=green,bold"
+        ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]="fg=red,bold"
+        ZSH_HIGHLIGHT_STYLES[dollar-single-quoted-argument]="fg=cyan"
+        ZSH_HIGHLIGHT_STYLES[double-quoted-argument]="fg=red,bold"
+        ZSH_HIGHLIGHT_STYLES[function]="fg=blue"
+        ZSH_HIGHLIGHT_STYLES[hashed-command]="fg=blue"
+        ZSH_HIGHLIGHT_STYLES[precommand]="fg=white,underline"
+        ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=yellow"
+        ZSH_HIGHLIGHT_STYLES[single-quoted-argument]="fg=cyan"
+        ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
+        for dir in \
+            $HOME/.config/zsh/plugins/zsh-syntax-highlighting \
+            /usr/share/zsh/plugins/zsh-syntax-highlighting \
+            /usr/share/zsh-syntax-highlighting
+        do
+            [[ ! -d "$dir" ]] || . "$dir/zsh-syntax-highlighting.zsh"
+            [[ ! -d "$dir" ]] || break
+        done; unset dir
+
         # Complete gimme function
         if [[ -n $(installed apt-cache) ]]; then
             function _apt_install_complete() {
@@ -1024,7 +1031,7 @@ esac
 # {{{ Wrap-up
 # Xterm
 if [[ -n $(installed xrdb) ]] && [[ -f $HOME/.Xresources ]]; then
-    xrdb -merge $HOME/.Xresources 2>/dev/null
+    xrdb -load $HOME/.Xresources 2>/dev/null
 fi
 
 # Local stuff

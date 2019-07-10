@@ -148,8 +148,8 @@ function __milesrc_exit_status() {
                 fmt="$(echo -n "$1" | grep -ioPs "emotes(;[^;]+){2}")"
                 case "$(__milesrc_rand_status 3)" in
                     "0")   status_symbol="=)" ;;
-                    "1") status_symbol="(^ت^)" ;;
-                    *) status_symbol="¯\_(^ت^)_/¯" ;;
+                    "1") status_symbol="(^.^)" ;;
+                    *) status_symbol="¯\_(^.^)_/¯" ;;
                 esac
             else
                 case "$(__milesrc_rand_status 9)" in

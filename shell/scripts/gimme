@@ -51,6 +51,23 @@ subinfo() { echo -e "${color:+\e[36m}[=] $*\e[0m"; }
 warn() { echo -e "${color:+\e[33m}[-] $*\e[0m"; }
 ### Helpers end
 
+gimme_apk() {
+    if [[ -n $(command -v apk) ]]; then
+        case "$action" in
+            "install") $sudo apk add "$@" ;;
+            "remove")
+                [[ -n $nosave ]] || $sudo apk del -r "$@"
+                [[ -z $nosave ]] || $sudo apk del --purge -r "$@"
+                ;;
+            "search") apk search "$@" ;;
+            "update")
+                $sudo apk update
+                $sudo apk upgrade -a -U
+                ;;
+        esac
+    fi
+}
+
 gimme_apt() {
     if [[ -n $(command -v apt-get) ]]; then
         case "$action" in
@@ -263,6 +280,7 @@ case "$(uname -s)" in
     "Darwin") gimme_brew "$@" ;;
     "Linux")
         case "$(grep -oPs "^ID\=\"?\K[^\"]+" /etc/os-release)" in
+            "alpine") gimme_apk "$@" ;;
             "arch") gimme_pacman "$@" ;;
             "chrom"*"os") gimme_crew "$@" ;;
             "debian") gimme_apt "$@" ;;

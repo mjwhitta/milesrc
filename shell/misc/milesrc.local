@@ -108,9 +108,19 @@ if [[ -z $(installed z | grep -s "gem") ]]; then
     }
 fi
 
-# Security functions
+# Security functions + an alias
 if [[ -n $(installed docker) ]]; then
+    alias dclean="docker system prune -af --volumes"
+
     function dsh() {
+        local image="$1" && shift
+        local name="$(echo "${image%%:*}" | sed -r "s/\W+/-/g")"
+        name+="_$(head -c 8 /dev/random | xxd -p)"
+
+        docker run -i --name "$name" --rm -t "$image" "$@"
+    }
+
+    function dshpwd() {
         local image="$1" && shift
         local name="$(echo "${image%%:*}" | sed -r "s/\W+/-/g")"
         name+="_$(head -c 8 /dev/random | xxd -p)"

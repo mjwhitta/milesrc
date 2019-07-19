@@ -136,98 +136,6 @@ add_to_path() {
     done
 }
 
-if [[ -n $(installed docker) ]]; then
-    dips() {
-        if [[ -z $(installed jq) ]]; then
-            echo "jq is not installed"
-            return
-        fi
-
-        docker network inspect ${1:-bridge} | \
-            jq -cMrS ".[].Containers[]|.Name,.IPv4Address" | \
-            sed "\$!N;s/\n/\t/"
-    }
-
-    dsh() {
-        dsh_usage() {
-            echo "Usage: ${0/*\//} [OPTIONS] <name> [image]"
-            echo
-            echo "Options:"
-            echo "    --expose=PORT         Expose ports"
-            echo "    -h, --help            Display this help message"
-            echo "    -p, --publish=PORT    Publish ports to the host"
-            echo
-            unset -f dsh_usage
-        }
-
-        local -a args exposed published
-        local arg
-
-        while [[ $# -gt 0 ]]; do
-            case "$1" in
-                "--") shift && args+=("$@") && break ;;
-                "--expose"*)
-                    case "$1" in
-                        "--"*"="*)
-                            arg="${1#*=}"
-                            [[ -z $arg ]] && dsh_usage && return 1
-                            ;;
-                        *)
-                            shift
-                            [[ $# -eq 0 ]] && dsh_usage && return 1
-                            arg="$1"
-                            ;;
-                    esac
-                    exposed+=("$arg")
-                    ;;
-                "-h"|"--help") dsh_usage && return 0 ;;
-                "-p"|"--publish"*)
-                    case "$1" in
-                        "--"*"="*)
-                            arg="${1#*=}"
-                            [[ -z $arg ]] && dsh_usage && return 1
-                            ;;
-                        *)
-                            shift
-                            [[ $# -eq 0 ]] && dsh_usage && return 1
-                            arg="$1"
-                            ;;
-                    esac
-                    published+=("$arg")
-                    ;;
-                *) args+=("$1") ;;
-            esac
-            shift
-        done
-        [[ ${#args[@]} -eq 0 ]] || set -- "${args[@]}"
-
-        if [[ $# -eq 0 ]] || [[ $# -gt 2 ]]; then
-            dsh_usage && return 2
-        fi
-
-        local image="${2:-$1}"
-        local name="$1"
-
-        args=(${args[@]%$image})
-        [[ $# -eq 1 ]] || args=(${args[@]%$name})
-
-        if [[ -z $(docker ps | grep -sw "$name") ]]; then
-            docker run -d ${exposed[@]} -i --name $name \
-                ${published[@]} --rm -t $image bash
-            [[ -n $(docker ps | grep -sw "$name") ]] || return
-        fi
-
-        local shell="bash"
-        for s in /usr/bin/zsh /bin/zsh /bin/bash /bin/sh; do
-            docker exec -it "$name" test -f "$s"
-            [[ $# -eq 0 ]] && shell="$s" && break
-        done; unset s
-
-        docker exec -it ${args[@]} $name $shell
-        return 0
-    }
-fi
-
 list_displays() {
     local dir="/tmp/.X11-unix"
     local x
@@ -363,19 +271,6 @@ fi
 case "$MILESRC_SHELL" in
     *bash)
         # {{{ Bash completions
-        # Complete dbash
-        if [[ -n $(installed docker) ]]; then
-            _dbash_complete() {
-                mapfile -t COMPREPLY < <(
-                    docker ps | perl -lne \
-                    '!/NAMES/ && /('$2'[^ ]*)$/ && print $1' | sort -u
-                )
-            }
-            if [[ -n $(installed perl) ]]; then
-                complete -F _dbash_complete dbash
-            fi
-        fi
-
         # Complete insync-headless
         if [[ -n $(installed insync-headless) ]]; then
             _insync_complete() {
@@ -429,19 +324,6 @@ case "$MILESRC_SHELL" in
         ;;
     *zsh)
         # {{{ Zsh completions
-        # Complete dbash
-        if [[ -n $(installed docker) ]]; then
-            _dbash_complete() {
-                reply=($(
-                    docker ps | \
-                    perl -lne '!/NAMES/ && /('$1'[^ ]*)$/ && print $1'
-                ))
-            }
-            if [[ -n $(installed perl) ]]; then
-                compctl -K _dbash_complete dbash
-            fi
-        fi
-
         # Complete insync-headless
         if [[ -n $(installed insync-headless) ]]; then
             _insync_complete() {

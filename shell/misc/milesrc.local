@@ -107,6 +107,49 @@ if [[ -z $(installed z | grep -s "gem") ]]; then
         find . -regextype posix-extended -iregex ".*$*.*" -print
     }
 fi
+
+# Security functions
+if [[ -n $(installed docker) ]]; then
+    function dsh() {
+        local image="$1" && shift
+        local name="$(echo "${image%%:*}" | sed -r "s/\W+/-/g")"
+        name+="_$(head -c 8 /dev/random | xxd -p)"
+
+        docker run -i --name "$name" --rm -tv "$(pwd)":/pwd -w /pwd \
+            "$image" "$@"
+    }
+
+    function msfc() {
+        local entrydir="/usr/src/metasploit-framework"
+        local image="metasploitframework/metasploit-framework:latest"
+        local name="msfconsole_$(head -c 8 /dev/random | xxd -p)"
+
+        mkdir -p "$HOME/.msf4"
+        docker run -e MSF_GID=$(id -g) -e MSF_UID=$(id -u) \
+            --entrypoint "$entrydir/docker/entrypoint.sh" -i \
+            --name "$name" -p 4444:4444 -p 8000-8500:8000-8500 --rm \
+            -tv "$HOME/.msf4":/home/msf/.msf4 -v "$(pwd)":/msf:Z \
+            -w /msf $image "$entrydir/msfconsole" -q "$@"
+    }
+
+    function msfv() {
+        local entrydir="/usr/src/metasploit-framework"
+        local image="metasploitframework/metasploit-framework:latest"
+        local name="msfvenom_$(head -c 8 /dev/random | xxd -p)"
+
+        mkdir -p "$HOME/.msf4"
+        docker run -e MSF_GID=$(id -g) -e MSF_UID=$(id -u) \
+            --entrypoint "$entrydir/docker/entrypoint.sh" -i \
+            --name "$name" --rm -tv "$HOME/.msf4":/home/msf/.msf4 \
+            -v "$(pwd)":/msf:Z -w /msf $image "$entrydir/msfvenom" \
+            "$@"
+    }
+fi
+
+function ngrok() {
+    ssh -o "ControlMaster no" -o "IdentitiesOnly yes" \
+    -R 0:localhost:${1:-8080} tunnel.us.ngrok.com "${2:-http}"
+}
 # }}}
 
 case "$MILESRC_SHELL" in

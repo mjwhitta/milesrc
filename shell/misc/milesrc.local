@@ -128,8 +128,8 @@ if [[ -n $(installed docker) ]]; then
         docker run -e MSF_GID=$(id -g) -e MSF_UID=$(id -u) \
             --entrypoint "$entrydir/docker/entrypoint.sh" -i \
             --name "$name" -p 4444:4444 -p 8000-8500:8000-8500 --rm \
-            -tv "$HOME/.msf4":/home/msf/.msf4 -v "$(pwd)":/msf:Z \
-            -w /msf $image "$entrydir/msfconsole" -q "$@"
+            -tv "$HOME/.msf4":/home/msf/.msf4 -v "$(pwd)":/pwd:Z \
+            -w /pwd $image "$entrydir/msfconsole" -q "$@"
     }
 
     function msfv() {
@@ -141,7 +141,7 @@ if [[ -n $(installed docker) ]]; then
         docker run -e MSF_GID=$(id -g) -e MSF_UID=$(id -u) \
             --entrypoint "$entrydir/docker/entrypoint.sh" -i \
             --name "$name" --rm -tv "$HOME/.msf4":/home/msf/.msf4 \
-            -v "$(pwd)":/msf:Z -w /msf $image "$entrydir/msfvenom" \
+            -v "$(pwd)":/pwd:Z -w /pwd $image "$entrydir/msfvenom" \
             "$@"
     }
 fi

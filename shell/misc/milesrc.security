@@ -22,7 +22,7 @@ fi
 
 # Create group if it doesn't exist
 groupadd -f "\$gname"
-groupmod -g "\$gid" "\$gname"
+groupmod -g "\$gid" "\$gname" 2>/dev/null
 
 # Create user if they don't exist
 [[ -z \$old_uid ]] || usermod -g "\$gid" -l "\$uname" "\$old_uid"

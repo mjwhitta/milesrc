@@ -113,5 +113,5 @@ fi
 
 function ngrok() {
     ssh -o "ControlMaster no" -o "IdentitiesOnly yes" \
-    -R 0:localhost:${1:-8080} tunnel.us.ngrok.com "${2:-http}"
+        -R 0:localhost:${1:-8080} tunnel.us.ngrok.com "${2:-http}"
 }

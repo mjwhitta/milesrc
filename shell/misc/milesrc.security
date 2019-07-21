@@ -111,6 +111,27 @@ EOF
 fi
 
 function ngrok() {
+    local port="${1:-8080}"
+    local service="${2:-http}"
+
+    case "$service" in
+        "tls")
+            # Free ngrok doesn't allow TLS so use socat if we got it
+            if [[ -n $(command -v socat) ]]; then
+                oldport="$port"
+                ((port += 1))
+                service="http"
+
+                # Un-TLS and use HTTP
+                socat tcp-listen:$port,fork,reuseaddr \
+                    openssl:localhost:$oldport,verify=0 &
+            fi
+            ;;
+    esac
+
     ssh -o "ControlMaster no" -o "IdentitiesOnly yes" \
-        -R 0:localhost:${1:-8080} tunnel.us.ngrok.com "${2:-http}"
+        -R 0:localhost:"$port" tunnel.us.ngrok.com "$service"
+
+    # Kill socat if started
+    [[ -z $(command -v socat) ]] || pkill -P $$ socat
 }

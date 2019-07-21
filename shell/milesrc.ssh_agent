@@ -7,17 +7,17 @@
 if [[ -n $(command -v ssh-agent) ]] && [[ -n $MILESRC_SSH_AGENT ]]
 then
     # Start agent if needed
-    mkdir -p $HOME/.ssh/agent
-    [[ -f $HOME/.ssh/agent/env ]] || ssh-agent >$HOME/.ssh/agent/env
-    . $HOME/.ssh/agent/env >/dev/null
+    mkdir -p $HOME/.ssh
+    [[ -f $HOME/.ssh/agent ]] || ssh-agent >$HOME/.ssh/agent
+    . $HOME/.ssh/agent >/dev/null
 
     # If PID exists but SSH_AUTH_SOCK doesn't, then restart agent. If
     # PID doesn't exist, try to start agent again.
     pidchk="$(ps -o command -p $SSH_AGENT_PID | grep -s "ssh-agent")"
     if [[ -z $pidchk ]] || [[ ! -e $SSH_AUTH_SOCK ]]; then
         [[ -z $pidchk ]] || ssh-agent -k 2>/dev/null
-        ssh-agent >$HOME/.ssh/agent/env
-        . $HOME/.ssh/agent/env >/dev/null
+        ssh-agent >$HOME/.ssh/agent
+        . $HOME/.ssh/agent >/dev/null
     fi
     unset pidchk
 

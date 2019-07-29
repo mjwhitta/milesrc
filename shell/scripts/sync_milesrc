@@ -98,7 +98,7 @@ done
 [[ $# -gt 0 ]] || usage 1
 
 for host in "$@"; do
-    rsync -c --delete --exclude .git \
+    rsync -c --delete --exclude .git --exclude local \
         ${skip_plugs:+--exclude plug.vim --exclude plugs} \
         ${skip_tmux:+--exclude tmux} \
         ${skip_vim:+--exclude vim} \

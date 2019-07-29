@@ -4,22 +4,21 @@ The milesrc is a combination of my shell, tmux, and vim configs. Once
 installed, the shell function `milesrc` will provide some more info:
 
 ```
-$ milesrc
 Configuration via files
+
     ~/.git.nostatus
         Prompt will not show any git status for paths in
         this file. One path per line.
-    ~/.milesrc.local
+    ~/.milesrc/local/local
         Sourced last. Put your custom bash/zsh settings
         here.
-    ~/.proj
-        Created by save alias. Stores a directory to be
-        used by j alias.
-    ~/.ssh-agent
-        If it exists, milesrc will automatically create and
-        handle your ssh-agent.
+    ~/.milesrc/local/pre
+        Sourced first. Put specified ENV vars here (see
+        below)
 
-Configuration via ENV vars
+Configuration via ENV vars (put in ~/.milesrc/local/local
+unless otherwise specified)
+
     MILESRC_LS_AFTER_CD
         If set, and you alias cd to mycd, ls will be
         automatically run after each cd. You likely don't
@@ -51,6 +50,15 @@ Configuration via ENV vars
             white, light_black, light_red, light_green,
             light_yellow, light_blue, light_magenta,
             light_cyan, light_white, or any number in 0-255
+    MILESRC_SSH_AGENT
+        If set (in ~/.milesrc/local/pre), start an
+        ssh-agent.
+    MILESRC_TMUX
+        If set (in ~/.milesrc/local/pre), attach to tmux
+        session.
+    MILESRC_VI_BINDINGS
+        If set (in ~/.milesrc/local/pre), use vi
+        keybindings.
 ```
 
 Below are some commands to install or uninstall my configs.
@@ -81,7 +89,7 @@ This will NOT make backups of existing configs:
 $ ./installer -f -v link
 ```
 
-#### Unintall
+#### Uninstall
 
 This will unlink configs and restore any backups that exist:
 

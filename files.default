@@ -10,9 +10,6 @@ shell/bash_zsh_rc:$HOME/.zshrc
 shell/complete/zsh:$HOME/.config/zsh/complete
 shell/scripts:$HOME/.config/zsh/scripts
 
-# Prompt
-shell/milesrc.prompt:$HOME/.milesrc.prompt
-
 # TMUX
 tmux:$HOME/.tmux
 tmux/tmux.conf:$HOME/.tmux.conf

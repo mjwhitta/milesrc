@@ -16,14 +16,16 @@ export MILESRC_SHELL="$(installed zsh)"
 
 # {{{ User configs
 # Local stuff
-[[ ! -f $HOME/.milesrc.pre ]] || . $HOME/.milesrc.pre
+[[ ! -f $HOME/.milesrc/local/pre ]] || . $HOME/.milesrc/local/pre
 if [[ -n $(installed tmux) ]] &&
    [[ -z $TMUX ]] &&
    [[ -n $MILESRC_TMUX ]]
 then
     exec tmux -2 new -A -s "$(hostname -s)"
 fi
-[[ ! -d $HOME/.milesrc ]] || . $HOME/.milesrc/shell/milesrc.ssh_agent
+if [[ -f $HOME/.milesrc/shell/milesrc.ssh_agent ]]; then
+    . $HOME/.milesrc/shell/milesrc.ssh_agent
+fi
 # }}}
 
 case "$MILESRC_SHELL" in
@@ -371,7 +373,9 @@ unset PTH
 # }}}
 
 # {{{ Prompt
-[[ ! -f $HOME/.milesrc.prompt ]] || . $HOME/.milesrc.prompt
+if [[ -f $HOME/.milesrc/shell/milesrc.prompt ]]; then
+    . $HOME/.milesrc/shell/milesrc.prompt
+fi
 # }}}
 
 # {{{ Aliases
@@ -569,15 +573,15 @@ function milesrc() {
     echo "    ~/.git.nostatus"
     echo "        Prompt will not show any git status for paths in"
     echo "        this file. One path per line."
-    echo "    ~/.milesrc.local"
+    echo "    ~/.milesrc/local/local"
     echo "        Sourced last. Put your custom bash/zsh settings"
     echo "        here."
-    echo "    ~/.milesrc.pre"
+    echo "    ~/.milesrc/local/pre"
     echo "        Sourced first. Put specified ENV vars here (see"
     echo "        below)"
     echo
-    echo "Configuration via ENV vars (put in ~/.milesrc.local unless"
-    echo "otherwise specified)"
+    echo "Configuration via ENV vars (put in ~/.milesrc/local/local"
+    echo "unless otherwise specified)"
     echo
     case "$(uname -s)" in
         "Darwin")
@@ -619,11 +623,14 @@ function milesrc() {
     echo "            light_yellow, light_blue, light_magenta,"
     echo "            light_cyan, light_white, or any number in 0-255"
     echo "    MILESRC_SSH_AGENT"
-    echo "        If set (in ~/.milesrc.pre), start an ssh-agent."
+    echo "        If set (in ~/.milesrc/local/pre), start an"
+    echo "        ssh-agent."
     echo "    MILESRC_TMUX"
-    echo "        If set (in ~/.milesrc.pre), attach to tmux session."
+    echo "        If set (in ~/.milesrc/local/pre), attach to tmux"
+    echo "        session."
     echo "    MILESRC_VI_BINDINGS"
-    echo "        If set (in ~/.milesrc.pre), use vi keybindings."
+    echo "        If set (in ~/.milesrc/local/pre), use vi"
+    echo "        keybindings."
 }
 
 function mycd() {
@@ -1035,5 +1042,5 @@ if [[ -n $(installed xrdb) ]] && [[ -f $HOME/.Xresources ]]; then
 fi
 
 # Local stuff
-[[ ! -f $HOME/.milesrc.local ]] || . $HOME/.milesrc.local
+[[ ! -f $HOME/.milesrc/local/local ]] || . $HOME/.milesrc/local/local
 # }}}

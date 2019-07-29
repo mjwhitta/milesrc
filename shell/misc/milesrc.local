@@ -140,10 +140,14 @@ esac
 
 # {{{ Wrap-up
 # Security stuff
-[[ ! -f $HOME/.milesrc.security ]] || . $HOME/.milesrc.security
+if [[ -f $HOME/.milesrc/local/security ]]; then
+    . $HOME/.milesrc/local/security
+fi
 
 # Config for this host
-[[ ! -f $HOME/.milesrc.$(uname -n) ]] || . $HOME/.milesrc.$(uname -n)
+if [[ -f $HOME/.milesrc/local/$(uname -n) ]]; then
+    . $HOME/.milesrc/local/$(uname -n)
+fi
 
 if [[ -n $(installed arTTY) ]]; then
     arTTY

@@ -97,8 +97,11 @@ done
 # Get list of processes matching pattern
 declare -a processes
 while read -r line; do
+    case "$line" in
+        *"$0"*) continue ;;
+    esac
     processes+=("$line")
-done < <(pgrep -a ${uname:+-u $uname} "$1"); unset line
+done < <(pgrep -af${uname:+u $uname} "$1"); unset line
 
 [[ ${#processes[@]} -gt 0 ]] || exit 0
 

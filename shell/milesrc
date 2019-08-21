@@ -757,7 +757,7 @@ function simplehttp() {
             ;;
         "ruby")
             if [[ -n $(installed ruby) ]]; then
-                ruby -r un -e httpd -- -p ${2:-8080} .
+                ruby -e httpd -r un -- -p ${2:-8080} .
             else
                 echo "ruby is not installed"
             fi

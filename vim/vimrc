@@ -856,6 +856,11 @@ if exists(':function') && exists(':let')
         " nmap <leader>j <plug>(easymotion-j)
         " nmap <leader>k <plug>(easymotion-k)
 
+        " Fugitive
+        if exists('&tags')
+            set tags^=.git/tags
+        endif
+
         " Git gutter
         if exists('&updatetime')
             set updatetime=1000

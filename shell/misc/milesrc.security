@@ -114,7 +114,27 @@ function ngrok() {
     local port="${1:-8080}"
     local service="${2:-http}"
 
+    case "$*" in
+        *"-h"*|*"--help"*)
+            echo "Usage: ngrok [port] [service]"
+            echo
+            echo "DESCRIPTION"
+            echo -n "    Punch a hole thru the firewall using SSH "
+            echo "and ngrok servers. Default"
+            echo "    port/service is 8080/http(s)."
+            echo
+            echo "OPTIONS"
+            echo "    -h, --help    Display this help message"
+            echo
+            echo "SERVICES"
+            echo "    http(s)"
+            echo "    tls"
+            return
+            ;;
+    esac
+
     case "$service" in
+        "https") service="http" ;;
         "tls")
             # Free ngrok doesn't allow TLS so use socat if we got it
             if [[ -n $(command -v socat) ]]; then
@@ -125,6 +145,9 @@ function ngrok() {
                 # Un-TLS and use HTTP
                 socat tcp-listen:$port,fork,reuseaddr \
                     openssl:localhost:$oldport,verify=0 &
+            else
+                "No socat found. Can't use TLS service w/o socat."
+                return
             fi
             ;;
     esac

@@ -772,9 +772,14 @@ function simplehttp() {
         *)
             echo "Usage: simplehttp <lang> [port]"
             echo
-            echo "Port defaults to 8080."
+            echo "DESCRIPTION"
+            echo -n "    Start an HTTP server using the specified "
+            echo "language and port (default: 8080)."
             echo
-            echo "Languages:"
+            echo "OPTIONS"
+            echo "    -h, --help    Display this help message"
+            echo
+            echo "LANGUAGES"
             [[ -z $(installed busybox) ]] || echo "    busybox"
             [[ -z $(installed perl) ]] || echo "    perl"
             [[ -z $(installed php) ]] || echo "    php"
@@ -818,12 +823,32 @@ function update_grub() {
 
 function x() {
     case "$1" in
-        *".zst")
-            if [[ -z $(installed zstd) ]]; then
-                echo "zstd is not installed"
-            else
-                tar -I "zstd -T0" -xf $@
+        "-h"|"--help")
+            echo "Usage: x <archive>"
+            echo
+            echo "DESCRIPTION"
+            echo -n "    Automatically extract the archive, "
+            echo "regardless of type."
+            echo
+            echo "OPTIONS"
+            echo "    -h, --help    Display this help message"
+            echo
+            echo "SUPPORTED TYPES"
+            [[ -z $(installed 7z) ]] || echo "    7z"
+            [[ -z $(installed bzip2) ]] || echo "    bz2"
+            [[ -z $(installed gzip) ]] || echo "    gz"
+            [[ -z $(installed jar) ]] || echo "    jar"
+            [[ -z $(installed unrar) ]] || echo "    rar"
+            [[ -z $(installed rpm2cpio) ]] || echo "    rpm"
+            if [[ -n $(installed tar) ]]; then
+                echo "    tar"
+                echo "    tar.gz"
+                echo "    tgz"
+                echo "    txz"
             fi
+            [[ -z $(installed xz) ]] || echo "    xz"
+            [[ -z $(installed unzip) ]] || echo "    zip"
+            [[ -z $(installed zstd) ]] || echo "    zstd"
             ;;
         *".tar"*|*".tgz"|*".txz")
             if [[ -z $(installed tar) ]]; then
@@ -888,6 +913,15 @@ function x() {
                 echo "unzip is not installed"
             else
                 unzip $@
+            fi
+            ;;
+        *".zst")
+            if [[ -z $(installed zstd) ]]; then
+                echo "zstd is not installed"
+            elif [[ -z $(installed tar) ]]; then
+                tar -I "zstd -T0" -xf $@
+            else
+                echo "tar is not installed"
             fi
             ;;
         *)

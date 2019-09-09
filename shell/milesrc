@@ -684,7 +684,9 @@ function remove_spaces_in_names() {
 
     # Determine rename command
     local rnm="$(installed rename)"
-    if [[ -e /usr/bin/site_perl/rename ]]; then
+    if [[ -e /usr/bin/vendor_perl/rename ]]; then
+        rnm="/usr/bin/vendor_perl/rename"
+    elif [[ -e /usr/bin/site_perl/rename ]]; then
         rnm="/usr/bin/site_perl/rename"
     fi
 

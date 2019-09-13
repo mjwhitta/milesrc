@@ -1,5 +1,5 @@
 # Security functions + an alias
-if [[ -n $(installed docker) ]]; then
+if [[ -n $(command -v docker) ]]; then
     function create_tmp_docker_entry() {
         cat >/tmp/dockerentry.sh <<EOF
 #!/usr/bin/env bash

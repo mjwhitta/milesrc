@@ -10,14 +10,14 @@ function installed() {
 
 function join_with() { local IFS="$1"; echo "${*:2}"; }
 
-export MILESRC_SHELL="$(installed zsh)"
+export MILESRC_SHELL="$(command -v zsh)"
 [[ -z $BASH ]] || export MILESRC_SHELL="$BASH"
 # }}}
 
 # {{{ User configs
 # Local stuff
 [[ ! -f $HOME/.milesrc/local/pre ]] || . $HOME/.milesrc/local/pre
-if [[ -n $(installed tmux) ]] &&
+if [[ -n $(command -v tmux) ]] &&
    [[ -z $TMUX ]] &&
    [[ -n $MILESRC_TMUX ]]
 then
@@ -94,7 +94,7 @@ case "$MILESRC_SHELL" in
         fi
 
         # Fix ^S
-        [[ -z $(installed stty) ]] || stty stop ""
+        [[ -z $(command -v stty) ]] || stty stop ""
         # }}}
         ;;
     *"zsh")
@@ -155,7 +155,7 @@ case "$MILESRC_SHELL" in
 
         # Turn off terminal driver flow control (CTRL+S/CTRL+Q)
         setopt noflowcontrol
-        [[ -z $(installed stty) ]] || stty -ixon -ixoff
+        [[ -z $(command -v stty) ]] || stty -ixon -ixoff
 
         # Do not kill background processes when closing the shell
         setopt nohup
@@ -233,7 +233,7 @@ export JAVA_HOME="$(
 export EDITOR="vim"
 
 # GPG
-[[ -z $(installed tty) ]] || export GPG_TTY="$(tty)"
+[[ -z $(command -v tty) ]] || export GPG_TTY="$(tty)"
 
 # Secure perms
 # Don't touch umask EVER
@@ -249,7 +249,7 @@ if [[ -f $HOME/.config/less/lessfilter ]]; then
 fi
 
 # Make less more friendly for non-text input files, see lesspipe(1)
-if [[ -n $(installed lesspipe) ]]; then
+if [[ -n $(command -v lesspipe) ]]; then
     export LESSOPEN="| lesspipe %s"
     export LESSCLOSE="lesspipe %s %s"
 fi
@@ -293,7 +293,7 @@ export RG_ARGS
 # Ruby
 export GEM_HOME="$HOME/.gem/ruby"
 export GEM_PATH="$GEM_HOME/gems"
-[[ -z $(installed ruby) ]] || mkdir -p $GEM_HOME/bin $GEM_HOME/gems
+[[ -z $(command -v ruby) ]] || mkdir -p $GEM_HOME/bin $GEM_HOME/gems
 if [[ -d $HOME/.gem ]] && [[ ! -f $HOME/.gemrc ]]; then
     {
         echo "gem: --no-format-executable --no-user-install"
@@ -311,14 +311,14 @@ fi
 
 # Go
 export GOPATH="$HOME/.go"
-[[ -z $(installed go) ]] || mkdir -p $GOPATH/bin
+[[ -z $(command -v go) ]] || mkdir -p $GOPATH/bin
 
 # Perl
 export PERL_LOCAL_LIB_ROOT="$HOME/.cpan/perl5"
 export PERL5LIB="$PERL_LOCAL_LIB_ROOT/lib/perl5"
 export PERL_MB_OPT="--install_base \"$PERL_LOCAL_LIB_ROOT\""
 export PERL_MM_OPT="INSTALL_BASE=$PERL_LOCAL_LIB_ROOT"
-[[ -z $(installed perl) ]] || mkdir -p $PERL_LOCAL_LIB_ROOT
+[[ -z $(command -v perl) ]] || mkdir -p $PERL_LOCAL_LIB_ROOT
 
 # Fix USER if not defined
 export USER="${USER:-$(id -nu)}"
@@ -379,44 +379,44 @@ fi
 # }}}
 
 # {{{ Aliases
-if [[ -n $(installed ack-grep) ]]; then
+if [[ -n $(command -v ack-grep) ]]; then
     alias ack="ack-grep $ACK_ARGS"
-elif [[ -n $(installed ack) ]]; then
+elif [[ -n $(command -v ack) ]]; then
     alias ack="\ack $ACK_ARGS"
 fi
-[[ -z $(installed ag) ]] || alias ag="\ag $AG_ARGS"
+[[ -z $(command -v ag) ]] || alias ag="\ag $AG_ARGS"
 # alias cd="mycd"
 alias cp="\cp -i"
-[[ -z $(installed egrep) ]] || alias egrep="\egrep $GREP_ARGS"
-[[ -z $(installed emacs) ]] || alias emacs="\emacs -nw"
+[[ -z $(command -v egrep) ]] || alias egrep="\egrep $GREP_ARGS"
+[[ -z $(command -v emacs) ]] || alias emacs="\emacs -nw"
 alias envg="env | grep -P"
-[[ -z $(installed sudo) ]] || alias f="sudo"
-[[ -z $(installed gdb) ]] || alias gdb="\gdb -q"
-[[ -z $(installed grep) ]] || alias grep="\grep $GREP_ARGS"
-[[ -z $(installed less) ]] || alias l="less"
-[[ -n $(installed less) ]] || alias l="more"
+[[ -z $(command -v sudo) ]] || alias f="sudo"
+[[ -z $(command -v gdb) ]] || alias gdb="\gdb -q"
+[[ -z $(command -v grep) ]] || alias grep="\grep $GREP_ARGS"
+[[ -z $(command -v less) ]] || alias l="less"
+[[ -n $(command -v less) ]] || alias l="more"
 alias la="ls -A"
 alias lag="la | grep -P"
 alias ll="ls -hl"
 alias lla="ll -A"
 alias llag="lla | grep -P"
 alias llg="ll | grep -P"
-[[ -z $(installed locate) ]] || alias locate="\locate -e --regex"
+[[ -z $(command -v locate) ]] || alias locate="\locate -e --regex"
 alias ls="\ls --color=auto -F"
 alias lsg="ls | grep -P"
 alias mine="sudo chown -R \$(id -nu):\$(id -gn)"
 alias mv="\mv -i"
-[[ -z $(installed mimeopen) ]] || alias open="mimeopen"
+[[ -z $(command -v mimeopen) ]] || alias open="mimeopen"
 alias nocolor="sed -r \"s/\[[0-9;]*[AKm]//g\""
 alias p="ps -o pid,user,%cpu,cmd --sort=-%cpu"
 alias pf="p -e --forest"
-[[ -z $(installed python2) ]] || alias pip2="python2 -m pip"
-[[ -z $(installed python3) ]] || alias pip3="python3 -m pip"
+[[ -z $(command -v python2) ]] || alias pip2="python2 -m pip"
+[[ -z $(command -v python3) ]] || alias pip3="python3 -m pip"
 alias psg="pgrep -af "
 alias psme="pgrep -afU \$USER"
 alias q="exit"
 alias r="reset"
-[[ -z $(installed rg) ]] || alias rg="\rg $RG_ARGS"
+[[ -z $(command -v rg) ]] || alias rg="\rg $RG_ARGS"
 case "$MILESRC_SHELL" in
     *"bash") alias srcmilesrc=". \$HOME/.bashrc" ;;
     *"zsh") alias srcmilesrc=". \$HOME/.zshrc" ;;
@@ -424,15 +424,15 @@ esac
 if [[ -f /opt/sublime_text/sublime_text ]]; then
     alias sublime="/opt/sublime_text/sublime_text"
 fi
-[[ -z $(installed sudo) ]] || alias sume="sudo -Es"
-if [[ -n $(installed htop) ]]; then
+[[ -z $(command -v sudo) ]] || alias sume="sudo -Es"
+if [[ -n $(command -v htop) ]]; then
     alias t="htop -d 10"
     alias tu="htop -d 10 -u \$USER"
 else
     alias t="top -d 10"
     alias tu="top -d 10 -u \$USER"
 fi
-[[ -z $(installed w3m) ]] || alias w3m="\w3m -cookie"
+[[ -z $(command -v w3m) ]] || alias w3m="\w3m -cookie"
 alias which="command -v"
 
 # Typos
@@ -452,10 +452,10 @@ function devexcuse() {
 }
 
 function git_clone() {
-    if [[ -n $(installed git) ]]; then
+    if [[ -n $(command -v git) ]]; then
         git clone $1 $2
     else
-        [[ -n $(installed curl) ]] || return 1
+        [[ -n $(command -v curl) ]] || return 1
         [[ $# -gt 0 ]] || return 2
 
         local git_url
@@ -509,7 +509,7 @@ function git_clone() {
 }
 
 function ipa() {
-    if [[ -n $(installed ip) ]]; then
+    if [[ -n $(command -v ip) ]]; then
         if ip 2>&1 | grep -Pq "c.olor"; then
             ip -c -o $@ a | grep -sv "mtu" | awk '{print $2,$4}'
         else
@@ -537,7 +537,7 @@ function ipa() {
 }
 
 function ipr() {
-    if [[ -n $(installed ip) ]]; then
+    if [[ -n $(command -v ip) ]]; then
         if ip 2>&1 | grep -Pq "c.olor"; then
             ip -c -o $@ r
         else
@@ -684,7 +684,7 @@ function remove_spaces_in_names() {
     [[ $# -eq 0 ]] || look_in="$@"
 
     # Determine rename command
-    local rnm="$(installed rename)"
+    local rnm="$(command -v rename)"
     if [[ -e /usr/bin/vendor_perl/rename ]]; then
         rnm="/usr/bin/vendor_perl/rename"
     elif [[ -e /usr/bin/site_perl/rename ]]; then
@@ -722,14 +722,14 @@ esac
 function simplehttp() {
     case "$1" in
         "busybox")
-            if [[ -n $(installed busybox) ]]; then
+            if [[ -n $(command -v busybox) ]]; then
                 busybox httpd -f -p ${2:-8080}
             else
                 echo "busybox is not installed"
             fi
             ;;
         "perl")
-            if [[ -n $(installed plackup) ]]; then
+            if [[ -n $(command -v plackup) ]]; then
                 plackup -MPlack::App::Directory \
                     -e 'Plack::App::Directory->new(root=>".");' \
                     -p ${2:-8080}
@@ -738,35 +738,35 @@ function simplehttp() {
             fi
             ;;
         "php")
-            if [[ -n $(installed php) ]]; then
+            if [[ -n $(command -v php) ]]; then
                 php -S 0.0.0.0:${2:-8080}
             else
                 echo "php is not installed"
             fi
             ;;
         "python2")
-            if [[ -n $(installed python2) ]]; then
+            if [[ -n $(command -v python2) ]]; then
                 python2 -m SimpleHTTPServer ${2:-8080}
             else
                 echo "python2 is not installed"
             fi
             ;;
         "python3")
-            if [[ -n $(installed python3) ]]; then
+            if [[ -n $(command -v python3) ]]; then
                 python3 -m http.server ${2:-8080}
             else
                 echo "python3 is not installed"
             fi
             ;;
         "ruby")
-            if [[ -n $(installed ruby) ]]; then
+            if [[ -n $(command -v ruby) ]]; then
                 ruby -e httpd -r un -- -p ${2:-8080} .
             else
                 echo "ruby is not installed"
             fi
             ;;
         "twisted")
-            if [[ -n $(installed twistd) ]]; then
+            if [[ -n $(command -v twistd) ]]; then
                 twistd -n web --listen tcp:${2:-8080} --path .
             else
                 echo "Please run: python3 -m pip install twisted"
@@ -783,19 +783,19 @@ function simplehttp() {
             echo "    -h, --help    Display this help message"
             echo
             echo "LANGUAGES"
-            [[ -z $(installed busybox) ]] || echo "    busybox"
-            [[ -z $(installed perl) ]] || echo "    perl"
-            [[ -z $(installed php) ]] || echo "    php"
-            [[ -z $(installed python2) ]] || echo "    python2"
-            [[ -z $(installed python3) ]] || echo "    python3"
-            [[ -z $(installed ruby) ]] || echo "    ruby"
-            [[ -z $(installed python3) ]] || echo "    twisted"
+            [[ -z $(command -v busybox) ]] || echo "    busybox"
+            [[ -z $(command -v perl) ]] || echo "    perl"
+            [[ -z $(command -v php) ]] || echo "    php"
+            [[ -z $(command -v python2) ]] || echo "    python2"
+            [[ -z $(command -v python3) ]] || echo "    python3"
+            [[ -z $(command -v ruby) ]] || echo "    ruby"
+            [[ -z $(command -v python3) ]] || echo "    twisted"
             ;;
     esac
 }
 
 function tdump() {
-    if [[ -z $(installed tcpdump) ]]; then
+    if [[ -z $(command -v tcpdump) ]]; then
         echo "tcpdump is not installed"
         return
     fi
@@ -837,98 +837,98 @@ function x() {
             echo "    -h, --help    Display this help message"
             echo
             echo "SUPPORTED TYPES"
-            [[ -z $(installed 7z) ]] || echo "    7z"
-            [[ -z $(installed bzip2) ]] || echo "    bz2"
-            [[ -z $(installed gzip) ]] || echo "    gz"
-            [[ -z $(installed jar) ]] || echo "    jar"
-            [[ -z $(installed unrar) ]] || echo "    rar"
-            [[ -z $(installed rpm2cpio) ]] || echo "    rpm"
-            if [[ -n $(installed tar) ]]; then
+            [[ -z $(command -v 7z) ]] || echo "    7z"
+            [[ -z $(command -v bzip2) ]] || echo "    bz2"
+            [[ -z $(command -v gzip) ]] || echo "    gz"
+            [[ -z $(command -v jar) ]] || echo "    jar"
+            [[ -z $(command -v unrar) ]] || echo "    rar"
+            [[ -z $(command -v rpm2cpio) ]] || echo "    rpm"
+            if [[ -n $(command -v tar) ]]; then
                 echo "    tar"
                 echo "    tar.gz"
                 echo "    tgz"
                 echo "    txz"
             fi
-            [[ -z $(installed xz) ]] || echo "    xz"
-            [[ -z $(installed unzip) ]] || echo "    zip"
-            [[ -z $(installed zstd) ]] || echo "    zstd"
+            [[ -z $(command -v xz) ]] || echo "    xz"
+            [[ -z $(command -v unzip) ]] || echo "    zip"
+            [[ -z $(command -v zstd) ]] || echo "    zstd"
             ;;
         *".tar"*|*".tgz"|*".txz")
-            if [[ -z $(installed tar) ]]; then
+            if [[ -z $(command -v tar) ]]; then
                 echo "tar is not installed"
             else
                 tar -xf $@
             fi
             ;;
         *".7z")
-            if [[ -z $(installed 7z) ]]; then
+            if [[ -z $(command -v 7z) ]]; then
                 echo "p7zip is not installed"
             else
                 7z x $@
             fi
             ;;
         *".bz2")
-            if [[ -z $(installed bzip2) ]]; then
+            if [[ -z $(command -v bzip2) ]]; then
                 echo "bzip2 is not installed"
             else
                 bzip2 -dk $@
             fi
             ;;
         *".gz")
-            if [[ -z $(installed gzip) ]]; then
+            if [[ -z $(command -v gzip) ]]; then
                 echo "gzip is not installed"
             else
                 gzip -dk $@
             fi
             ;;
         *".jar")
-            if [[ -z $(installed jar) ]]; then
+            if [[ -z $(command -v jar) ]]; then
                 echo "java is not installed"
             else
                 jar -xf $@
             fi
             ;;
         *".rar")
-            if [[ -z $(installed unrar) ]]; then
+            if [[ -z $(command -v unrar) ]]; then
                 echo "unrar is not installed"
             else
                 unrar x $@
             fi
             ;;
         *".rpm")
-            if [[ -z $(installed rpm2cpio) ]]; then
+            if [[ -z $(command -v rpm2cpio) ]]; then
                 echo "rpm2cpio is not installed"
-            elif [[ -z $(installed cpio) ]]; then
+            elif [[ -z $(command -v cpio) ]]; then
                 echo "rpm2cpio is not installed"
             else
                 rpm2cpio $@ | cpio -idmv
             fi
             ;;
         *".xz")
-            if [[ -z $(installed xz) ]]; then
+            if [[ -z $(command -v xz) ]]; then
                 echo "xz is not installed"
             else
                 xz -dk $@
             fi
             ;;
         *".zip")
-            if [[ -z $(installed unzip) ]]; then
+            if [[ -z $(command -v unzip) ]]; then
                 echo "unzip is not installed"
             else
                 unzip $@
             fi
             ;;
         *".zst")
-            if [[ -z $(installed zstd) ]]; then
+            if [[ -z $(command -v zstd) ]]; then
                 echo "zstd is not installed"
-            elif [[ -z $(installed tar) ]]; then
+            elif [[ -z $(command -v tar) ]]; then
                 tar -I "zstd -T0" -xf $@
             else
                 echo "tar is not installed"
             fi
             ;;
         *)
-            if [[ -n $(installed aunpack) ]]; then
+            if [[ -n $(command -v aunpack) ]]; then
                 aunpack $@
             else
                 echo "Unknown archive format!"
@@ -949,27 +949,27 @@ case "$MILESRC_SHELL" in
         fi
 
         # Complete gimme function
-        if [[ -n $(installed apt-cache) ]]; then
+        if [[ -n $(command -v apt-cache) ]]; then
             function _apt_install_complete() {
                 mapfile -t COMPREPLY < <(
                     apt-cache --no-generate pkgnames "$2"
                 )
             }
             complete -F _apt_install_complete gimme
-        elif [[ -n $(installed brew) ]]; then
+        elif [[ -n $(command -v brew) ]]; then
             function _brew_install_complete() {
                 mapfile -t COMPREPLY < <(brew search "$2")
             }
             complete -F _brew_install_complete gimme
-        elif [[ -n $(installed crew) ]]; then
+        elif [[ -n $(command -v crew) ]]; then
             function _crew_install_complete() {
                 mapfile -t COMPREPLY < <(
                     crew search "$2" | awk '{print $1}'
                 )
             }
             complete -F _crew_install_complete gimme
-        elif [[ -n $(installed pacman) ]]; then
-            if [[ -n $(installed ruaur) ]]; then
+        elif [[ -n $(command -v pacman) ]]; then
+            if [[ -n $(command -v ruaur) ]]; then
                 function _ruaur_install_complete() {
                     mapfile -t COMPREPLY < <(
                         ruaur -Ss "$2" --names-only | \
@@ -1036,23 +1036,23 @@ case "$MILESRC_SHELL" in
         done; unset dir
 
         # Complete gimme function
-        if [[ -n $(installed apt-cache) ]]; then
+        if [[ -n $(command -v apt-cache) ]]; then
             function _apt_install_complete() {
                 reply=($(apt-cache --no-generate pkgnames "$1"))
             }
             compctl -K _apt_install_complete gimme
-        elif [[ -n $(installed brew) ]]; then
+        elif [[ -n $(command -v brew) ]]; then
             function _brew_install_complete() {
                 reply=($(brew search "$1"))
             }
             compctl -K _brew_install_complete gimme
-        elif [[ -n $(installed crew) ]]; then
+        elif [[ -n $(command -v crew) ]]; then
             function _crew_install_complete() {
                 reply=($(crew search "$1" | awk '{print $1}'))
             }
             compctl -K _crew_install_complete gimme
-        elif [[ -n $(installed pacman) ]]; then
-            if [[ -n $(installed ruaur) ]]; then
+        elif [[ -n $(command -v pacman) ]]; then
+            if [[ -n $(command -v ruaur) ]]; then
                 compdef _gnu_generic ruaur
                 function _ruaur_install_complete() {
                     reply=($(ruaur -Ss "$1" --names-only))
@@ -1074,7 +1074,7 @@ esac
 
 # {{{ Wrap-up
 # Xterm
-if [[ -n $(installed xrdb) ]] && [[ -f $HOME/.Xresources ]]; then
+if [[ -n $(command -v xrdb) ]] && [[ -f $HOME/.Xresources ]]; then
     xrdb -load $HOME/.Xresources 2>/dev/null
 fi
 

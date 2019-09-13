@@ -44,11 +44,11 @@ done; unset dir
 alias dt="tmux -2 new -d -s"
 alias et="exec tmux -2 new -A -s"
 alias j="\cd \$(cat $HOME/.proj 2>/dev/null)"
-[[ -z $(installed pwsh) ]] || alias powershell="TERM=xterm pwsh"
+[[ -z $(command -v pwsh) ]] || alias powershell="TERM=xterm pwsh"
 alias save="pwd >\$HOME/.proj"
 
 # Git aliases
-if [[ -n $(installed git) ]]; then
+if [[ -n $(command -v git) ]]; then
     full="--date=format-local:\"%F_%H%M%S\" --full-history"
     minimal="-b --color-words=. --ignore-blank-lines --minimal"
     tformat="tformat:\"%Cred%h %Cgreen%cd %Cblue%an%Creset %s\""
@@ -89,15 +89,15 @@ function wunder() {
 }
 
 # I like ruby-zoom, but in case it's not installed, create functions
-if [[ -z $(installed z | grep -s "gem") ]]; then
+if [[ -z $(command -v z | grep -s "gem") ]]; then
     function z() {
-        if [[ -n $(installed rg) ]]; then
+        if [[ -n $(command -v rg) ]]; then
             rg $@
-        elif [[ -n $(installed ag) ]]; then
+        elif [[ -n $(command -v ag) ]]; then
             ag $@
-        elif [[ -n $(installed ack-grep) ]]; then
+        elif [[ -n $(command -v ack-grep) ]]; then
             ack-grep $@
-        elif [[ -n $(installed ack) ]]; then
+        elif [[ -n $(command -v ack) ]]; then
             ack $@
         else
             grep -HnPr $@
@@ -113,7 +113,7 @@ case "$MILESRC_SHELL" in
     *bash)
         # {{{ Bash completions
         # Complete arTTY
-        if [[ -n $(installed arTTY) ]]; then
+        if [[ -n $(command -v arTTY) ]]; then
             _arTTY_complete() {
                 mapfile -t COMPREPLY < <(arTTY -p --ls -m "^$2")
             }
@@ -124,7 +124,7 @@ case "$MILESRC_SHELL" in
     *zsh)
         # {{{ Zsh completions
         # Complete arTTY
-        if [[ -n $(installed arTTY) ]]; then
+        if [[ -n $(command -v arTTY) ]]; then
             compdef _gnu_generic art artty arTTY
             _arTTY_complete() {
                 reply=($(arTTY -p --ls))
@@ -149,7 +149,7 @@ if [[ -f $HOME/.milesrc/local/$(uname -n) ]]; then
     . $HOME/.milesrc/local/$(uname -n)
 fi
 
-if [[ -n $(installed arTTY) ]]; then
+if [[ -n $(command -v arTTY) ]]; then
     arTTY
 else
     alias art="clear"

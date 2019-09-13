@@ -113,7 +113,7 @@ esac
 # }}}
 
 # {{{ Aliases
-[[ -z $(installed nano) ]] || alias nano="\nano $NANO_ARGS"
+[[ -z $(command -v nano) ]] || alias nano="\nano $NANO_ARGS"
 alias weather="clear; curl -s wttr.in/~Lafayette,IN | head -n -2"
 # }}}
 
@@ -178,7 +178,7 @@ function lsp() {
 }
 
 q() {
-    if [[ -z $(installed tmux) ]] ||
+    if [[ -z $(command -v tmux) ]] ||
        [[ -z $TMUX ]] ||
        [[ $(tmux list-panes | wc -l) -ne 1 ]] ||
        [[ $(tmux list-windows | wc -l) -ne 1 ]]
@@ -207,7 +207,7 @@ rat() {
     done
 }
 
-if [[ -n $(installed vim) ]]; then
+if [[ -n $(command -v vim) ]]; then
     rogue() {
         if [[ ! -d $HOME/.vim/bundle/rogue.vim ]]; then
             echo "rogue.vim is not installed"
@@ -235,10 +235,10 @@ sample_color() {
     done
 }
 
-if [[ -n "$(installed vim)" ]] || [[ -n "$(installed vi)" ]]; then
+if [[ -n "$(command -v vim)" ]] || [[ -n "$(command -v vi)" ]]; then
     function vim() {
-        local vi="$(installed vim)"
-        [[ -z $vi ]] && vi="$(installed vi)"
+        local vi="$(command -v vim)"
+        [[ -z $vi ]] && vi="$(command -v vi)"
         [[ -z $(command -v sudo) ]] && $vi $@ && return $?
 
         local i
@@ -272,20 +272,20 @@ case "$MILESRC_SHELL" in
     *bash)
         # {{{ Bash completions
         # Complete insync-headless
-        if [[ -n $(installed insync-headless) ]]; then
+        if [[ -n $(command -v insync-headless) ]]; then
             _insync_complete() {
                 mapfile -t COMPREPLY < <(
                     insync-headless help | perl -lne \
                     '/^\s('$2'[^\s]+)/ && print $1' | sort -u
                 )
             }
-            if [[ -n $(installed perl) ]]; then
+            if [[ -n $(command -v perl) ]]; then
                 complete -F _insync_complete insync-headless
             fi
         fi
 
         # Complete mspac
-        if [[ -n $(installed mspac) ]]; then
+        if [[ -n $(command -v mspac) ]]; then
             _mspac_complete() {
                 mapfile -t COMPREPLY < <(
                     mspac --list-pellets | grep -Ps "^$2" | sort -u
@@ -303,20 +303,20 @@ case "$MILESRC_SHELL" in
                 )
             fi
         }
-        if [[ -n $(installed perl) ]]; then
+        if [[ -n $(command -v perl) ]]; then
             complete -F _hostname_complete notmux
             complete -F _hostname_complete sshrc
         fi
 
         # Complete vbox
-        if [[ -n $(installed vboxmanage) ]]; then
+        if [[ -n $(command -v vboxmanage) ]]; then
             _vbox_complete() {
                 mapfile -t COMPREPLY < <(
                     vboxmanage list vms | perl -lne \
                     '/^"('$2'.*)" .*/ && print $1' | sort -u
                 )
             }
-            if [[ -n $(installed perl) ]]; then
+            if [[ -n $(command -v perl) ]]; then
                 complete -F _vbox_complete vbox
             fi
         fi
@@ -325,20 +325,20 @@ case "$MILESRC_SHELL" in
     *zsh)
         # {{{ Zsh completions
         # Complete insync-headless
-        if [[ -n $(installed insync-headless) ]]; then
+        if [[ -n $(command -v insync-headless) ]]; then
             _insync_complete() {
                 reply=($(
                     insync-headless help | \
                     perl -lne '/^\s([^\s]+)/ && print $1'
                 ))
             }
-            if [[ -n $(installed perl) ]]; then
+            if [[ -n $(command -v perl) ]]; then
                 compctl -K _insync_complete insync-headless
             fi
         fi
 
         # Complete mspac
-        if [[ -n $(installed mspac) ]]; then
+        if [[ -n $(command -v mspac) ]]; then
             compdef _gnu_generic mspac
             _mspac_complete() {
                 reply=($(mspac --list-pellets))
@@ -351,14 +351,14 @@ case "$MILESRC_SHELL" in
         compdef sshrc=ssh
 
         # Complete vbox
-        if [[ -n $(installed vboxmanage) ]]; then
+        if [[ -n $(command -v vboxmanage) ]]; then
             _vbox_complete() {
                 reply=($(
                     vboxmanage list vms | perl -lne \
                     '/^"(.+)" .*/ && print $1' | sort -u
                 ))
             }
-            if [[ -n $(installed perl) ]]; then
+            if [[ -n $(command -v perl) ]]; then
                 complete -F _vbox_complete vbox
             fi
         fi

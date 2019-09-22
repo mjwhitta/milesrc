@@ -3,28 +3,14 @@
 
 # {{{ Env Vars
 declare -a MILESRC_PROMPT
-# milesrc
-#MILESRC_PROMPT=(
-#    # "host;white;blue;remote;white;27;root;white;160;hide_local;true"
-#    "host;white;blue;remote;white;27;root;white;160"
-#    "venv;white;166"
-#    "git;light_black;white"
-#    "cwd;white;light_black"
-#    "exit;red;light_black;e-motes;green;light_black"
-#    "date;light_black;light_magenta"
-#    "vi_ins;white;green;vi_cmd;white;blue;vi_rep;white;124"
-#    "newline"
-#    "prompt;white;light_black"
-#)
-# solarized dark
 MILESRC_PROMPT=(
-    # "host;white;blue;remote;white;27;root;white;160;hide_local;true"
     "host;white;blue;remote;white;cyan;root;white;red"
-    "venv;white;166"
-    "git;black;white"
-    "cwd;white;light_green"
-    "exit;white;red;e-motes;white;green"
     "date;white;light_magenta"
+    "git;black;white"
+    "venv;white;yellow"
+    "exit;white;red;e-motes;white;green"
+    "newline"
+    "cwd;white;light_green"
     "vi_ins;white;green;vi_cmd;white;blue;vi_rep;white;red"
     "newline"
     "prompt;white;light_green"
@@ -43,6 +29,7 @@ done; unset dir
 # {{{ Aliases
 alias dt="tmux -2 new -d -s"
 alias et="exec tmux -2 new -A -s"
+alias eth="exec tmux -2 new -A -s \"\$(hostname)\""
 alias j="\cd \$(cat $HOME/.proj 2>/dev/null)"
 [[ -z $(command -v pwsh) ]] || alias powershell="TERM=xterm pwsh"
 alias save="pwd >\$HOME/.proj"

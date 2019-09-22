@@ -338,19 +338,21 @@ function __milesrc_prompt_ps1() {
     [[ $# -eq 1 ]] || return
 
     local -A p
+    local cwdwidth="$COLUMNS"
     local exit_status="$1"
+    local found
     local i
-    local subtract="true"
-    local width="$COLUMNS"
+    local subtract="0"
     case "$MILESRC_PROMPT_SHELL" in
         *"zsh")
-            [[ $MILESRC_PROMPT_ZSHV -ge 5.5 ]] || ((width -= 1))
+            [[ $MILESRC_PROMPT_ZSHV -ge 5.5 ]] || ((cwdwidth -= 1))
             ;;
     esac
 
     for i in "${MILESRC_PROMPT[@]}"; do
         local len="0"
         case "$i" in
+            "cwd"*) found="true" ;;
             "date"*)
                 p[date]="$(__milesrc_date $i)"
                 len="${p[date]%%|*}"
@@ -367,7 +369,13 @@ function __milesrc_prompt_ps1() {
                 p[host]="$(__milesrc_host $i)"
                 len="${p[host]%%|*}"
                 ;;
-            "newline") unset subtract ;;
+            "newline")
+                if [[ -n $found ]]; then
+                    cwdwidth="$((COLUMNS - subtract))"
+                    unset found
+                fi
+                subtract="0"
+                ;;
             "prompt"*)
                 p[prompt]="$(__milesrc_prompt_sym $i)"
                 len="${p[prompt]%%|*}"
@@ -381,14 +389,14 @@ function __milesrc_prompt_ps1() {
                 len="${p[mode]%%|*}"
                 ;;
         esac
-        [[ -z $subtract ]] || ((width -= ${len:-0}))
+        ((subtract += ${len:-0}))
     done; unset i
 
     # CWD
     local fmt="$(
         echo -n "${MILESRC_PROMPT[@]}" | grep -ioPs "cwd[^ ]+"
     )"
-    p[cwd]="$(__milesrc_cwd $fmt $width)"
+    p[cwd]="$(__milesrc_cwd $fmt $cwdwidth)"
 
     # Put it together
     for i in "${MILESRC_PROMPT[@]}"; do

@@ -79,10 +79,11 @@ gimme_apt() {
                 if [[ -z $nosave ]]; then
                     DEBIAN_FRONTEND="noninteractive" \
                         $sudo apt-get remove "$@"
-                fi
-                if [[ -n $nosave ]]; then
+                elif [[ -n $nosave ]]; then
                     DEBIAN_FRONTEND="noninteractive" \
                         $sudo apt-get purge "$@"
+                    DEBIAN_FRONTEND="noninteractive" \
+                        $sudo apt-get autoremove
                 fi
                 ;;
             "search") apt-cache search "$@" ;;

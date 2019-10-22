@@ -340,10 +340,10 @@ unset PTH
 for dir in \
     "$HOME/bin" \
     "$HOME/.config/$(basename "$MILESRC_SHELL")/scripts" \
-    "$GEM_HOME/bin" \
     "$HOME/.local/bin" \
     "$GOPATH" \
     "$GOPATH/bin" \
+    "$GEM_HOME/bin" \
     "$PERL_LOCAL_LIB_ROOT/bin" \
     /usr/local/bin \
     /usr/local/sbin \

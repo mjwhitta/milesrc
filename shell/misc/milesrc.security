@@ -53,74 +53,57 @@ EOF
     }
 
     alias dclean="docker system prune -af --volumes"
+    alias dps="docker ps -a"
+    alias dsh="docker exec -it"
 
-    function dsh() {
-        local image="$1" && shift
-        local name="$(echo "${image%%:*}" | sed -r "s/\W+/-/g")"
-        name+="_$(head -c 8 /dev/random | xxd -p)"
-
+    function drun() {
         docker run \
             -e DKR_GID="$(id -g)" -e DKR_GNAME="$(id -gn)" \
-            -e DKR_UID="$(id -u)" -e DKR_UNAME="$(id -nu)" \
-            -i --name "$name" --rm -t "$image" "$@"
+            -e DKR_UID="$(id -u)" -e DKR_UNAME="$(id -nu)" -i --rm \
+            -t "$@"
     }
 
-    function dshpwd() {
-        local image="$1" && shift
-        local name="$(echo "${image%%:*}" | sed -r "s/\W+/-/g")"
-        name+="_$(head -c 8 /dev/random | xxd -p)"
-
-        docker run \
-            -e DKR_GID="$(id -g)" -e DKR_GNAME="$(id -gn)" \
-            -e DKR_UID="$(id -u)" -e DKR_UNAME="$(id -nu)" \
-            -i --name "$name" --rm -tv "$(pwd)":/pwd -w /pwd \
-            "$image" "$@"
+    function drunpwd() {
+        drun -v "$(pwd)":/pwd:Z -w /pwd "$@"
     }
 
-    function msfconsole() {
+    function metasploit_image() {
         local entrydir="/usr/src/metasploit-framework"
         local image="metasploitframework/metasploit-framework:latest"
         local name="msfconsole_$(head -c 8 /dev/random | xxd -p)"
 
         mkdir -p "$HOME/.msf4"
-        docker run -e MSF_GID=$(id -g) -e MSF_UID=$(id -u) \
-            --entrypoint "$entrydir/docker/entrypoint.sh" -i \
-            --name "$name" -p 4444:4444 -p 8000-8500:8000-8500 --rm \
-            -tv "$HOME/.msf4":/home/msf/.msf4 -v "$(pwd)":/pwd:Z \
-            -w /pwd $image "$entrydir/msfconsole" -q "$@"
+        drunpwd -e MSF_GID="$(id -g)" -e MSF_UID="$(id -u)" \
+            --entrypoint "$entrydir/docker/entrypoint.sh" \
+            --name "$name" -v "$HOME/.msf4":/home/msf/.msf4:Z "$@"
+    }
+
+    function msfconsole() {
+        local entrydir="/usr/src/metasploit-framework"
+        local image="metasploitframework/metasploit-framework:latest"
+        metasploit_image -p 4444:4444 -p 8000-8500:8000-8500 $image \
+            "$entrydir/msfconsole" -q "$@"
     }
 
     function msfvenom() {
         local entrydir="/usr/src/metasploit-framework"
         local image="metasploitframework/metasploit-framework:latest"
-        local name="msfvenom_$(head -c 8 /dev/random | xxd -p)"
-
-        mkdir -p "$HOME/.msf4"
-        docker run -e MSF_GID=$(id -g) -e MSF_UID=$(id -u) \
-            --entrypoint "$entrydir/docker/entrypoint.sh" -i \
-            --name "$name" --rm -tv "$HOME/.msf4":/home/msf/.msf4 \
-            -v "$(pwd)":/pwd:Z -w /pwd $image "$entrydir/msfvenom" \
-            "$@"
+        metasploit_image $image "$entrydir/msfvenom" "$@"
     }
 
     function r2() {
+        r2_image r2 "$@"
+    }
+
+    function r2_image() {
         create_tmp_docker_entry
-        docker run --cap-add=SYS_PTRACE -e DKR_GID="$(id -g)" \
-            -e DKR_GNAME="$(id -gn)" -e DKR_UID="$(id -u)" \
-            -e DKR_UNAME="$(id -nu)" --entrypoint /dockerentry -i \
-            --name "r2_$(head -c 8 /dev/random | xxd -p)" --rm -t \
-            -u root -v /tmp/dockerentry:/dockerentry \
-            -v "$(pwd)":/pwd:Z -w /pwd radare/radare2 r2 "$@"
+        drunpwd --cap-add=SYS_PTRACE --entrypoint /dockerentry \
+            --name "r2_$(head -c 8 /dev/random | xxd -p)" -u root \
+            -v /tmp/dockerentry:/dockerentry:ro radare/radare2 "$@"
     }
 
     function r2sh() {
-        create_tmp_docker_entry
-        docker run --cap-add=SYS_PTRACE -e DKR_GID="$(id -g)" \
-            -e DKR_GNAME="$(id -gn)" -e DKR_UID="$(id -u)" \
-            -e DKR_UNAME="$(id -nu)" --entrypoint /dockerentry -i \
-            --name "r2_$(head -c 8 /dev/random | xxd -p)" --rm -t \
-            -u root -v /tmp/dockerentry:/dockerentry \
-            -v "$(pwd)":/pwd:Z -w /pwd radare/radare2 bash
+        r2_image bash
     }
 fi
 
@@ -158,7 +141,7 @@ function ngrok() {
 
                 # Un-TLS and use HTTP
                 socat tcp-listen:$port,fork,reuseaddr \
-                    openssl:localhost:$oldport,verify=0 &
+                    openssl:localhost:"$oldport",verify=0 &
             else
                 "No socat found. Can't use TLS service w/o socat."
                 return

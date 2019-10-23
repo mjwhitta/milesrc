@@ -7,11 +7,11 @@ MILESRC_PROMPT=(
     "host;white;blue;remote;white;cyan;root;white;red"
     "date;white;magenta"
     "git;black;white"
-    "venv;white;yellow"
-    "exit;white;red;e-motes;white;green"
+    "venv;white;light_red"
     "newline"
     "vi_ins;white;green;vi_cmd;white;light_magenta;vi_rep;white;red"
     "cwd;white;light_green"
+    "exit;white;red;e-motes;white;green"
     "newline"
     "prompt;white;light_green"
 )

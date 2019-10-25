@@ -82,7 +82,7 @@ function __milesrc_colors() {
 
 # {{{ __milesrc_cwd
 # Current working directory
-# $1 = format in the form of cwd;fgclr;bgclr
+# $1 = format in the form of cwd;fgclr;bgclr[;fill]
 # $2 = the width needed to truncate the cwd
 function __milesrc_cwd() {
     [[ $# -eq 2 ]] || return
@@ -90,6 +90,7 @@ function __milesrc_cwd() {
     local cwd="$(
         pwd | sed -r -e "s#$HOME#\~#" -e "s#/# / #g" -e "s/^ //"
     )"
+    local fill="$(echo -n "$1" | grep -ioPs ";fill")"
     local fmt="$(echo -n "$1" | grep -ioPs "cwd(;[^;]+){2}")"
     local i
     local length="$(echo -n "$cwd" | wc -m)"
@@ -100,6 +101,7 @@ function __milesrc_cwd() {
 
     if [[ $length -le $width ]]; then
         ((offset = width - length - 1))
+        [[ -n $fill ]] || offset="0"
         cwd="$(
             echo -n "$cwd"
             for i in $(seq 0 $offset); do echo -n " "; done; unset i

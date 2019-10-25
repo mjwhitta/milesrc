@@ -10,9 +10,9 @@ MILESRC_PROMPT=(
     "git;black;white"
     "venv;white;light_red"
     "newline"
+    "exit;white;red;e-motes;white;green"
     "cwd;white;light_black;nofill"
     "newline"
-    "exit;white;red;e-motes;white;green"
     "prompt;white;light_black"
 )
 export MILESRC_PROMPT

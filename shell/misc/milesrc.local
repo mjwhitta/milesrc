@@ -5,7 +5,7 @@
 declare -a MILESRC_PROMPT
 MILESRC_PROMPT=(
     "host;white;blue;remote;white;cyan;root;white;red"
-    "date;white;magenta"
+    "date;white;light_green"
     "git;black;white"
     "venv;white;light_red"
     "newline"

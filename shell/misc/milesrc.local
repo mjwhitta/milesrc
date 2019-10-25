@@ -5,15 +5,15 @@
 declare -a MILESRC_PROMPT
 MILESRC_PROMPT=(
     "host;white;blue;remote;white;cyan;root;white;red"
+    "vi_ins;white;green;vi_cmd;white;light_magenta;vi_rep;white;red"
     "date;white;light_green"
     "git;black;white"
     "venv;white;light_red"
     "newline"
-    "vi_ins;white;green;vi_cmd;white;light_magenta;vi_rep;white;red"
     "cwd;white;light_black;nofill"
     "newline"
     "exit;white;red;e-motes;white;green"
-    "prompt;white;light_green"
+    "prompt;white;light_black"
 )
 export MILESRC_PROMPT
 

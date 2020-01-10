@@ -290,6 +290,10 @@ RG_ARGS+="--colors \"match:fg:black\" "
 RG_ARGS+="--colors \"path:fg:green\""
 export RG_ARGS
 
+## sshpass
+SSHPASS_ARGS="-o \"PreferredAuthentications=password\" "
+SSHPASS_ARGS+="-o \"PubkeyAuthentication=no\""
+
 # Ruby
 export GEM_HOME="$HOME/.gem/ruby"
 export GEM_PATH="$GEM_HOME/gems"
@@ -421,7 +425,7 @@ case "$MILESRC_SHELL" in
     *"bash") alias srcmilesrc=". \"\$HOME/.bashrc\"" ;;
     *"zsh") alias srcmilesrc=". \"\$HOME/.zshrc\"" ;;
 esac
-alias sshpass="ssh -o \"PreferredAuthentications=password\""
+alias sshpass="ssh $SSHPASS_ARGS"
 if [[ -f /opt/sublime_text/sublime_text ]]; then
     alias sublime="/opt/sublime_text/sublime_text"
 fi

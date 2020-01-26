@@ -297,7 +297,7 @@ SSHPASS_ARGS+="-o \"PubkeyAuthentication=no\""
 # Ruby
 export GEM_HOME="$HOME/.gem/ruby"
 export GEM_PATH="$GEM_HOME/gems"
-[[ -z $(command -v ruby) ]] || mkdir -p "$GEM_HOME/bin $GEM_HOME/gems"
+[[ -z $(command -v ruby) ]] || mkdir -p "$GEM_HOME"/{bin,gems}
 if [[ -d $HOME/.gem ]] && [[ ! -f $HOME/.gemrc ]]; then
     {
         echo "gem: --no-format-executable --no-user-install"

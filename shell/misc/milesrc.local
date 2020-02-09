@@ -52,12 +52,17 @@ fi
 # }}}
 
 # {{{ Functions
-# List directories reachable from CDPATH
-function lscd() {
-    [[ -n $CDPATH ]] || return
-    while read -r dir; do
-        ls $dir
-    done < <(echo "$CDPATH" | sed "s/:/\n/g"); unset dir
+goplay() {
+    [[ -n $(command -v go) ]] || return
+
+    if [[ $# -eq 0 ]]; then
+        vim /tmp/goplay.go
+        go fmt /tmp/goplay.go >/dev/null
+    else
+        case "$1" in
+            "run") go run /tmp/goplay.go "${@:2}" ;;
+        esac
+    fi
 }
 
 function moon() { clear; curl -s wttr.in/Moon | head -n -2; }
@@ -104,7 +109,7 @@ case "$MILESRC_SHELL" in
             _arTTY_complete() {
                 mapfile -t COMPREPLY < <(arTTY --ls -m "^$2" -p)
             }
-            complete -F _arTTY_complete arTTY
+            complete -F _arTTY_complete art artty arTTY
         fi
         # }}}
         ;;
@@ -114,7 +119,7 @@ case "$MILESRC_SHELL" in
         if [[ -n $(command -v arTTY) ]]; then
             compdef _gnu_generic art artty arTTY
             _arTTY_complete() { reply=($(arTTY --ls -p)); }
-            compctl -K _arTTY_complete arTTY
+            compctl -K _arTTY_complete art artty arTTY
         fi
 
         # Complete ruby-zoom commands
@@ -135,6 +140,8 @@ if [[ -f $HOME/.milesrc/local/$(uname -n) ]]; then
 fi
 
 if [[ -n $(command -v arTTY) ]]; then
+    alias art="arTTY"
+    alias artty="arTTY"
     arTTY
 else
     alias art="clear"

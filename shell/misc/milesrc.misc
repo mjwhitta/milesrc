@@ -114,28 +114,9 @@ esac
 
 # {{{ Aliases
 [[ -z $(command -v nano) ]] || alias nano="\nano $NANO_ARGS"
-alias weather="clear; curl -s wttr.in/~Lafayette,IN | head -n -2"
 # }}}
 
 # {{{ Functions
-add_to_path() {
-    local arg
-    local dir
-
-    for arg in "$@"; do
-        if [[ -d $arg ]]; then
-            while read -r dir; do
-                \cd $dir
-                export PATH="$PATH:$(pwd)"
-                \cd - >/dev/null
-            done < <(
-                find -L $arg -name ".*" -prune -o -type d -print \
-                2>/dev/null
-            )
-        fi
-    done
-}
-
 list_displays() {
     local dir="/tmp/.X11-unix"
     local x
@@ -147,55 +128,6 @@ list_displays() {
     else
         echo "X11 dir does not exist!"
     fi
-}
-
-# Lists directories in PROJS and allows quick cd'ing to them
-function lsp() {
-    [[ -d $PROJS ]] || return 0
-
-    local count="0"
-    local prev=""
-
-    # Find repos that are not archived and not submodules
-    while read -r dir; do
-        if [[ -z $prev ]] ||
-           [[ -z $(echo "${dir#$PROJS/}" | grep -Ps "$prev") ]]
-        then
-            ((count += 1))
-            prev="${dir#$PROJS/}"
-
-            if [[ $# -eq 0 ]]; then
-                printf "%03d %s\n" $count $prev
-            elif [[ $count -eq $1 ]]; then
-                \cd $dir
-                return 0
-            fi
-        fi
-    done < <(
-        find -L $PROJS -mindepth 1 -path "*archived*" -prune -o \
-        -name ".git" -exec dirname {} + 2>/dev/null | sort
-    ); unset dir
-}
-
-q() {
-    if [[ -z $(command -v tmux) ]] ||
-       [[ -z $TMUX ]] ||
-       [[ $(tmux list-panes | wc -l) -ne 1 ]] ||
-       [[ $(tmux list-windows | wc -l) -ne 1 ]]
-    then
-        exit 0
-    fi
-
-    local session="$(tmux display-message -p "#S")"
-    local clients="$(tmux list-clients | grep -cs "$session")"
-
-    if [[ $clients -eq 1 ]]; then
-        \cd
-        [[ ! -f $HOME/.milesrc.local ]] || . $HOME/.milesrc.local
-        tmux clear-history
-    fi
-
-    tmux detach-client
 }
 
 rat() {
@@ -224,66 +156,11 @@ if [[ -n $(command -v vim) ]]; then
         rm -f $HOME/rogue_vim.scores
     }
 fi
-
-sample_color() {
-    local i
-    local black="\e[30m"
-    local reset="\e[0m"
-    local white="\e[37m"
-    for i in "$@"; do
-        echo -e "\e[48;5;${i}m$black $i $white $i $reset"
-    done
-}
-
-if [[ -n "$(command -v vim)" ]] || [[ -n "$(command -v vi)" ]]; then
-    function vim() {
-        local vi="$(command -v vim)"
-        [[ -z $vi ]] && vi="$(command -v vi)"
-        [[ -z $(command -v sudo) ]] && $vi $@ && return $?
-
-        local i
-        local sudo
-
-        for i in "$@"; do
-            case "$i" in
-                "/dev/null") continue ;;
-                -*) continue ;;
-            esac
-            if [[ -e $i ]]; then
-                [[ ! -w $i ]] && sudo="true" && break
-            elif [[ -d $(dirname $i) ]]; then
-                [[ ! -w $(dirname $i) ]] && sudo="true" && break
-            fi
-        done
-
-        local num="$(
-            grep -Pv "^[#_]|false|git|nologin|postgres|root|sync" \
-            /etc/passwd | wc -l
-        )"
-        [[ $num -le 1 ]] || unset sudo
-
-        [[ -z $sudo ]] && $vi $@ && return $?
-        sudo $vi $@
-    }
-fi
 # }}}
 
 case "$MILESRC_SHELL" in
     *bash)
         # {{{ Bash completions
-        # Complete insync-headless
-        if [[ -n $(command -v insync-headless) ]]; then
-            _insync_complete() {
-                mapfile -t COMPREPLY < <(
-                    insync-headless help | perl -lne \
-                    '/^\s('$2'[^\s]+)/ && print $1' | sort -u
-                )
-            }
-            if [[ -n $(command -v perl) ]]; then
-                complete -F _insync_complete insync-headless
-            fi
-        fi
-
         # Complete mspac
         if [[ -n $(command -v mspac) ]]; then
             _mspac_complete() {
@@ -324,19 +201,6 @@ case "$MILESRC_SHELL" in
         ;;
     *zsh)
         # {{{ Zsh completions
-        # Complete insync-headless
-        if [[ -n $(command -v insync-headless) ]]; then
-            _insync_complete() {
-                reply=($(
-                    insync-headless help | \
-                    perl -lne '/^\s([^\s]+)/ && print $1'
-                ))
-            }
-            if [[ -n $(command -v perl) ]]; then
-                compctl -K _insync_complete insync-headless
-            fi
-        fi
-
         # Complete mspac
         if [[ -n $(command -v mspac) ]]; then
             compdef _gnu_generic mspac

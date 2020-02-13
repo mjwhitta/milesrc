@@ -55,14 +55,26 @@ fi
 goplay() {
     [[ -n $(command -v go) ]] || return
 
-    if [[ $# -eq 0 ]]; then
-        vim /tmp/goplay.go
-        go fmt /tmp/goplay.go >/dev/null
-    else
-        case "$1" in
-            "run") go run /tmp/goplay.go "${@:2}" ;;
-        esac
-    fi
+    case "${1:-edit}" in
+        "build") go build -o "${2:-goplay}" /tmp/goplay.go ;;
+        "edit")
+            vim /tmp/goplay.go
+            go fmt /tmp/goplay.go >/dev/null
+            ;;
+        "-h"|"--help"|"help")
+            cat <<EOF
+Usage: ${0} [ACTION] [args]
+
+ACTIONS
+    build    Compiles /tmp/goplay.go, takes an optional name
+    edit     Opens /tmp/goplay.go in vim
+    help     Display this help message
+    run      Runs /tmp/goplay.go, passes remaining cli args
+
+EOF
+            ;;
+        "run") go run /tmp/goplay.go "${@:2}" ;;
+    esac
 }
 
 function moon() { clear; curl -s wttr.in/Moon | head -n -2; }

@@ -61,6 +61,7 @@ goplay() {
             vim /tmp/goplay.go
             go fmt /tmp/goplay.go >/dev/null
             ;;
+        "fmt") go fmt /tmp/goplay.go >/dev/null ;;
         "-h"|"--help"|"help")
             cat <<EOF
 Usage: ${0} [ACTION] [args]

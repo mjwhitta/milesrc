@@ -31,6 +31,7 @@ alias dt="tmux -2 new -d -s"
 alias et="exec tmux -2 new -A -s"
 alias eth="exec tmux -2 new -A -s \"\$(hostname)\""
 alias j="\cd \$(cat $HOME/.proj 2>/dev/null)"
+alias nslookup="echo \"use 'dig +domain= +short [-x]' instead\" #"
 [[ -z $(command -v pwsh) ]] || alias powershell="TERM=xterm pwsh"
 alias save="pwd >\$HOME/.proj"
 

@@ -125,7 +125,7 @@ function __milesrc_date() {
     [[ $# -eq 1 ]] || return
 
     local fmt="$(echo -n "$1" | grep -ioPs "date(;[^;]+){2}")"
-    local date="$(date +%F_%H%M%S)"
+    local date="$(date +%FT%H:%M:%S%z)"
 
     __milesrc_format "$fmt" "$date"
 }

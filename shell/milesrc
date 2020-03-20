@@ -357,10 +357,8 @@ for dir in \
     /sbin \
     /usr/bin/core_perl \
     /usr/bin/vendor_perl \
+    "$HOME/Android/Sdk/emulator" \
     "$HOME/Android/Sdk/platform-tools" \
-    "$HOME/Android/Sdk/tools" \
-    "$HOME/Android/Sdk/tools/bin" \
-    "$HOME/Android/Ndk" \
     "$HOME/.rvm/bin"
 do
     [[ ! -d $dir ]] || PTH="${PTH:+$PTH:}$dir"

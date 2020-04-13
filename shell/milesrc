@@ -419,6 +419,7 @@ alias psme="pgrep -afU \"\$USER\""
 alias q="exit"
 alias r="reset"
 [[ -z $(command -v rg) ]] || alias rg="\rg $RG_ARGS"
+alias scppass="scp $SSHPASS_ARGS"
 case "$MILESRC_SHELL" in
     *"bash") alias srcmilesrc=". \"\$HOME/.bashrc\"" ;;
     *"zsh") alias srcmilesrc=". \"\$HOME/.zshrc\"" ;;

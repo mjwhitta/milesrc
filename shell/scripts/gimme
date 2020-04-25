@@ -159,9 +159,22 @@ gimme_dnf() {
 }
 
 gimme_pacman() {
-    if [[ -n $(command -v ruaur) ]]; then
+    if [[ -n $(command -v yay) ]]; then
         case "$action" in
-            "install") ruaur -S "$@" --noconfirm ;;
+            "install") $sudo yay -S "$@" ;;
+            "remove")
+                [[ -n $nosave ]] || $sudo yay -Rs "$@"
+                [[ -z $nosave ]] || $sudo yay -Rns "$@"
+                ;;
+            "search") yay -Ss "$@" ;;
+            "update")
+                $sudo yay -Syyu --noconfirm
+                $sudo yay -Sc --noconfirm
+                ;;
+        esac
+    elif [[ -n $(command -v ruaur) ]]; then
+        case "$action" in
+            "install") ruaur -S "$@" ;;
             "remove")
                 [[ -n $nosave ]] || ruaur -R "$@"
                 [[ -z $nosave ]] || ruaur -Rn "$@"
@@ -174,7 +187,7 @@ gimme_pacman() {
         esac
     elif [[ -n $(command -v pacman) ]]; then
         case "$action" in
-            "install") $sudo pacman -S "$@" --noconfirm ;;
+            "install") $sudo pacman -S "$@" ;;
             "remove")
                 [[ -n $nosave ]] || $sudo pacman -Rs "$@"
                 [[ -z $nosave ]] || $sudo pacman -Rns "$@"

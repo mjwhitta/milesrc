@@ -161,15 +161,15 @@ gimme_dnf() {
 gimme_pacman() {
     if [[ -n $(command -v yay) ]]; then
         case "$action" in
-            "install") $sudo yay -S "$@" ;;
+            "install") yay -S "$@" ;;
             "remove")
-                [[ -n $nosave ]] || $sudo yay -Rs "$@"
-                [[ -z $nosave ]] || $sudo yay -Rns "$@"
+                [[ -n $nosave ]] || yay -Rs "$@"
+                [[ -z $nosave ]] || yay -Rns "$@"
                 ;;
             "search") yay -Ss "$@" ;;
             "update")
-                $sudo yay -Syyu --noconfirm
-                $sudo yay -Sc --noconfirm
+                yay -Syyu --noconfirm
+                yay -Sc --noconfirm
                 ;;
         esac
     elif [[ -n $(command -v ruaur) ]]; then

@@ -69,21 +69,40 @@ gimme_apk() {
 }
 
 gimme_apt() {
-    if [[ -n $(command -v apt-get) ]]; then
+    if [[ -n $(command -v apt) ]]; then
         case "$action" in
-            "install")
-                DEBIAN_FRONTEND="noninteractive" \
-                    $sudo apt-get install -qy "$@"
-                ;;
+            "install") $sudo apt install -q "$@" ;;
             "remove")
                 if [[ -z $nosave ]]; then
-                    DEBIAN_FRONTEND="noninteractive" \
-                        $sudo apt-get remove "$@"
+                    $sudo apt remove "$@"
                 elif [[ -n $nosave ]]; then
+                    $sudo apt purge "$@"
+                    $sudo apt autoremove
+                fi
+                ;;
+            "search") apt-cache search "$@" ;;
+            "update")
+                for cmd in \
+                    update \
+                    upgrade \
+                    dist-upgrade \
+                    autoremove \
+                    autoclean
+                do
                     DEBIAN_FRONTEND="noninteractive" \
-                        $sudo apt-get purge "$@"
-                    DEBIAN_FRONTEND="noninteractive" \
-                        $sudo apt-get autoremove
+                        $sudo apt $cmd -qy
+                done
+                ;;
+        esac
+    elif [[ -n $(command -v apt-get) ]]; then
+        case "$action" in
+            "install") $sudo apt-get install -q "$@" ;;
+            "remove")
+                if [[ -z $nosave ]]; then
+                    $sudo apt-get remove "$@"
+                elif [[ -n $nosave ]]; then
+                    $sudo apt-get purge "$@"
+                    $sudo apt-get autoremove
                 fi
                 ;;
             "search") apt-cache search "$@" ;;
@@ -125,7 +144,7 @@ gimme_brew() {
 gimme_crew() {
     if [[ -n $(command -v crew) ]]; then
         case "$action" in
-            "install") yes | crew install "$@" ;;
+            "install") crew install "$@" ;;
             "remove") crew remove "$@" ;;
             "search") crew search "$@" ;;
             "update") crew update && yes | crew upgrade ;;
@@ -143,14 +162,14 @@ gimme_dnf() {
         esac
     elif [[ -n $(command -v dnf) ]]; then
         case "$action" in
-            "install") $sudo dnf install -y "$@" ;;
+            "install") $sudo dnf install "$@" ;;
             "remove") $sudo dnf remove "$@" ;;
             "search") dnf search -q "$@" ;;
             "update") $sudo dnf upgrade -y ;;
         esac
     elif [[ -n $(command -v yum) ]]; then
         case "$action" in
-            "install") $sudo yum install -y "$@" ;;
+            "install") $sudo yum install "$@" ;;
             "remove") $sudo yum remove "$@" ;;
             "search") yum search "$@" ;;
             "update") $sudo yum update -y ;;
@@ -207,10 +226,10 @@ gimme_zypper() {
         case "$action" in
             "install")
                 $sudo transactional-update pkg in \
-                    --no-recommends -y "$@"
+                    --no-recommends "$@"
                 ;;
             "remove")
-                $sudo transactional-update pkg rm -uy "$@" ;;
+                $sudo transactional-update pkg rm -u "$@" ;;
             "search") zypper search "$@" ;;
             "update")
                 case "$type" in
@@ -222,8 +241,8 @@ gimme_zypper() {
     elif [[ -n $(command -v zypper) ]]; then
         case "$action" in
             "install")
-                $sudo zypper install --no-recommends -y "$@" ;;
-            "remove") $sudo zypper remove --clean-deps -y "$@" ;;
+                $sudo zypper install --no-recommends "$@" ;;
+            "remove") $sudo zypper remove --clean-deps "$@" ;;
             "search") zypper search "$@" ;;
             "update")
                 $sudo zypper update -y

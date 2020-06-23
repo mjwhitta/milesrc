@@ -155,3 +155,5 @@ function ngrok() {
     # Kill socat if started
     [[ -z $(command -v socat) ]] || pkill -P $$ socat
 }
+
+function shh() { ssh -t "$1" HISTFILE= bash --norc; }

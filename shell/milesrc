@@ -717,58 +717,47 @@ case "$MILESRC_SHELL" in
 esac
 
 function simplehttp() {
-    case "$1" in
-        "busybox")
-            if [[ -n $(command -v busybox) ]]; then
-                busybox httpd -f -p "${2:-8080}"
-            else
-                echo "busybox is not installed"
+    local port="${2:-8080}"
+
+    case "${1:--h}" in
+        "-h"|"--help") ;;
+        *)
+            if [[ -z $(command -v $1) ]]; then
+                echo "$1 is not installed"
+                return
             fi
+            ;;
+    esac
+
+    case "$1" in
+        "busybox") busybox httpd -f -p "$port" ;;
+        "nginx")
+            cat >/tmp/simplehttp<<EOF
+error_log stderr info;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    server {
+        listen $port;
+        root $(pwd);
+        try_files \$uri \$uri/;
+    }
+}
+EOF
+            nginx -c /tmp/simplehttp -T
             ;;
         "perl")
-            if [[ -n $(command -v plackup) ]]; then
-                plackup -MPlack::App::Directory \
-                    -e 'Plack::App::Directory->new(root=>".");' \
-                    -p "${2:-8080}"
-            else
-                echo "Please run: cpan Plack"
-            fi
+            plackup -MPlack::App::Directory \
+                -e 'Plack::App::Directory->new(root=>".");' -p "$port"
             ;;
-        "php")
-            if [[ -n $(command -v php) ]]; then
-                php -S 0.0.0.0:"${2:-8080}"
-            else
-                echo "php is not installed"
-            fi
-            ;;
-        "python2")
-            if [[ -n $(command -v python2) ]]; then
-                python2 -m SimpleHTTPServer "${2:-8080}"
-            else
-                echo "python2 is not installed"
-            fi
-            ;;
-        "python3")
-            if [[ -n $(command -v python3) ]]; then
-                python3 -m http.server "${2:-8080}"
-            else
-                echo "python3 is not installed"
-            fi
-            ;;
-        "ruby")
-            if [[ -n $(command -v ruby) ]]; then
-                ruby -e httpd -r un -- -p "${2:-8080}" .
-            else
-                echo "ruby is not installed"
-            fi
-            ;;
-        "twisted")
-            if [[ -n $(command -v twistd) ]]; then
-                twistd -n web --listen tcp:"${2:-8080}" --path .
-            else
-                echo "Please run: python3 -m pip install twisted"
-            fi
-            ;;
+        "php") php -S "0.0.0.0:$port" ;;
+        "python2") python2 -m SimpleHTTPServer "$port" ;;
+        "python3") python3 -m http.server "$port" ;;
+        "ruby") ruby -e httpd -r un -- -p "$port" . ;;
+        "twisted") twistd -n web --listen "tcp:$port" --path . ;;
         *)
             echo "Usage: simplehttp <lang> [port]"
             echo
@@ -781,6 +770,7 @@ function simplehttp() {
             echo
             echo "LANGUAGES"
             [[ -z $(command -v busybox) ]] || echo "    busybox"
+            [[ -z $(command -v nginx) ]] || echo "    nginx"
             [[ -z $(command -v perl) ]] || echo "    perl"
             [[ -z $(command -v php) ]] || echo "    php"
             [[ -z $(command -v python2) ]] || echo "    python2"

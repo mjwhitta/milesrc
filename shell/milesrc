@@ -732,8 +732,10 @@ function simplehttp() {
     case "$1" in
         "busybox") busybox httpd -f -p "$port" ;;
         "nginx")
-            cat >/tmp/simplehttp<<EOF
-error_log stderr info;
+            mkdir -p /tmp/simplehttp
+            cat >/tmp/simplehttp/nginx.conf<<EOF
+daemon off;
+error_log stderr;
 
 events {
     worker_connections 1024;
@@ -741,13 +743,20 @@ events {
 
 http {
     server {
+        access_log /dev/stdout;
+        autoindex on;
         listen $port;
         root $(pwd);
-        try_files \$uri \$uri/;
+        server_name localhost;
     }
 }
+
+pid /tmp/simplehttp/nginx.pid;
+worker_processes 1;
 EOF
-            nginx -c /tmp/simplehttp -T
+
+            nginx -c /tmp/simplehttp/nginx.conf -p /tmp/simplehttp
+            rm -rf /tmp/simplehttp
             ;;
         "perl")
             plackup -MPlack::App::Directory \

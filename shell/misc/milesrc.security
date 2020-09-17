@@ -84,7 +84,7 @@ EOF
             local entrydir="/usr/src/metasploit-framework"
             local image="metasploitframework/metasploit-framework"
             metasploit_image -p 4444:4444 -p 8000-8500:8000-8500 \
-            $image:latest "$entrydir/msfconsole" -q "$@"
+            ${image}:latest "$entrydir/msfconsole" -q "$@"
         }
     fi
 
@@ -92,7 +92,7 @@ EOF
         function msfvenom() {
             local entrydir="/usr/src/metasploit-framework"
             local image="metasploitframework/metasploit-framework"
-            metasploit_image $image:latest "$entrydir/msfvenom" "$@"
+            metasploit_image ${image}:latest "$entrydir/msfvenom" "$@"
         }
     fi
 

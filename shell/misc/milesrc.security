@@ -79,22 +79,28 @@ EOF
             --name "$name" -v "$HOME/.msf4":/home/msf/.msf4:Z "$@"
     }
 
-    function msfconsole() {
-        local entrydir="/usr/src/metasploit-framework"
-        local image="metasploitframework/metasploit-framework:latest"
-        metasploit_image -p 4444:4444 -p 8000-8500:8000-8500 $image \
-            "$entrydir/msfconsole" -q "$@"
-    }
+    if [[ -z $(command -v msfconsole) ]]; then
+        function msfconsole() {
+            local entrydir="/usr/src/metasploit-framework"
+            local image="metasploitframework/metasploit-framework"
+            metasploit_image -p 4444:4444 -p 8000-8500:8000-8500 \
+            $image:latest "$entrydir/msfconsole" -q "$@"
+        }
+    fi
 
-    function msfvenom() {
-        local entrydir="/usr/src/metasploit-framework"
-        local image="metasploitframework/metasploit-framework:latest"
-        metasploit_image $image "$entrydir/msfvenom" "$@"
-    }
+    if [[ -z $(command -v msfvenom) ]]; then
+        function msfvenom() {
+            local entrydir="/usr/src/metasploit-framework"
+            local image="metasploitframework/metasploit-framework"
+            metasploit_image $image:latest "$entrydir/msfvenom" "$@"
+        }
+    fi
 
-    function r2() {
-        r2_image r2 "$@"
-    }
+    if [[ -z $(command -v r2) ]]; then
+        function r2() {
+            r2_image r2 "$@"
+        }
+    fi
 
     function r2_image() {
         create_tmp_docker_entry

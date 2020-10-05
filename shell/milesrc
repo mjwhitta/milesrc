@@ -1077,7 +1077,10 @@ esac
 
 # {{{ Wrap-up
 # Xterm
-if [[ -n $(command -v xrdb) ]] && [[ -f $HOME/.Xresources ]]; then
+if [[ -n $(command -v xrdb) ]] &&
+   [[ -f $HOME/.Xresources ]] &&
+   [[ -z $SSH_CONNECTION ]]
+then
     xrdb -load "$HOME/.Xresources" 2>/dev/null
 fi
 

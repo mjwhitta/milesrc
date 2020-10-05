@@ -329,6 +329,7 @@ export USER="${USER:-$(id -nu)}"
 
 # Display
 if [[ -z $DISPLAY ]] &&
+   [[ -z $SSH_CONNECTION ]] &&
    [[ -d /tmp/.X11-unix ]] &&
    [[ -n $(ls /tmp/.X11-unix) ]]
 then

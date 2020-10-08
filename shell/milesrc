@@ -316,6 +316,9 @@ fi
 # Go
 export GOPATH="$HOME/.go"
 [[ -z $(command -v go) ]] || mkdir -p "$GOPATH/bin"
+if [[ -d $HOME/.cache/gvm ]]; then
+    export GOROOT="$HOME/.cache/gvm/use"
+fi
 
 # Perl
 export PERL_LOCAL_LIB_ROOT="$HOME/.cpan/perl5"
@@ -346,6 +349,7 @@ for dir in \
     "$HOME/bin" \
     "$HOME/.config/$(basename "$MILESRC_SHELL")/scripts" \
     "$HOME/.local/bin" \
+    "${GOROOT:-/doesnotexist}/bin" \
     "$GOPATH" \
     "$GOPATH/bin" \
     "$GEM_HOME/bin" \
@@ -368,7 +372,8 @@ done; unset dir
 # Find missing from PATH
 while read -r dir; do
     [[ ! -d $dir ]] || PTH="${PTH:+$PTH:}$dir"
-done < <(echo "${PATH//:/\n}" | grep -Psv "${PTH//:/|}"); unset dir
+done < <(echo "$PATH" | sed "s/:/\n/g" | grep -Psv "^${PTH//:/$|^}$")
+unset dir
 
 # Set PATH
 [[ -z $PTH ]] || export PATH="$PTH"

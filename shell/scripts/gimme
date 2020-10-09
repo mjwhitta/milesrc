@@ -314,7 +314,7 @@ case "$(uname -s)" in
     "Linux")
         case "$(grep -oPs "^ID\=\"?\K[^\"]+" /etc/os-release)" in
             "alpine") gimme_apk "$@" ;;
-            "arch") gimme_pacman "$@" ;;
+            "arch"|"archarm") gimme_pacman "$@" ;;
             "chrom"*"os") gimme_crew "$@" ;;
             "debian") gimme_apt "$@" ;;
             "fedora") gimme_dnf "$@" ;;

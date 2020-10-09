@@ -316,7 +316,7 @@ case "$(uname -s)" in
             "alpine") gimme_apk "$@" ;;
             "arch"|"archarm") gimme_pacman "$@" ;;
             "chrom"*"os") gimme_crew "$@" ;;
-            "debian") gimme_apt "$@" ;;
+            "debian"|"raspbian") gimme_apt "$@" ;;
             "fedora") gimme_dnf "$@" ;;
             "opensuse"*"leap") gimme_zypper "leap" "$@" ;;
             "opensuse"*"tumbleweed") gimme_zypper "tw" "$@" ;;

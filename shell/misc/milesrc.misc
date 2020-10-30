@@ -165,7 +165,7 @@ case "$MILESRC_SHELL" in
         if [[ -n $(command -v mspac) ]]; then
             _mspac_complete() {
                 mapfile -t COMPREPLY < <(
-                    mspac --list-pellets | grep -Ps "^$2" | sort -u
+                    mspac --list-pellets | grep -Es "^$2" | sort -u
                 )
             }
             complete -F _mspac_complete mspac
@@ -176,7 +176,7 @@ case "$MILESRC_SHELL" in
             if [[ -f $HOME/.ssh/config ]]; then
                 mapfile -t COMPREPLY < <(
                     perl -lne '/^Host ([A-Za-z0-9]+)/ && print $1' \
-                    $HOME/.ssh/config | grep -Ps "^$2" | sort -u
+                    $HOME/.ssh/config | grep -Es "^$2" | sort -u
                 )
             fi
         }

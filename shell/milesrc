@@ -4,10 +4,6 @@
 # The magic happens in this file.
 
 # {{{ Helper utils
-function installed() {
-    type -a "$1" 2>&1 | grep -m 1 -oPs "$1 is \K/.+"
-}
-
 function join_with() { local IFS="$1"; echo "${*:2}"; }
 
 export MILESRC_SHELL="$(command -v zsh)"
@@ -372,7 +368,7 @@ done; unset dir
 # Find missing from PATH
 while read -r dir; do
     [[ ! -d $dir ]] || PTH="${PTH:+$PTH:}$dir"
-done < <(echo "$PATH" | sed "s/:/\n/g" | grep -Psv "^${PTH//:/$|^}$")
+done < <(echo "$PATH" | sed "s/:/\n/g" | grep -Esv "^${PTH//:/$|^}$")
 unset dir
 
 # Set PATH
@@ -397,21 +393,21 @@ fi
 alias cp="\cp -i"
 [[ -z $(command -v egrep) ]] || alias egrep="\egrep $GREP_ARGS"
 [[ -z $(command -v emacs) ]] || alias emacs="\emacs -nw"
-alias envg="env | grep -P"
+alias envg="env | grep -E"
 [[ -z $(command -v sudo) ]] || alias f="sudo"
 [[ -z $(command -v gdb) ]] || alias gdb="\gdb -q"
 [[ -z $(command -v grep) ]] || alias grep="\grep $GREP_ARGS"
 [[ -z $(command -v less) ]] || alias l="less"
 [[ -n $(command -v less) ]] || alias l="more"
 alias la="ls -A"
-alias lag="la | grep -P"
+alias lag="la | grep -E"
 alias ll="ls -hl"
 alias lla="ll -A"
-alias llag="lla | grep -P"
-alias llg="ll | grep -P"
+alias llag="lla | grep -E"
+alias llg="ll | grep -E"
 [[ -z $(command -v locate) ]] || alias locate="\locate -e --regex"
 alias ls="\ls --color=auto -F"
-alias lsg="ls | grep -P"
+alias lsg="ls | grep -E"
 alias mine="sudo chown -R \$(id -nu):\$(id -gn)"
 alias mv="\mv -i"
 [[ -z $(command -v mimeopen) ]] || alias open="mimeopen"
@@ -519,7 +515,7 @@ function git_clone() {
 
 function ipa() {
     if [[ -n $(command -v ip) ]]; then
-        if ip 2>&1 | grep -Pq "c.olor"; then
+        if ip 2>&1 | grep -Eq "c.olor"; then
             ip -c -o $@ a | grep -sv "mtu" | awk '{print $2,$4}'
         else
             ip -o $@ a | grep -sv "mtu" | awk '{print $2,$4}'
@@ -547,7 +543,7 @@ function ipa() {
 
 function ipr() {
     if [[ -n $(command -v ip) ]]; then
-        if ip 2>&1 | grep -Pq "c.olor"; then
+        if ip 2>&1 | grep -Eq "c.olor"; then
             ip -c -o $@ r
         else
             ip -o $@ r
@@ -807,7 +803,7 @@ function tdump() {
         return
     fi
 
-    local cap="$(echo "$@" | grep -oPs "\S+\.pcap")"
+    local cap="$(echo "$@" | grep -Eos "\S+\.pcap")"
     sudo tcpdump -n -vvv $@
     [[ -z $(id | grep -s "uid=0") ]] || return 0
     local name="$(id -nu)"
@@ -982,7 +978,7 @@ case "$MILESRC_SHELL" in
                 function _ruaur_install_complete() {
                     mapfile -t COMPREPLY < <(
                         ruaur -Ss "$2" --names-only | \
-                        grep -Ps "^$2" | sort -u
+                        grep -Es "^$2" | sort -u
                     )
                 }
                 complete -F _ruaur_install_complete gimme

@@ -106,7 +106,7 @@ if [[ -z $(command -v z | grep -s "gem") ]]; then
         elif [[ -n $(command -v ack) ]]; then
             ack $@
         else
-            grep -HnPr $@
+            grep -EHnr $@
         fi
     }
     function zf() {

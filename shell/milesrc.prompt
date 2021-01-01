@@ -88,7 +88,7 @@ function __milesrc_cwd() {
     [[ $# -eq 2 ]] || return
 
     local cwd="$(
-        pwd | sed -r -e "s#$HOME#\~#" -e "s#/# / #g" -e "s/^ //"
+        pwd | sed -r -e "s#^$HOME#\~#" -e "s#/# / #g" -e "s/^ //"
     )"
     local fill="$(echo -n "$1" | grep -Eios ";fill")"
     local fmt="$(echo -n "$1" | grep -Eios "cwd(;[^;]+){2}")"

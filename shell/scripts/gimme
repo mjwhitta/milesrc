@@ -268,6 +268,7 @@ Options:
     -R, --remove     Remove package(s)
     -s, --search     Search for matching packages
     -u, --update     Update installed packages
+    -v, --version    Show gimme version
 
 EOF
     exit "$1"
@@ -280,6 +281,7 @@ color="true"
 deps+=("awk")
 deps+=("grep")
 sudo="$(command -v sudo)"
+version="1.0.0"
 
 # Check for missing dependencies
 check_deps
@@ -296,6 +298,7 @@ while [[ $# -gt 0 ]]; do
         "-Rn") action="remove"; nosave="true" ;;
         "-s"|"--search") action="search" ;;
         "-u"|"--update") action="update" ;;
+        "-v"|"--version") action="version" ;;
         *) args+=("$1") ;;
     esac
     shift
@@ -304,11 +307,30 @@ done
 
 # Check for valid params
 [[ -z $help ]] || usage 0
+
+# Check for valid OS
+case "$(uname -s)" in
+    "Darwin") os="macOS" ;;
+    "Linux")
+        # grep and awk b/c alpine/busybox
+        os="$(
+            grep -Eos "^ID\=\"?[^\"]+" /etc/os-release | \
+            awk -F "=" '{print $2}'
+        )"
+        ;;
+    *) errx 1 "Unsupported OS!" ;;
+esac
+
+# Check for valid usage
 case "$action" in
-    "install") [[ $# -ne 0 ]] || usage 1 ;;
-    "remove") [[ $# -ne 0 ]] || usage 1 ;;
-    "search") [[ $# -ne 0 ]] || usage 1 ;;
-    "update") [[ $# -eq 0 ]] || usage 1 ;;
+    "install") [[ $# -ne 0 ]] || usage 2 ;;
+    "remove") [[ $# -ne 0 ]] || usage 2 ;;
+    "search") [[ $# -ne 0 ]] || usage 2 ;;
+    "update") [[ $# -eq 0 ]] || usage 2 ;;
+    "version")
+        [[ $# -eq 0 ]] || usage 2
+        echo "gimme $version ($os)"
+        ;;
 esac
 
 # Check for self-update
@@ -323,7 +345,7 @@ if [[ $# -eq 1 ]]; then
             gimme="/-/raw/master/shell/scripts/gimme"
 
             curl -kLo /tmp/gimme -s "$repo/$gimme"
-            [[ $? -eq 0 ]] || errx 2 "Failed to get new gimme"
+            [[ $? -eq 0 ]] || errx 3 "Failed to get new gimme"
 
             chmod +x "/tmp/gimme"
             mv -f /tmp/gimme "$0"
@@ -333,24 +355,15 @@ if [[ $# -eq 1 ]]; then
     esac
 fi
 
-case "$(uname -s)" in
-    "Darwin") gimme_brew "$@" ;;
-    "Linux")
-        # grep and awk b/c alpine/busybox
-        os="$(
-            grep -Eos "^ID\=\"?[^\"]+" /etc/os-release | \
-            awk -F "=" '{print $2}'
-        )"
-        case "$os" in
-            "alpine") gimme_apk "$@" ;;
-            "arch"|"archarm") gimme_pacman "$@" ;;
-            "chrom"*"os") gimme_crew "$@" ;;
-            "debian"|"raspbian") gimme_apt "$@" ;;
-            "fedora") gimme_dnf "$@" ;;
-            "opensuse"*"leap") gimme_zypper "leap" "$@" ;;
-            "opensuse"*"tumbleweed") gimme_zypper "tw" "$@" ;;
-            *) echo "Unsupported package manager!" ;;
-        esac
-        ;;
-    *) echo "Unsupported OS!" ;;
+# Call appropriate package manager
+case "$os" in
+    "alpine") gimme_apk "$@" ;;
+    "arch"|"archarm") gimme_pacman "$@" ;;
+    "chrom"*"os") gimme_crew "$@" ;;
+    "debian"|"raspbian") gimme_apt "$@" ;;
+    "fedora") gimme_dnf "$@" ;;
+    "macOS") gimme_brew "$@" ;;
+    "opensuse"*"leap") gimme_zypper "leap" "$@" ;;
+    "opensuse"*"tumbleweed") gimme_zypper "tw" "$@" ;;
+    *) errx 4 "Unsupported package manager!" ;;
 esac

@@ -257,7 +257,8 @@ usage() {
 Usage: ${0##*/} [OPTIONS] [pkg]...
 
 Automatically uses the correct package manager. Default behavior is to
-install.
+install. If the only pkg provided is "gimme", the script will update
+itself with the newest version on GitLab.
 
 Options:
     -h, --help       Display this help message
@@ -309,6 +310,24 @@ case "$action" in
     "search") [[ $# -ne 0 ]] || usage 1 ;;
     "update") [[ $# -eq 0 ]] || usage 1 ;;
 esac
+
+# Check for self-update
+if [[ $# -eq 1 ]]; then
+    case "$1" in
+        "gimme")
+            repo="https://gitlab.com/mjwhitta/milesrc"
+            gimme="/-/raw/master/shell/scripts/gimme"
+
+            curl -kLo /tmp/gimme -s "$repo/$gimme"
+            [[ $? -eq 0 ]] || errx 2 "Failed to get new gimme"
+
+            chmod +x "/tmp/gimme"
+            mv -f /tmp/gimme "$0"
+
+            exit
+            ;;
+    esac
+fi
 
 case "$(uname -s)" in
     "Darwin") gimme_brew "$@" ;;

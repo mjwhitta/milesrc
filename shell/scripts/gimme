@@ -276,7 +276,8 @@ declare -a args deps
 unset help nosave
 action="install"
 color="true"
-# deps+=("todo")
+deps+=("awk")
+deps+=("grep")
 sudo="$(command -v sudo)"
 
 # Check for missing dependencies
@@ -312,7 +313,12 @@ esac
 case "$(uname -s)" in
     "Darwin") gimme_brew "$@" ;;
     "Linux")
-        case "$(grep -oPs "^ID\=\"?\K[^\"]+" /etc/os-release)" in
+        # grep and awk b/c alpine/busybox
+        os="$(
+            grep -Eos "^ID\=\"?[^\"]+" /etc/os-release | \
+            awk -F "=" '{print $2}'
+        )"
+        case "$os" in
             "alpine") gimme_apk "$@" ;;
             "arch"|"archarm") gimme_pacman "$@" ;;
             "chrom"*"os") gimme_crew "$@" ;;

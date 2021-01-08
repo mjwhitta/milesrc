@@ -330,6 +330,7 @@ case "$action" in
     "version")
         [[ $# -eq 0 ]] || usage 2
         echo "gimme $version ($os)"
+        exit 0
         ;;
 esac
 

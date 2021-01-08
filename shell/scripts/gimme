@@ -315,6 +315,10 @@ esac
 if [[ $# -eq 1 ]]; then
     case "$1" in
         "gimme")
+            # Check for missing dependencies
+            deps=("curl")
+            check_deps
+
             repo="https://gitlab.com/mjwhitta/milesrc"
             gimme="/-/raw/master/shell/scripts/gimme"
 

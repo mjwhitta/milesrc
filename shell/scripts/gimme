@@ -128,15 +128,7 @@ gimme_brew() {
             "install") brew install "$@" ;;
             "remove") brew remove "$@" ;;
             "search") brew search "$@" ;;
-            "update")
-                for cmd in update upgrade cleanup; do
-                    brew $cmd
-                done; unset cmd
-                while read -r cask; do
-                    brew cask install "$cask"
-                done < <(brew cask list); unset cask
-                brew cask cleanup
-                ;;
+            "update") brew update && brew upgrade ;;
         esac
     fi
 }

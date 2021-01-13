@@ -274,7 +274,7 @@ deps+=("awk")
 deps+=("grep")
 deps+=("tr")
 sudo="$(command -v sudo)"
-version="1.1.0"
+version="1.1.1"
 
 # Check for missing dependencies
 check_deps
@@ -355,7 +355,7 @@ case "$os" in
     "arch"|"archarm") gimme_pacman "$@" ;;
     "chrom"*"os") gimme_crew "$@" ;;
     "debian"|"raspbian") gimme_apt "$@" ;;
-    "fedora") gimme_dnf "$@" ;;
+    "centos"|"fedora") gimme_dnf "$@" ;;
     "macOS") gimme_brew "$@" ;;
     "opensuse"*"leap") gimme_zypper "leap" "$@" ;;
     "opensuse"*"tumbleweed") gimme_zypper "tw" "$@" ;;

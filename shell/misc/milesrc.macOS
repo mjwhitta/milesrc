@@ -9,12 +9,28 @@ case "$(uname -s)" in
 
         # Aliases
         alias ls="\ls -F -G"
-        alias md5sum="md5"
         alias p="ps -o pid,user,%cpu,command -r"
-        alias sha1sum="shasum -a 1"
-        alias sha256sum="shasum -a 256"
-        alias sha384sum="shasum -a 384"
-        alias sha512sum="shasum -a 512"
+
+        # Fix missing utils
+        mkdir -p "$HOME/.local/bin"
+        if [[ -z $(which md5sum) ]]; then
+            cat >"$HOME/.local/bin/md5sum" <<EOF
+#!/usr/bin/env bash
+
+md5 "$@"
+EOF
+            chmod 700 "$HOME/.local/bin/md5sum"
+        fi
+        if [[ -z $(which sha256sum) ]]; then
+            for i in 1 256 384 512; do
+                cat >"$HOME/.local/bin/sha${i}sum" <<EOF
+#!/usr/bin/env bash
+
+shasum -a "$i" "$@"
+EOF
+                chmod 700 "$HOME/.local/bin/sha${i}sum"
+            done; unset i
+        fi
 
         # Fix some dumb things
         local gfind ggrep gsed
@@ -26,9 +42,9 @@ case "$(uname -s)" in
             echo "*** WARNING ***"
             echo "macOS is dumb! The following may be required:"
             echo
-            [[ -n $gfind ]] || echo "    brew install findutils"
-            [[ -n $ggrep ]] || echo "    brew install grep"
-            [[ -n $gsed ]] || echo "    brew install gnu-sed"
+            [[ -n $gfind ]] || echo "  brew install findutils"
+            [[ -n $ggrep ]] || echo "  brew install grep"
+            [[ -n $gsed ]] || echo "  brew install gnu-sed"
             echo
             echo "You'll then want to symlink the following into"
             echo "$HOME/bin:"
@@ -39,8 +55,8 @@ case "$(uname -s)" in
                 echo "  ln -s \$(which gupdatedb) updatedb"
                 echo "  ln -s \$(which gxargs) xargs"
             fi
-            [[ -n $ggrep ]] || echo "    ln -s \$(which ggrep) grep"
-            [[ -n $gsed ]] || echo "    ln -s \$(which gsed) sed"
+            [[ -n $ggrep ]] || echo "  ln -s \$(which ggrep) grep"
+            [[ -n $gsed ]] || echo "  ln -s \$(which gsed) sed"
             echo
             echo "Add the following to $HOME/.milesrc.local to hide"
             echo "these warnings:"

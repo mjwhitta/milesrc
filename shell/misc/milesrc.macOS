@@ -47,7 +47,7 @@ EOF
             [[ -n $gsed ]] || echo "  brew install gnu-sed"
             echo
             echo "You'll then want to symlink the following into"
-            echo "$HOME/bin:"
+            echo "$HOME/.local/bin:"
             echo
             if [[ -z $gfind ]]; then
                 echo "  ln -s \$(which gfind) find"

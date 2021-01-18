@@ -10,6 +10,23 @@ export MILESRC_SHELL="$(command -v zsh)"
 [[ -z $BASH ]] || export MILESRC_SHELL="$BASH"
 # }}}
 
+# {{{ Bootstrap PATH
+# Find minimum dirs that should be in PATH before doing anything else
+unset PTH
+for dir in \
+    "$HOME/.local/bin" \
+    /usr/local/bin /usr/local/sbin \
+    /usr/bin /usr/sbin \
+    /bin /sbin
+do
+    [[ ! -d $dir ]] || PTH="${PTH:+$PTH:}$dir"
+done; unset dir
+
+# Set PATH
+[[ -z $PTH ]] || export PATH="$PTH"
+unset PTH
+# }}}
+
 # {{{ User configs
 # Local stuff
 [[ ! -f $HOME/.milesrc/local/pre ]] || . "$HOME/.milesrc/local/pre"
@@ -345,25 +362,16 @@ fi
 # Find dirs that should be in PATH
 unset PTH
 for dir in \
-    "$HOME/bin" \
+    "$HOME/bin" "$HOME/.local/bin" \
     "$HOME/.config/$(basename "$MILESRC_SHELL")/scripts" \
-    "$HOME/.local/bin" \
-    "${GOROOT:-/doesnotexist}/bin" \
-    "$GOPATH" \
-    "$GOPATH/bin" \
-    "$GEM_HOME/bin" \
+    "${GOROOT:-/doesnotexist}/bin" "$GOPATH" "$GOPATH/bin" \
+    "$GEM_HOME/bin" "$HOME/.rvm/bin" \
     "$PERL_LOCAL_LIB_ROOT/bin" \
-    /usr/local/bin \
-    /usr/local/sbin \
-    /usr/bin \
-    /usr/sbin \
-    /bin \
-    /sbin \
-    /usr/bin/core_perl \
-    /usr/bin/vendor_perl \
-    "$HOME/Android/Sdk/emulator" \
-    "$HOME/Android/Sdk/platform-tools" \
-    "$HOME/.rvm/bin"
+    /usr/bin/core_perl /usr/bin/vendor_perl \
+    "$HOME/Android/Sdk/emulator" "$HOME/Android/Sdk/platform-tools" \
+    /usr/local/bin /usr/local/sbin \
+    /usr/bin /usr/sbin \
+    /bin /sbin
 do
     [[ ! -d $dir ]] || PTH="${PTH:+$PTH:}$dir"
 done; unset dir

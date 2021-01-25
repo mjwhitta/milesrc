@@ -17,7 +17,8 @@ case "$(uname -s)" in
             cat >"$HOME/.local/bin/md5sum" <<EOF
 #!/usr/bin/env bash
 
-md5 "\$@" | /usr/bin/sed -r "s/MD5 \(|\) \=//g" | awk '{print $2,$1}'
+md5 "\$@" | /usr/bin/sed -r "s/MD5 \(|\) \=//g" | \\
+    awk '{print \$2,\$1}'
 EOF
             chmod 700 "$HOME/.local/bin/md5sum"
         fi

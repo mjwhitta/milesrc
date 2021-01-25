@@ -809,6 +809,7 @@ if exists(':function') && exists(':let')
             Plug 'tpope/vim-fugitive'
             Plug 'airblade/vim-gitgutter'
         endif
+        " Plug 'fatih/vim-go', { 'for': 'go' }
         Plug 'terryma/vim-multiple-cursors'
         " Plug 'vim-ruby/vim-ruby', { 'for': 'ruby' }
         Plug 'tmux-plugins/vim-tmux'
@@ -905,6 +906,10 @@ if exists(':function') && exists(':let')
         "let g:tagbar_left = 1
         "let g:tagbar_autoclose = 1
         "nnoremap <leader><leader>t :TagbarToggle<cr><C-w>h
+
+        " vim-go
+        " let g:go_def_mode = 'gopls'
+        " let g:go_info_mode = 'gopls'
     endif
     silent! call plug#end()
 endif

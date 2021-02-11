@@ -272,9 +272,9 @@ action="install"
 color="true"
 deps+=("awk")
 deps+=("grep")
+deps+=("id")
 deps+=("tr")
-sudo="$(command -v sudo)"
-version="1.1.1"
+version="1.2.0"
 
 # Check for missing dependencies
 check_deps
@@ -300,6 +300,11 @@ done
 
 # Check for valid params
 [[ -z $help ]] || usage 0
+
+case "$(id -u)" in
+    "0") ;;
+    *) sudo="$(command -v sudo)" ;;
+esac
 
 # Check for valid OS
 case "$(uname -s)" in

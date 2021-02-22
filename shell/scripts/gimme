@@ -128,7 +128,12 @@ gimme_brew() {
             "install") brew install "$@" ;;
             "remove") brew remove "$@" ;;
             "search") brew search "$@" ;;
-            "update") brew update && brew upgrade && brew cleanup ;;
+            "update")
+                brew update && \
+                brew upgrade && \
+                brew upgrade $(brew list --cask)
+                brew cleanup
+                ;;
         esac
     fi
 }
@@ -274,7 +279,7 @@ deps+=("awk")
 deps+=("grep")
 deps+=("id")
 deps+=("tr")
-version="1.2.1"
+version="1.3.0"
 
 # Check for missing dependencies
 check_deps

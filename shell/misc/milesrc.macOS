@@ -16,6 +16,16 @@ case "$(uname -s)" in
 
         # Fix missing utils
         mkdir -p "$HOME/.local/bin"
+
+        if [[ -z $(which poweroff) ]]; then
+            cat >"$HOME/.local/bin/poweroff" <<EOF
+#!/usr/bin/env bash
+
+shutdown -h now
+EOF
+            chmod 700 "$HOME/.local/bin/poweroff"
+        fi
+
         if [[ -z $(which md5sum) ]]; then
             cat >"$HOME/.local/bin/md5sum" <<EOF
 #!/usr/bin/env bash
@@ -25,6 +35,7 @@ md5 "\$@" | /usr/bin/sed -r "s/MD5 \(|\) \=//g" | \\
 EOF
             chmod 700 "$HOME/.local/bin/md5sum"
         fi
+
         if [[ -z $(which sha256sum) ]]; then
             for i in 1 256 384 512; do
                 cat >"$HOME/.local/bin/sha${i}sum" <<EOF

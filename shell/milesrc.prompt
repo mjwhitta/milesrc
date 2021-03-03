@@ -305,7 +305,7 @@ function __milesrc_host() {
     local root="$(echo -n "$1" | grep -Eios "root(;[^;]+){2}")"
     [[ -z $(id | grep -s "uid=0") ]] || [[ -z $root ]] || fmt="$root"
 
-    local host="$USER@$(uname -n | awk -F "." '{print $1}')"
+    local host="$USER@$(hostname -s)"
     case "$hide_local" in
         "hide_local;true") host="$USER" ;;
     esac

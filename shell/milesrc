@@ -34,7 +34,10 @@ if [[ -n $(command -v tmux) ]] &&
    [[ -z $TMUX ]] &&
    [[ -n $MILESRC_TMUX ]]
 then
-    exec tmux -2 new -A -s "$(hostname -s)"
+    case "$SSH_CONNECTION" in
+        "127."*|"localhost"*) ;;
+        *) exec tmux -2 new -A -s "$(hostname -s)" ;;
+    esac
 fi
 if [[ -f $HOME/.milesrc/shell/milesrc.ssh_agent ]]; then
     . "$HOME/.milesrc/shell/milesrc.ssh_agent"

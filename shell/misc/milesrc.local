@@ -150,8 +150,8 @@ if [[ -f $HOME/.milesrc/local/security ]]; then
 fi
 
 # Config for this host
-if [[ -f $HOME/.milesrc/local/$(uname -n) ]]; then
-    . $HOME/.milesrc/local/$(uname -n)
+if [[ -f $HOME/.milesrc/local/$(hostname -s) ]]; then
+    . $HOME/.milesrc/local/$(hostname -s)
 fi
 
 if [[ -n $(command -v arTTY) ]]; then

@@ -96,6 +96,13 @@ EOF
         }
     fi
 
+    if [[ -z $(command -v nfspysh) ]]; then
+        function nfspysh() {
+            docker run -i --name nfspy --rm -t danielpresl/nfspy \
+                nfspysh "$@"
+        }
+    fi
+
     if [[ -z $(command -v r2) ]]; then
         function r2() {
             r2_image r2 "$@"

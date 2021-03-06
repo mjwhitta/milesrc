@@ -30,9 +30,17 @@
 
 ### Helpers begin
 check_deps() {
+    local missing
     for d in "${deps[@]}"; do
-        [[ -n $(command -v "$d") ]] || errx 128 "$d is not installed"
+        if [[ -z $(command -v "$d") ]]; then
+            # Force absolute path
+            if [[ ! -e "/$d" ]]; then
+                err "$d was not found"
+                missing="true"
+            fi
+        fi
     done; unset d
+    [[ -z $missing ]] || exit 128
 }
 err() { echo -e "${color:+\e[31m}[!] $*\e[0m"; }
 errx() { err "${*:2}"; exit "$1"; }
@@ -41,8 +49,8 @@ info() { echo -e "${color:+\e[37m}[*] $*\e[0m"; }
 long_opt() {
     local arg shift="0"
     case "$1" in
-        "--"*"="*) arg="${1#*=}"; [[ -n $arg ]] || usage 127 ;;
-        *) shift="1"; shift; [[ $# -gt 0 ]] || usage 127; arg="$1" ;;
+        "--"*"="*) arg="${1#*=}"; [[ -n $arg ]] || return 127 ;;
+        *) shift="1"; shift; [[ $# -gt 0 ]] || return 127; arg="$1" ;;
     esac
     echo "$arg"
     return $shift
@@ -57,41 +65,50 @@ usage() {
     cat <<EOF
 Usage: ${0##*/} [OPTIONS] <pattern>
 
-Interactively kill processes
+DESCRIPTION
+    Interactively kill processes.
 
-Options:
-    -h, --help          Display this help message
-    --no-color          Disable colorized output
-    -u, --uname=USER    Only list processes for specified user
+OPTIONS
+    -h, --help         Display this help message
+    --no-color         Disable colorized output
+    -u, --user=USER    Only list processes for specified user
 
 EOF
     exit "$1"
 }
 
-declare -a args deps
+declare -a args
 unset help
 color="true"
-deps+=("pgrep")
 uname="$(id -nu)"
-
-# Check for missing dependencies
-check_deps
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        "--") shift && args+=("$@") && break ;;
+        "--") shift; args+=("$@"); break ;;
         "-h"|"--help") help="true" ;;
         "--no-color") unset color ;;
-        "-u"|"--user"*) uname="$(long_opt "$@")" || shift ;;
+        "-u"|"--user"*) uname="$(long_opt "$@")" ;;
         *) args+=("$1") ;;
+    esac
+    case "$?" in
+        0) ;;
+        1) shift ;;
+        *) usage $? ;;
     esac
     shift
 done
 [[ ${#args[@]} -eq 0 ]] || set -- "${args[@]}"
 
-# Check for valid params
+# Help info
 [[ -z $help ]] || usage 0
+
+# Check for missing dependencies
+declare -a deps
+deps+=("pgrep")
+check_deps
+
+# Check for valid params
 [[ $# -eq 1 ]] || usage 1
 
 # Get list of processes matching pattern

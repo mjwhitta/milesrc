@@ -30,9 +30,17 @@
 
 ### Helpers begin
 check_deps() {
+    local missing
     for d in "${deps[@]}"; do
-        [[ -n $(command -v "$d") ]] || errx 128 "$d is not installed"
+        if [[ -z $(command -v "$d") ]]; then
+            # Force absolute path
+            if [[ ! -e "/$d" ]]; then
+                err "$d was not found"
+                missing="true"
+            fi
+        fi
     done; unset d
+    [[ -z $missing ]] || exit 128
 }
 err() { echo -e "${color:+\e[31m}[!] $*\e[0m"; }
 errx() { err "${*:2}"; exit "$1"; }
@@ -41,8 +49,8 @@ info() { echo -e "${color:+\e[37m}[*] $*\e[0m"; }
 long_opt() {
     local arg shift="0"
     case "$1" in
-        "--"*"="*) arg="${1#*=}"; [[ -n $arg ]] || usage 127 ;;
-        *) shift="1"; shift; [[ $# -gt 0 ]] || usage 127; arg="$1" ;;
+        "--"*"="*) arg="${1#*=}"; [[ -n $arg ]] || return 127 ;;
+        *) shift="1"; shift; [[ $# -gt 0 ]] || return 127; arg="$1" ;;
     esac
     echo "$arg"
     return $shift
@@ -253,11 +261,12 @@ usage() {
     cat <<EOF
 Usage: ${0##*/} [OPTIONS] [pkg]...
 
-Automatically uses the correct package manager. Default behavior is to
-install. If the only pkg provided is "gimme", the script will update
-itself with the newest version on GitLab.
+DESCRIPTION
+    Automatically uses the correct package manager. Default behavior
+    is to install. If the only pkg provided is "gimme", the script
+    will update itself with the newest version from GitLab.
 
-Options:
+OPTIONS
     -h, --help       Display this help message
     -i, --install    Install package(s) (default)
     --no-color       Disable colorized output
@@ -271,26 +280,19 @@ EOF
     exit "$1"
 }
 
-declare -a args deps
+declare -a args
 unset help nosave
 action="install"
 color="true"
-deps+=("awk")
-deps+=("grep")
-deps+=("id")
-deps+=("tr")
-version="1.3.0"
-
-# Check for missing dependencies
-check_deps
+version="1.3.1"
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        "--") shift && args+=("$@") && break ;;
+        "--") shift; args+=("$@"); break ;;
         "-h"|"--help") help="true" ;;
         "-i"|"--install") action="install" ;;
-        "--no color") unset color ;;
+        "--no-color") unset color ;;
         "-n"|"--nosave") nosave="true" ;;
         "-R"|"--remove") action="remove" ;;
         "-Rn") action="remove"; nosave="true" ;;
@@ -299,42 +301,53 @@ while [[ $# -gt 0 ]]; do
         "-v"|"--version") action="version" ;;
         *) args+=("$1") ;;
     esac
+    case "$?" in
+        0) ;;
+        1) shift ;;
+        *) usage $? ;;
+    esac
     shift
 done
 [[ ${#args[@]} -eq 0 ]] || set -- "${args[@]}"
 
-# Check for valid params
+# Help info
 [[ -z $help ]] || usage 0
 
-case "$(id -u)" in
-    "0") ;;
-    *) sudo="$(command -v sudo)" ;;
+# Check for missing dependencies
+declare -a deps
+deps+=("awk")
+deps+=("grep")
+deps+=("id")
+deps+=("tr")
+deps+=("uname")
+check_deps
+
+# Check for valid params
+case "$action" in
+    "install") [[ $# -ne 0 ]] || usage 1 ;;
+    "remove") [[ $# -ne 0 ]] || usage 1 ;;
+    "search") [[ $# -ne 0 ]] || usage 1 ;;
+    "update") [[ $# -eq 0 ]] || usage 1 ;;
+    "version") [[ $# -eq 0 ]] || usage 1 ;;
 esac
 
 # Check for valid OS
 case "$(uname -s)" in
     "Darwin") os="macOS" ;;
     "Linux")
-        # grep and awk b/c alpine/busybox
+        # grep -P is best, but alas, some OS do not have that option
+        # (alpine/busybox)
         os="$(
             grep -Eos "^ID\=\"?[^\"]+" /etc/os-release | \
             awk -F "=" '{print $2}' | tr -d "\""
         )"
         ;;
-    *) errx 1 "Unsupported OS!" ;;
+    *) errx 2 "Unsupported OS!" ;;
 esac
 
-# Check for valid usage
+# If --version, short-circuit
 case "$action" in
-    "install") [[ $# -ne 0 ]] || usage 2 ;;
-    "remove") [[ $# -ne 0 ]] || usage 2 ;;
-    "search") [[ $# -ne 0 ]] || usage 2 ;;
-    "update") [[ $# -eq 0 ]] || usage 2 ;;
-    "version")
-        [[ $# -eq 0 ]] || usage 2
-        echo "gimme $version ($os)"
-        exit 0
-        ;;
+    "version") echo "gimme $version ($os)"; exit 0 ;;
 esac
 
 # Check for self-update
@@ -354,10 +367,16 @@ if [[ $# -eq 1 ]]; then
             chmod +x "/tmp/gimme"
             mv -f /tmp/gimme "$0"
 
-            exit
+            exit $?
             ;;
     esac
 fi
+
+# Find sudo, if needed
+case "$(id -u)" in
+    "0") ;;
+    *) sudo="$(command -v sudo)" ;;
+esac
 
 # Call appropriate package manager
 case "$os" in

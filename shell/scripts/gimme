@@ -284,7 +284,7 @@ declare -a args
 unset help nosave
 action="install"
 color="true"
-version="1.3.3"
+version="1.3.4"
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do
@@ -324,7 +324,7 @@ case "$(uname -s)" in
             awk -F "=" '{print $2}' | tr -d "\""
         )"
         ;;
-    *) errx 2 "Unsupported OS!" ;;
+    *) errx 1 "Unsupported OS!" ;;
 esac
 
 # Check for missing dependencies
@@ -334,11 +334,11 @@ check_deps
 
 # Check for valid params
 case "$action" in
-    "install") [[ $# -ne 0 ]] || usage 1 ;;
-    "remove") [[ $# -ne 0 ]] || usage 1 ;;
-    "search") [[ $# -ne 0 ]] || usage 1 ;;
-    "update") [[ $# -eq 0 ]] || usage 1 ;;
-    "version") [[ $# -eq 0 ]] || usage 1 ;;
+    "install") [[ $# -ne 0 ]] || usage 2 ;;
+    "remove") [[ $# -ne 0 ]] || usage 2 ;;
+    "search") [[ $# -ne 0 ]] || usage 2 ;;
+    "update") [[ $# -eq 0 ]] || usage 2 ;;
+    "version") [[ $# -eq 0 ]] || usage 2 ;;
 esac
 
 # If --version, short-circuit

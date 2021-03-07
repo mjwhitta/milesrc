@@ -2,19 +2,27 @@
 
 ### Helpers begin
 check_deps() {
+    local missing
     for d in "${deps[@]}"; do
-        [[ -n $(command -v "$d") ]] || errx 128 "$d is not installed"
+        if [[ -z $(command -v "$d") ]]; then
+            # Force absolute path
+            if [[ ! -e "/$d" ]]; then
+                err "$d was not found"
+                missing="true"
+            fi
+        fi
     done; unset d
+    [[ -z $missing ]] || exit 128
 }
 err() { echo -e "${color:+\e[31m}[!] $*\e[0m"; }
-errx() { echo -e "${color:+\e[31m}[!] ${*:2}\e[0m"; exit "$1"; }
+errx() { err "${*:2}"; exit "$1"; }
 good() { echo -e "${color:+\e[32m}[+] $*\e[0m"; }
 info() { echo -e "${color:+\e[37m}[*] $*\e[0m"; }
 long_opt() {
     local arg shift="0"
     case "$1" in
-        "--"*"="*) arg="${1#*=}"; [[ -n $arg ]] || usage 127 ;;
-        *) shift="1"; shift; [[ $# -gt 0 ]] || usage 127; arg="$1" ;;
+        "--"*"="*) arg="${1#*=}"; [[ -n $arg ]] || return 127 ;;
+        *) shift="1"; shift; [[ $# -gt 0 ]] || return 127; arg="$1" ;;
     esac
     echo "$arg"
     return $shift
@@ -143,14 +151,16 @@ unlink() {
 usage() {
     cat <<EOF
 Usage: ${0##*/} [OPTIONS] <action>
+DESCRIPTION
+    Install the milesrc.
 
-Options:
+OPTIONS
     -f, --force    Do not make backups
     -h, --help     Display this help message
-    --nocolor      Disable colorized output
+    --no-color     Disable colorized output
     -v, --vim      Install vim plugins when linking
 
-Actions:
+ACTIONS
     link      Back up existing dotfiles and symlink milesrc
     status    Show what's linked and what isn't
     unlink    Remove symlinks and restore old configs
@@ -168,32 +178,41 @@ vim_plugins() {
     [[ $? -eq 0 ]] || exit $?
 }
 
-declare -a args deps
+declare -a args
 unset force help install_vim_plugins
 backup="milesrc.bak"
 color="true"
 here="$(pwd)"
 
-# Check for missing dependencies
-check_deps
-
 # Parse command line options
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        "--") shift && args+=("$@") && break ;;
+        "--") shift; args+=("$@"); break ;;
         "-f"|"--force") force="true" ;;
         "-fv") force="true"; install_vim_plugins="true" ;;
         "-h"|"--help") help="true" ;;
-        "--nocolor") unset color ;;
+        "--no-color") unset color ;;
         "-v"|"--vim") install_vim_plugins="true" ;;
         *) args+=("$1") ;;
+    esac
+    case "$?" in
+        0) ;;
+        1) shift ;;
+        *) usage $? ;;
     esac
     shift
 done
 [[ ${#args[@]} -eq 0 ]] || set -- "${args[@]}"
 
-# Check for valid params
+# Help info
 [[ -z $help ]] || usage 0
+
+# Check for missing dependencies
+declare -a deps
+# deps+=("todo")
+check_deps
+
+# Check for valid params
 [[ $# -eq 1 ]] || usage 1
 
 declare -a files

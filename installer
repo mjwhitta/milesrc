@@ -32,8 +32,11 @@ warn() { echo -e "${color:+\e[33m}[-] $*\e[0m"; }
 ### Helpers end
 
 link() {
+    local from
+    local lnk
+    local to
+
     info "Linking directories and files..."
-    local from to
     for entry in "${files[@]}"; do
         from="$here/${entry/:*/}"
         to="$(eval echo "${entry/*:/}")"
@@ -43,9 +46,9 @@ link() {
             continue
         fi
 
-        local link="$(find "$to" -type l -printf "%l" 2>/dev/null)"
-        if [[ -n $link ]]; then
-            [[ $link != "$from" ]] || continue
+        if [[ -L "$to" ]]; then
+            lnk="$(find "$to" -type l -printf "%l" 2>/dev/null)"
+            [[ $lnk != $from ]] || continue
             warn "Removing symlink $to"
             rm "$to"
         elif [[ -e "$to" ]] && [[ -z $force ]]; then
@@ -81,7 +84,10 @@ link() {
 }
 
 link_status() {
-    local from to
+    local from
+    local lnk
+    local to
+
     for entry in "${files[@]}"; do
         from="$here/${entry/:*/}"
         to="$(eval echo "${entry/*:/}")"
@@ -91,9 +97,9 @@ link_status() {
             continue
         fi
 
-        local link="$(find "$to" -type l -printf "%l" 2>/dev/null)"
-        if [[ -n $link ]]; then
-            if [[ $link == "$from" ]]; then
+        if [[ -L "$to" ]]; then
+            lnk="$(find "$to" -type l -printf "%l" 2>/dev/null)"
+            if [[ $lnk == $from ]]; then
                 good "$to is linked"
             else
                 warn "$to is not linked"
@@ -113,15 +119,18 @@ link_status() {
 }
 
 unlink() {
+    local from
+    local lnk
+    local to
+
     info "Unlinking directories and files..."
-    local from to
     for entry in "${files[@]}"; do
         from="$here/${entry/:*/}"
         to="$(eval echo "${entry/*:/}")"
 
-        local link="$(find "$to" -type l -printf "%l" 2>/dev/null)"
-        if [[ -n $link ]]; then
-            if [[ $link == "$from" ]]; then
+        if [[ -L "$to" ]]; then
+            lnk="$(find "$to" -type l -printf "%l" 2>/dev/null)"
+            if [[ $lnk == $from ]]; then
                 good "Removing symlink for $to"
                 rm "$to"
             else
@@ -132,7 +141,7 @@ unlink() {
         if [[ ! -e "$to" ]] && [[ -e "$to.$backup" ]]; then
             warn "Restoring $to.$backup to $to"
             mv "$to.$backup" "$to"
-        elif [[ -e "$to" ]] && [[ -z $link ]]; then
+        elif [[ -e "$to" ]] && [[ ! -L "$to" ]]; then
             err "Could not unlink $to as it was not a symlink"
         fi
 
@@ -151,6 +160,7 @@ unlink() {
 usage() {
     cat <<EOF
 Usage: ${0##*/} [OPTIONS] <action>
+
 DESCRIPTION
     Install the milesrc.
 
@@ -217,15 +227,11 @@ check_deps
 [[ $# -eq 1 ]] || usage 1
 
 declare -a files
-if [[ -f files ]]; then
-    while read -r file; do
-        files+=("$file")
-    done < <(grep -Ev "^(\s*#|$)" files); unset file
-else
-    while read -r file; do
-        files+=("$file")
-    done < <(grep -Ev "^(\s*#|$)" files.default); unset file
-fi
+cfg="files"
+[[ -f files ]] || cfg="files.default"
+while read -r file; do
+    files+=("$file")
+done < <(grep -Ev "^(\s*#|$)" "$cfg"); unset file
 
 case "$1" in
     "link") link ;;

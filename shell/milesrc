@@ -56,7 +56,7 @@ case "$MILESRC_SHELL" in
         export HISTSIZE="1000"
         export HISTFILESIZE="2000"
         export HISTCONTROL="ignoreboth"
-        shopt -s histappend histverify
+        shopt -s histappend #histverify
 
         # Don't need to type cd
         shopt -s autocd

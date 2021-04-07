@@ -513,14 +513,14 @@ function git_clone() {
                 fi
                 ;;
             "gitlab.com")
-                curl -LO "$url/repository/master/archive.tar"
+                curl -LO "$url/-/archive/master/$repo-master.tar"
                 [[ $? -eq 0 ]] || return 3
-                tar -xf archive.tar && rm -f archive.tar
+                tar -xf "$repo-master.tar" && rm -f "$repo-master.tar"
                 [[ $? -eq 0 ]] || return 4
                 if [[ $# -eq 1 ]]; then
-                    mv "$repo-master-"* "$repo"
+                    mv "$repo-master"* "$repo"
                 else
-                    mv "$repo-master-"* "$2"
+                    mv "$repo-master"* "$2"
                 fi
                 ;;
         esac

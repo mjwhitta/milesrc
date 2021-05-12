@@ -98,8 +98,7 @@ EOF
 
     if [[ -z $(command -v nfspysh) ]]; then
         function nfspysh() {
-            docker run -i --name nfspy --rm -t danielpresl/nfspy \
-                nfspysh "$@"
+            drunpwd --name nfspy danielpresl/nfspy nfspysh "$@"
         }
     fi
 

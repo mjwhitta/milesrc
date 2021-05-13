@@ -42,10 +42,10 @@ check_deps() {
     done; unset d
     [[ -z $missing ]] || exit 128
 }
-err() { echo -e "${color:+\e[31m}[!] $*\e[0m"; }
+err() { echo -e "${color:+\e[31m}[!] $*${color:+\e[0m}" >&2; }
 errx() { err "${*:2}"; exit "$1"; }
-good() { echo -e "${color:+\e[32m}[+] $*\e[0m"; }
-info() { echo -e "${color:+\e[37m}[*] $*\e[0m"; }
+good() { echo -e "${color:+\e[32m}[+] $*${color:+\e[0m}"; }
+info() { echo -e "${color:+\e[37m}[*] $*${color:+\e[0m}"; }
 long_opt() {
     local arg shift="0"
     case "$1" in
@@ -55,8 +55,8 @@ long_opt() {
     echo "$arg"
     return $shift
 }
-subinfo() { echo -e "${color:+\e[36m}[=] $*\e[0m"; }
-warn() { echo -e "${color:+\e[33m}[-] $*\e[0m"; }
+subinfo() { echo -e "${color:+\e[36m}[=] $*${color:+\e[0m}"; }
+warn() { echo -e "${color:+\e[33m}[-] $*${color:+\e[0m}"; }
 ### Helpers end
 
 gimme_apk() {
@@ -267,14 +267,14 @@ DESCRIPTION
     will update itself with the newest version from GitLab.
 
 OPTIONS
-    -h, --help       Display this help message
-    -i, --install    Install package(s) (default)
-    --no-color       Disable colorized output
-    -n, --nosave     Also remove configs
-    -R, --remove     Remove package(s)
-    -s, --search     Search for matching packages
-    -u, --update     Update installed packages
-    -v, --version    Show gimme version
+    -h, --help        Display this help message
+    -i, --install     Install package(s) (default)
+        --no-color    Disable colorized output
+    -n, --nosave      Also remove configs
+    -R, --remove      Remove package(s)
+    -s, --search      Search for matching packages
+    -u, --update      Update installed packages
+    -v, --version     Show gimme version
 
 EOF
     exit "$1"
@@ -284,7 +284,7 @@ declare -a args
 unset help nosave
 action="install"
 color="true"
-version="1.4.0"
+version="1.4.1"
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do

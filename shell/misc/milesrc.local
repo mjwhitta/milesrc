@@ -58,7 +58,10 @@ function goplay() {
     [[ -n $(command -v go) ]] || return
 
     case "${1:-edit}" in
-        "build") go build -o "${2:-goplay}" /tmp/goplay.go ;;
+        "build")
+            go build -ldflags "-s -w" -o "${2:-goplay}" --trimpath \
+                /tmp/goplay.go
+            ;;
         "edit")
             vim /tmp/goplay.go
             go fmt /tmp/goplay.go >/dev/null

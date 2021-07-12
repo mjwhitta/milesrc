@@ -111,7 +111,7 @@ EOF
 
     if [[ -z $(command -v pwsh) ]]; then
         function pwsh() {
-            echo "[!] Run the following command first:"
+            echo "[!] Run the following commands first:"
             echo "- Install-Module PSWSMan"
             echo "- Install-WSMan"
             echo

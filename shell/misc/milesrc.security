@@ -109,6 +109,16 @@ EOF
         }
     fi
 
+    if [[ -z $(command -v pwsh) ]]; then
+        function pwsh() {
+            echo "[!] Run the following command first:"
+            echo "- Install-Module PSWSMan"
+            echo "- Install-WSMan"
+            echo
+            drunpwd mcr.microsoft.com/powershell:debian-11
+        }
+    fi
+
     if [[ -z $(command -v r2) ]]; then
         function r2() {
             r2_image r2 "$@"

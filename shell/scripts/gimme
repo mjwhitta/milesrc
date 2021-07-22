@@ -59,37 +59,40 @@ subinfo() { echo -e "${color:+\e[36m}[=] $*${color:+\e[0m}"; }
 warn() { echo -e "${color:+\e[33m}[-] $*${color:+\e[0m}"; }
 ### Helpers end
 
+# shellcheck disable=SC2086
 gimme_apk() {
     if [[ -n $(command -v apk) ]]; then
         case "$action" in
-            "install") $sudo apk add "$@" ;;
+            "install") vrun $sudo apk add "$@" ;;
             "remove")
-                [[ -n $nosave ]] || $sudo apk del -r "$@"
-                [[ -z $nosave ]] || $sudo apk del --purge -r "$@"
+                [[ -n $nosave ]] || vrun $sudo apk del -r "$@"
+                [[ -z $nosave ]] || vrun $sudo apk del --purge -r "$@"
                 ;;
-            "search") apk search "$@" ;;
+            "search") vrun apk search "$@" ;;
             "update")
-                $sudo apk update
-                $sudo apk upgrade -a -U
+                vrun $sudo apk update
+                vrun $sudo apk upgrade -a -U
                 ;;
         esac
     fi
 }
 
+# shellcheck disable=SC2086
 gimme_apt() {
     if [[ -n $(command -v apt) ]]; then
         case "$action" in
-            "install") $sudo apt install -q "$@" ;;
+            "install") vrun $sudo apt install -q "$@" ;;
             "remove")
                 if [[ -z $nosave ]]; then
-                    $sudo apt remove "$@"
+                    vrun $sudo apt remove "$@"
                 elif [[ -n $nosave ]]; then
-                    $sudo apt purge "$@"
-                    $sudo apt autoremove
+                    vrun $sudo apt purge "$@"
+                    vrun $sudo apt autoremove
                 fi
                 ;;
-            "search") apt-cache search "$@" ;;
+            "search") vrun apt-cache search "$@" ;;
             "update")
+                vrun export DEBIAN_FRONTEND="noninteractive"
                 for cmd in \
                     update \
                     upgrade \
@@ -97,24 +100,24 @@ gimme_apt() {
                     autoremove \
                     autoclean
                 do
-                    DEBIAN_FRONTEND="noninteractive" \
-                        $sudo apt $cmd -qy
+                    vrun $sudo apt $cmd -qy
                 done
                 ;;
         esac
     elif [[ -n $(command -v apt-get) ]]; then
         case "$action" in
-            "install") $sudo apt-get install -q "$@" ;;
+            "install") vrun $sudo apt-get install -q "$@" ;;
             "remove")
                 if [[ -z $nosave ]]; then
-                    $sudo apt-get remove "$@"
+                    vrun $sudo apt-get remove "$@"
                 elif [[ -n $nosave ]]; then
-                    $sudo apt-get purge "$@"
-                    $sudo apt-get autoremove
+                    vrun $sudo apt-get purge "$@"
+                    vrun $sudo apt-get autoremove
                 fi
                 ;;
-            "search") apt-cache search "$@" ;;
+            "search") vrun apt-cache search "$@" ;;
             "update")
+                vrun export DEBIAN_FRONTEND="noninteractive"
                 for cmd in \
                     update \
                     upgrade \
@@ -122,8 +125,7 @@ gimme_apt() {
                     autoremove \
                     autoclean
                 do
-                    DEBIAN_FRONTEND="noninteractive" \
-                        $sudo apt-get $cmd -qy
+                    vrun $sudo apt-get $cmd -qy
                 done
                 ;;
         esac
@@ -133,125 +135,132 @@ gimme_apt() {
 gimme_brew() {
     if [[ -n $(command -v brew) ]]; then
         case "$action" in
-            "install") brew install "$@" ;;
-            "remove") brew remove "$@" ;;
-            "search") brew search "$@" ;;
+            "install") vrun brew install "$@" ;;
+            "remove") vrun brew remove "$@" ;;
+            "search") vrun brew search "$@" ;;
             "update")
-                brew update && \
-                brew upgrade && \
-                brew upgrade $(brew list --cask)
-                brew cleanup
+                # shellcheck disable=SC2046
+                vrun brew update && \
+                vrun brew upgrade && \
+                vrun brew upgrade $(brew list --cask)
+                vrun brew cleanup
                 ;;
         esac
     fi
 }
 
+# shellcheck disable=SC2086
 gimme_crew() {
     if [[ -n $(command -v crew) ]]; then
         case "$action" in
-            "install") crew install "$@" ;;
-            "remove") crew remove "$@" ;;
-            "search") crew search "$@" ;;
-            "update") crew update && yes | crew upgrade ;;
+            "install") vrun crew install "$@" ;;
+            "remove") vrun crew remove "$@" ;;
+            "search") vrun crew search "$@" ;;
+            "update") vrun crew update && yes | vrun crew upgrade ;;
         esac
     fi
 }
 
+# shellcheck disable=SC2086
 gimme_dnf() {
     if [[ -n $(command -v atomic) ]]; then
         case "$action" in
-            "install") $sudo atomic host install "$@" ;;
-            "remove") $sudo atomic host uninstall "$@" ;;
+            "install") vrun $sudo atomic host install "$@" ;;
+            "remove") vrun $sudo atomic host uninstall "$@" ;;
             "search") echo "Not supported" ;;
-            "update") $sudo atomic host upgrade ;;
+            "update") vrun $sudo atomic host upgrade ;;
         esac
     elif [[ -n $(command -v dnf) ]]; then
         case "$action" in
-            "install") $sudo dnf install "$@" ;;
-            "remove") $sudo dnf remove "$@" ;;
-            "search") dnf search -q "$@" ;;
-            "update") $sudo dnf upgrade -y ;;
+            "install") vrun $sudo dnf install "$@" ;;
+            "remove") vrun $sudo dnf remove "$@" ;;
+            "search") vrun dnf search -q "$@" ;;
+            "update") vrun $sudo dnf upgrade -y ;;
         esac
     elif [[ -n $(command -v yum) ]]; then
         case "$action" in
-            "install") $sudo yum install "$@" ;;
-            "remove") $sudo yum remove "$@" ;;
-            "search") yum search "$@" ;;
-            "update") $sudo yum update -y ;;
+            "install") vrun $sudo yum install "$@" ;;
+            "remove") vrun $sudo yum remove "$@" ;;
+            "search") vrun yum search "$@" ;;
+            "update") vrun $sudo yum update -y ;;
         esac
     fi
 }
 
+# shellcheck disable=SC2086
 gimme_pacman() {
     if [[ -n $(command -v yay) ]]; then
         case "$action" in
-            "install") yay -S "$@" ;;
+            "install") vrun yay -S "$@" ;;
             "remove")
-                [[ -n $nosave ]] || yay -Rs "$@"
-                [[ -z $nosave ]] || yay -Rns "$@"
+                [[ -n $nosave ]] || vrun yay -Rs "$@"
+                [[ -z $nosave ]] || vrun yay -Rns "$@"
                 ;;
-            "search") yay -Ss "$@" ;;
+            "search") vrun yay -Ss "$@" ;;
             "update")
-                yay -Syyu --noconfirm
-                yay -Sc --noconfirm
+                vrun yay -Syyu --noconfirm
+                vrun yay -Sc --noconfirm
                 ;;
         esac
     elif [[ -n $(command -v ruaur) ]]; then
         case "$action" in
-            "install") ruaur -S "$@" ;;
+            "install") vrun ruaur -S "$@" ;;
             "remove")
-                [[ -n $nosave ]] || ruaur -R "$@"
-                [[ -z $nosave ]] || ruaur -Rn "$@"
+                [[ -n $nosave ]] || vrun ruaur -R "$@"
+                [[ -z $nosave ]] || vrun ruaur -Rn "$@"
                 ;;
-            "search") ruaur -Ss "$@" ;;
+            "search") vrun ruaur -Ss "$@" ;;
             "update")
-                ruaur -Su --noconfirm
-                ruaur -Sc --noconfirm
+                vrun ruaur -Su --noconfirm
+                vrun ruaur -Sc --noconfirm
                 ;;
         esac
     elif [[ -n $(command -v pacman) ]]; then
         case "$action" in
-            "install") $sudo pacman -S "$@" ;;
+            "install") vrun $sudo pacman -S "$@" ;;
             "remove")
-                [[ -n $nosave ]] || $sudo pacman -Rs "$@"
-                [[ -z $nosave ]] || $sudo pacman -Rns "$@"
+                [[ -n $nosave ]] || vrun $sudo pacman -Rs "$@"
+                [[ -z $nosave ]] || vrun $sudo pacman -Rns "$@"
                 ;;
-            "search") pacman -Ss "$@" ;;
+            "search") vrun pacman -Ss "$@" ;;
             "update")
-                $sudo pacman -Syyu --noconfirm
-                $sudo pacman -Sc --noconfirm
+                vrun $sudo pacman -Syyu --noconfirm
+                vrun $sudo pacman -Sc --noconfirm
                 ;;
         esac
     fi
 }
 
+# shellcheck disable=SC2086
 gimme_zypper() {
     local type="$1" && shift
     if [[ -n $(command -v transactional-update) ]]; then
         case "$action" in
             "install")
-                $sudo transactional-update pkg in \
+                vrun $sudo transactional-update pkg in \
                     --no-recommends "$@"
                 ;;
             "remove")
-                $sudo transactional-update pkg rm -u "$@" ;;
-            "search") zypper search "$@" ;;
+                vrun $sudo transactional-update pkg rm -u "$@"
+                ;;
+            "search") vrun zypper search "$@" ;;
             "update")
                 case "$type" in
-                    "leap") $sudo transactional-update up ;;
-                    "tw") $sudo transactional-update dup ;;
+                    "leap") vrun $sudo transactional-update up ;;
+                    "tw") vrun $sudo transactional-update dup ;;
                 esac
                 ;;
         esac
     elif [[ -n $(command -v zypper) ]]; then
         case "$action" in
             "install")
-                $sudo zypper install --no-recommends "$@" ;;
-            "remove") $sudo zypper remove --clean-deps "$@" ;;
-            "search") zypper search "$@" ;;
+                vrun $sudo zypper install --no-recommends "$@"
+                ;;
+            "remove") vrun $sudo zypper remove --clean-deps "$@" ;;
+            "search") vrun zypper search "$@" ;;
             "update")
-                $sudo zypper update -y
-                $sudo zypper dist-upgrade -y
+                vrun $sudo zypper update -y
+                vrun $sudo zypper dist-upgrade -y
                 ;;
         esac
     fi
@@ -274,17 +283,20 @@ OPTIONS
     -R, --remove      Remove package(s)
     -s, --search      Search for matching packages
     -u, --update      Update installed packages
-    -v, --version     Show gimme version
+    -v, --verbose     Show commands as they are run
+    -V, --version     Show gimme version
 
 EOF
     exit "$1"
 }
 
+vrun() { [[ -z $verbose ]] || info "$@"; "$@"; }
+
 declare -a args
-unset help nosave
+unset help nosave verbose
 action="install"
 color="true"
-version="1.4.1"
+version="1.5.0"
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do
@@ -298,7 +310,8 @@ while [[ $# -gt 0 ]]; do
         "-Rn") action="remove"; nosave="true" ;;
         "-s"|"--search") action="search" ;;
         "-u"|"--update") action="update" ;;
-        "-v"|"-V"|"--version") action="version" ;;
+        "-v"|"--verbose") verbose="true" ;;
+        "-V"|"--version") action="version" ;;
         *) args+=("$1") ;;
     esac
     case "$?" in

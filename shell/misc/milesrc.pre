@@ -5,6 +5,6 @@ export MILESRC_SSH_AGENT="true"
 export MILESRC_VI_BINDINGS="true"
 
 # Start tmux if ssh connection
-if [[ -n $SSH_CLIENT ]] && [[ ! -f $HOME/.notmux ]]; then
+if [[ -n $SSH_CONNECTION ]] && [[ ! -f $HOME/.notmux ]]; then
     export MILESRC_TMUX="true"
 fi

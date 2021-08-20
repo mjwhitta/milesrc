@@ -19,7 +19,7 @@ for dir in \
     /usr/bin /usr/sbin \
     /bin /sbin
 do
-    [[ ! -d $dir ]] || PTH="${PTH:+$PTH:}$dir"
+    [[ ! -d "$dir" ]] || PTH="${PTH:+$PTH:}$dir"
 done; unset dir
 
 # Set PATH
@@ -29,7 +29,7 @@ unset PTH
 
 # {{{ User configs
 # Local stuff
-[[ ! -f $HOME/.milesrc/local/pre ]] || . "$HOME/.milesrc/local/pre"
+[[ ! -f "$HOME/.milesrc/local/pre" ]] || . "$HOME/.milesrc/local/pre"
 if [[ -n $(command -v tmux) ]] &&
    [[ -z $TMUX ]] &&
    [[ -n $MILESRC_TMUX ]]
@@ -39,7 +39,7 @@ then
         *) exec tmux -2 new -A -s "$(hostname -s)" ;;
     esac
 fi
-if [[ -f $HOME/.milesrc/shell/milesrc.ssh_agent ]]; then
+if [[ -f "$HOME/.milesrc/shell/milesrc.ssh_agent" ]]; then
     . "$HOME/.milesrc/shell/milesrc.ssh_agent"
 fi
 # }}}
@@ -214,7 +214,7 @@ case "$MILESRC_SHELL" in
             "$HOME/.config/zsh/plugins/zsh-history-substring-search" \
             /usr/share/zsh/plugins/zsh-history-substring-search
         do
-            if [[ -d $dir ]]; then
+            if [[ -d "$dir" ]]; then
                 . "$dir/zsh-history-substring-search.zsh"
                 if [[ -n $MILESRC_VI_BINDINGS ]]; then
                     bindkey -M vicmd "k" history-substring-search-up
@@ -263,7 +263,7 @@ export JAVA_HOME="$(
 # Less
 export PAGER="less"
 export LESS="-ciMRs"
-if [[ -f $HOME/.config/less/lessfilter ]]; then
+if [[ -f "$HOME/.config/less/lessfilter" ]]; then
     export LESSOPEN="|\"$HOME/.config/less/lessfilter\" %s"
 fi
 
@@ -317,7 +317,7 @@ SSHPASS_ARGS+="-o \"PubkeyAuthentication=no\""
 export GEM_HOME="$HOME/.gem/ruby"
 export GEM_PATH="$GEM_HOME/gems"
 [[ -z $(command -v ruby) ]] || mkdir -p "$GEM_HOME"/{bin,gems}
-if [[ -d $HOME/.gem ]] && [[ ! -f $HOME/.gemrc ]]; then
+if [[ -d "$HOME/.gem" ]] && [[ ! -f "$HOME/.gemrc" ]]; then
     {
         echo "gem: --no-format-executable --no-user-install"
         echo "install: --no-format-executable --no-user-install"
@@ -326,7 +326,7 @@ if [[ -d $HOME/.gem ]] && [[ ! -f $HOME/.gemrc ]]; then
 fi
 
 # Python
-if [[ ! -f $HOME/.config/pip/pip.conf ]]; then
+if [[ ! -f "$HOME/.config/pip/pip.conf" ]]; then
     mkdir -p "$HOME/.config/pip"
     echo "[install]" >"$HOME/.config/pip/pip.conf"
     echo "user = yes" >>"$HOME/.config/pip/pip.conf"
@@ -335,7 +335,7 @@ fi
 # Go
 export GOPATH="$HOME/.go"
 [[ -z $(command -v go) ]] || mkdir -p "$GOPATH/bin"
-if [[ -d $HOME/.cache/gvm ]]; then
+if [[ -d "$HOME/.cache/gvm" ]]; then
     export GOROOT="$HOME/.cache/gvm/use"
 fi
 
@@ -376,12 +376,12 @@ for dir in \
     /usr/bin /usr/sbin \
     /bin /sbin
 do
-    [[ ! -d $dir ]] || PTH="${PTH:+$PTH:}$dir"
+    [[ ! -d "$dir" ]] || PTH="${PTH:+$PTH:}$dir"
 done; unset dir
 
 # Find missing from PATH
 while read -r dir; do
-    [[ ! -d $dir ]] || PTH="${PTH:+$PTH:}$dir"
+    [[ ! -d "$dir" ]] || PTH="${PTH:+$PTH:}$dir"
 done < <(echo "$PATH" | sed "s/:/\n/g" | grep -Esv "^${PTH//:/$|^}$")
 unset dir
 
@@ -391,7 +391,7 @@ unset PTH
 # }}}
 
 # {{{ Prompt
-if [[ -f $HOME/.milesrc/shell/milesrc.prompt ]]; then
+if [[ -f "$HOME/.milesrc/shell/milesrc.prompt" ]]; then
     . "$HOME/.milesrc/shell/milesrc.prompt"
 fi
 # }}}
@@ -403,7 +403,7 @@ elif [[ -n $(command -v ack) ]]; then
     alias ack="\ack $ACK_ARGS"
 fi
 [[ -z $(command -v ag) ]] || alias ag="\ag $AG_ARGS"
-# alias cd="mycd"
+alias cd="mycd"
 alias cp="\cp -i"
 [[ -z $(command -v egrep) ]] || alias egrep="\egrep $GREP_ARGS"
 [[ -z $(command -v emacs) ]] || alias emacs="\emacs -nw"
@@ -471,16 +471,17 @@ function devexcuse() {
 }
 
 function git_clone() {
+    local git_url
+    local group_or_user
+    local repo
+    local tmp="${1%.git}"
+    local url
+
     if [[ -n $(command -v git) ]]; then
         git clone "$1" "$2"
     else
         [[ -n $(command -v curl) ]] || return 1
         [[ $# -gt 0 ]] || return 2
-
-        local git_url
-        local group_or_user
-        local repo
-        local tmp="${1%.git}"
 
         case "$tmp" in
             "git@"*)
@@ -499,7 +500,7 @@ function git_clone() {
                 ;;
         esac
 
-        local url="https://$git_url/$group_or_user/$repo"
+        url="https://$git_url/$group_or_user/$repo"
         case "$git_url" in
             "github.com")
                 curl -LO "$url/archive/master.zip"
@@ -528,6 +529,9 @@ function git_clone() {
 }
 
 function ipa() {
+    local device
+    local inet
+
     if [[ -n $(command -v ip) ]]; then
         if ip 2>&1 | grep -Eq "c.olor"; then
             ip -c -o $@ a | grep -sv "mtu" | awk '{print $2,$4}'
@@ -535,8 +539,6 @@ function ipa() {
             ip -o $@ a | grep -sv "mtu" | awk '{print $2,$4}'
         fi
     else
-        local device
-        local inet
         while read -r line; do
             case "$line" in
                 *encap*|*flags*)
@@ -581,7 +583,7 @@ function iso2usb() {
     local usage="Usage: iso2usb [-h|--help] <iso> <dev>"
 
     [[ $# -ne 2 ]] && echo "$usage" && return 1
-    [[ ! -f $1 ]] && echo "$usage" && return 2
+    [[ ! -f "$1" ]] && echo "$usage" && return 2
     [[ ! -b $2 ]] && echo "$usage" && return 3
 
     sudo dd if="$1" of="$2" bs="4M"
@@ -654,28 +656,33 @@ function milesrc() {
 }
 
 function mycd() {
-    local ls_args="--color=auto -F"
-    if [[ $# -eq 0 ]] || [[ -d "$*" ]] || [[ $* == "-" ]]; then
-        \cd "${*:-$HOME}" >/dev/null || return
-        [[ -z $MILESRC_LS_AFTER_CD ]] || ls $ls_args
-    elif [[ -d $(echo "$PWD/$*" | sed -r "s|[^/]+/\.\.||g") ]]; then
-        \cd "$*" >/dev/null || return
-        [[ -z $MILESRC_LS_AFTER_CD ]] || ls $ls_args
-    else
-        echo "Directory doesn't exist: $*"
-        local in="$(dirname "$*")"
-        local seek="$(basename "$*")"
-        local possible="$(
-            find -L "$in" -maxdepth 1 -type d -iname "$seek*" \
-            2>/dev/null | sort | head -n 1
-        )"
-        if [[ -n $possible ]] && [[ -d "$possible" ]]; then
-            echo "Guessing you meant: $possible"
-            echo
-            \cd "$possible" >/dev/null || return
-            [[ -z $MILESRC_LS_AFTER_CD ]] || ls $ls_args
-        fi
-    fi
+    # local in
+    local -a ls_args
+    # local possible
+    # local seek
+
+    ls_args+=("--color=auto")
+    ls_args+=("-F")
+
+    #if [[ $# -eq 0 ]] || [[ -d "$*" ]] || [[ $* == "-" ]]; then
+    \cd "$@" >/dev/null || return
+    [[ -z $MILESRC_LS_AFTER_CD ]] || ls ${ls_args[*]}
+    [[ -z $TMUX ]] || tmux setenv -g PWD "$PWD"
+    #else
+    #    echo "cd: no such file or directory: $*"
+    #    in="$(dirname "$*")"
+    #    seek="$(basename "$*")"
+    #    possible="$(
+    #        find -L "$in" -maxdepth 1 -type d -iname "$seek*" \
+    #        2>/dev/null | sort | head -n 1
+    #    )"
+    #    if [[ -n $possible ]] && [[ -d "$possible" ]]; then
+    #        echo "Guessing you meant: $possible"
+    #        echo
+    #        \cd "$possible" >/dev/null || return
+    #        [[ -z $MILESRC_LS_AFTER_CD ]] || ls $ls_args
+    #    fi
+    #fi
     return 0
 }
 
@@ -685,18 +692,20 @@ function os() {
 
 function remove_spaces_in_names() {
     local dir
+    local -a look_in=(".")
+    local rnm
+
     for dir in "$@"; do
-        if [[ ! -d $dir ]]; then
+        if [[ ! -d "$dir" ]]; then
             echo "$dir does not exist"
             return
         fi
-    done
+    done; unset dir
 
-    local -a look_in=(".")
     [[ $# -eq 0 ]] || look_in=("$@")
 
     # Determine rename command
-    local rnm="$(command -v rename)"
+    rnm="$(command -v rename)"
     if [[ -e /usr/bin/vendor_perl/rename ]]; then
         rnm="/usr/bin/vendor_perl/rename"
     elif [[ -e /usr/bin/site_perl/rename ]]; then
@@ -716,7 +725,7 @@ function remove_spaces_in_names() {
 case "$MILESRC_SHELL" in
     *"bash")
         function reset_completions() {
-            [[ -d $HOME/.config/bash/complete ]] || return
+            [[ -d "$HOME/.config/bash/complete" ]] || return
             while read -r comp; do
                 . "$HOME/.config/bash/complete/$comp"
             done < <(find "$HOME/.config/bash/complete" -type f)
@@ -812,17 +821,25 @@ EOF
 }
 
 function tdump() {
+    local cap
+    local group
+    local name
+
     if [[ -z $(command -v tcpdump) ]]; then
         echo "tcpdump is not installed"
         return
     fi
 
-    local cap="$(echo "$@" | grep -Eos "\S+\.pcap")"
+    cap="$(echo "$@" | grep -Eos "\S+\.pcap")"
+
     sudo tcpdump -n -vvv $@
+
     [[ -z $(id | grep -s "uid=0") ]] || return 0
-    local name="$(id -nu)"
-    local group="$(id -gn)"
-    if [[ -n $cap ]] && [[ -f $cap ]]; then
+
+    group="$(id -gn)"
+    name="$(id -nu)"
+
+    if [[ -n $cap ]] && [[ -f "$cap" ]]; then
         sudo chown "$name":"$group" "$cap"
     fi
 }
@@ -837,7 +854,7 @@ function update_grub() {
             /boot/grub \
             /boot/grub2
         do
-            [[ -d $cfg ]] || continue
+            [[ -d "$cfg" ]] || continue
             sudo "$mkconfig" -o "$cfg/grub.cfg"
         done
     done
@@ -960,7 +977,7 @@ function x() {
 case "$MILESRC_SHELL" in
     *"bash")
         # {{{ Bash completions
-        if [[ -d $HOME/.config/bash/complete ]]; then
+        if [[ -d "$HOME/.config/bash/complete" ]]; then
             while read -r comp; do
                 . "$HOME/.config/bash/complete/$comp"
             done < <(find "$HOME/.config/bash/complete" -type f)
@@ -1010,7 +1027,7 @@ case "$MILESRC_SHELL" in
         ;;
     *"zsh")
         # {{{ Zsh completions
-        if [[ -d $HOME/.config/zsh/complete ]]; then
+        if [[ -d "$HOME/.config/zsh/complete" ]]; then
             fpath+=("$HOME/.config/zsh/complete")
         fi
 
@@ -1019,7 +1036,7 @@ case "$MILESRC_SHELL" in
             /usr/share/zsh/plugins/zsh-completions/src \
             /usr/share/zsh/site-functions
         do
-            [[ ! -d $dir ]] || fpath+=("$dir")
+            [[ ! -d "$dir" ]] || fpath+=("$dir")
         done; unset dir
 
         if [[ $ZSHV -gt 4.2 ]]; then
@@ -1094,14 +1111,14 @@ esac
 # {{{ Wrap-up
 # Xterm
 if [[ -n $(command -v xrdb) ]] &&
-   [[ -f $HOME/.Xresources ]] &&
+   [[ -f "$HOME/.Xresources" ]] &&
    [[ -z $SSH_CONNECTION ]]
 then
     xrdb -load "$HOME/.Xresources" 2>/dev/null
 fi
 
 # Local stuff
-if [[ -f $HOME/.milesrc/local/local ]]; then
+if [[ -f "$HOME/.milesrc/local/local" ]]; then
     . "$HOME/.milesrc/local/local"
 fi
 # }}}

@@ -142,7 +142,7 @@ gimme_brew() {
                 # shellcheck disable=SC2046
                 vrun brew update && \
                 vrun brew upgrade && \
-                vrun brew upgrade $(brew list --cask)
+                vrun brew upgrade --casks $(brew list --cask)
                 vrun brew cleanup
                 ;;
         esac
@@ -296,7 +296,7 @@ declare -a args
 unset help nosave verbose
 action="install"
 color="true"
-version="1.5.0"
+version="1.5.1"
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do

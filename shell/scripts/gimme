@@ -139,7 +139,9 @@ gimme_brew() {
             "remove") vrun brew remove "$@" ;;
             "search") vrun brew search "$@" ;;
             "update")
-                vrun brew update && vrun brew upgrade
+                vrun brew update && \
+                vrun brew upgrade && \
+                vrun brew upgrade --cask
                 vrun brew cleanup
                 ;;
         esac
@@ -293,7 +295,7 @@ declare -a args
 unset help nosave verbose
 action="install"
 color="true"
-version="1.5.2"
+version="1.5.3"
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do

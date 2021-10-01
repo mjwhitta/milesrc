@@ -810,9 +810,9 @@ if exists(':function') && exists(':let')
             Plug 'airblade/vim-gitgutter'
         endif
         " Plug 'fatih/vim-go', { 'for': 'go' }
-        Plug 'terryma/vim-multiple-cursors'
         " Plug 'vim-ruby/vim-ruby', { 'for': 'ruby' }
         Plug 'tmux-plugins/vim-tmux'
+        Plug 'mg979/vim-visual-multi'
 
         " Abolish
         nnoremap /// :%S///gc<left><left><left><left>

@@ -99,7 +99,8 @@ function wunder() {
 }
 
 # I like ruby-zoom, but in case it's not installed, create functions
-if [[ -z $(command -v z | grep -s "gem") ]]; then
+if [[ ! -d "$HOME/.rvm" ]] && [[ -z $(command -v z | grep -s "gem") ]]
+then
     function z() {
         if [[ -n $(command -v rg) ]]; then
             rg "$@"

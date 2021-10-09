@@ -136,10 +136,14 @@ gimme_brew() {
     if [[ -n $(command -v brew) ]]; then
         case "$action" in
             "install") vrun brew install "$@" ;;
-            "remove") vrun brew remove "$@" ;;
+            "remove")
+                vrun brew remove "$@"
+                [[ -z $nosave ]] || vrun brew autoremove
+                ;;
             "search") vrun brew search "$@" ;;
             "update")
                 vrun brew update && vrun brew upgrade
+                vrun brew autoremove
                 vrun brew cleanup
                 ;;
         esac
@@ -293,7 +297,7 @@ declare -a args
 unset help nosave verbose
 action="install"
 color="true"
-version="1.5.2"
+version="1.6.0"
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do

@@ -438,7 +438,6 @@ function __milesrc_prompt_ps1() {
                 ;;
         esac
     done; unset i
-    echo -n " "
 }
 # }}}
 

@@ -513,9 +513,9 @@ function __milesrc_vi_mode() {
 
 # {{{ Prompt
 # Vi mode strings
-export VI_CMD=" NORMAL  "
-export VI_INS=" INSERT  "
-export VI_REP=" REPLACE "
+export VI_CMD="NORMAL"
+export VI_INS="INSERT"
+export VI_REP="REPLACE"
 
 # Enable prompt
 case "$MILESRC_PROMPT_SHELL" in

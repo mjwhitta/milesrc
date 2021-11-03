@@ -51,7 +51,7 @@ if exists('&foldnestmax')
 endif
 if exists('&foldlevelstart')
     " set foldlevelstart=0 " Fold by default
-    set foldlevelstart=2
+    set foldlevelstart=99 " Don't fold any by default
 endif
 
 " Mouse support
@@ -484,11 +484,18 @@ if exists(':augroup')
         endif
     augroup END
 
+    augroup foldnestmax
+        if exists('&foldnestmax')
+            autocmd FileType json setlocal foldnestmax=20
+        endif
+    augroup END
+
     augroup foldmethod
         autocmd!
         if exists('&foldmethod')
-            autocmd FileType c,cpp,go,h,java,python,ruby,sh setlocal
-                \ foldmethod=syntax
+            autocmd FileType c,cpp,go,h,java,json,python,ruby,sh
+                \ setlocal foldmethod=syntax
+
             autocmd FileType vim setlocal foldmethod=marker
 
             autocmd BufReadPost .bashrc setlocal foldmethod=marker

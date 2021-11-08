@@ -1,3 +1,4 @@
+# shellcheck disable=SC2148
 # If not running interactively, don't do anything
 [[ $- == *i* ]] || return
 
@@ -8,10 +9,15 @@
 export MILESRC_PROMPT_SHELL="$(command -v zsh)"
 [[ -z $BASH ]] || export MILESRC_PROMPT_SHELL="$BASH"
 case "$MILESRC_PROMPT_SHELL" in
-    *"zsh")
+    *"zsh") # We only want major.minor w/o the decimal
+        # Get version string
         MILESRC_PROMPT_ZSHV="$(zsh --version)"
+        # Remove beginning and end of string to get just version
         MILESRC_PROMPT_ZSHV="${MILESRC_PROMPT_ZSHV#* }"
         MILESRC_PROMPT_ZSHV="${MILESRC_PROMPT_ZSHV%% *}"
+        # Remove first decimal
+        MILESRC_PROMPT_ZSHV="${MILESRC_PROMPT_ZSHV/\./}"
+        # Remove the last decimal and anything after
         export MILESRC_PROMPT_ZSHV="${MILESRC_PROMPT_ZSHV%\.*}"
         ;;
 esac
@@ -125,7 +131,7 @@ function __milesrc_cwd() {
         if [[ -n $fill ]]; then
             ((offset = width - length))
             unset fill
-            for ((i = 0; i < $offset; ++i)); do fill+=" "; done
+            for ((i = 0; i < offset; ++i)); do fill+=" "; done
             unset i
         fi
 
@@ -238,6 +244,7 @@ function __milesrc_format() {
     local bgclr
     local fgclr
     local len
+    local out
 
     fgclr="${1#*;}"
     fgclr="${fgclr%%;*}"
@@ -247,10 +254,18 @@ function __milesrc_format() {
     [[ -z $2 ]] || ((len+=2))
 
     # Provide length
-    echo -n "$len|"
+    out="$len|"
+
+    # Set colors
+    out+="$(__milesrc_colors "$fgclr" "$bgclr")"
 
     # And a leading and trailing space
-    echo -n "$(__milesrc_colors $fgclr $bgclr) $2 $(__milesrc_colors)"
+    out+=" $2 "
+
+    # Restore colors
+    out+="$(__milesrc_colors)"
+
+    echo -n "$out"
 }
 # }}}
 
@@ -412,7 +427,7 @@ function __milesrc_prompt_ps1() {
 
     case "$MILESRC_PROMPT_SHELL" in
         *"zsh")
-            [[ $MILESRC_PROMPT_ZSHV -ge 5.5 ]] || ((cwdwidth -= 1))
+            [[ $MILESRC_PROMPT_ZSHV -ge 55 ]] || ((cwdwidth -= 1))
             ;;
     esac
 
@@ -422,19 +437,19 @@ function __milesrc_prompt_ps1() {
         case "$i" in
             "cwd"*) cwddone="true" ;;
             "date"*)
-                p[date]="$(__milesrc_date $i)"
+                p[date]="$(__milesrc_date "$i")"
                 len="${p[date]%%|*}"
                 ;;
             "exit"*)
-                p[exit]="$(__milesrc_exit_status $i $exit_status)"
+                p[exit]="$(__milesrc_exit_status "$i" "$exit_status")"
                 len="${p[exit]%%|*}"
                 ;;
             "git"*)
-                p[git]="$(__milesrc_git_status $i)"
+                p[git]="$(__milesrc_git_status "$i")"
                 len="${p[git]%%|*}"
                 ;;
             "host"*)
-                p[host]="$(__milesrc_host $i)"
+                p[host]="$(__milesrc_host "$i")"
                 len="${p[host]%%|*}"
                 ;;
             "newline")
@@ -445,15 +460,15 @@ function __milesrc_prompt_ps1() {
                 subtract="0"
                 ;;
             "prompt"*)
-                p[prompt]="$(__milesrc_prompt_sym $i)"
+                p[prompt]="$(__milesrc_prompt_sym "$i")"
                 len="${p[prompt]%%|*}"
                 ;;
             "venv"*)
-                p[venv]="$(__milesrc_python_venv $i)"
+                p[venv]="$(__milesrc_python_venv "$i")"
                 len="${p[venv]%%|*}"
                 ;;
             "vi_cmd"*|"vi_ins"*)
-                p[mode]="$(__milesrc_vi_mode $i)"
+                p[mode]="$(__milesrc_vi_mode "$i")"
                 len="${p[mode]%%|*}"
                 ;;
         esac
@@ -462,7 +477,7 @@ function __milesrc_prompt_ps1() {
 
     # CWD
     fmt="$(__milesrc_format_parse "${MILESRC_PROMPT[*]}" "cwd" 3)"
-    p[cwd]="$(__milesrc_cwd $fmt $cwdwidth)"
+    p[cwd]="$(__milesrc_cwd "$fmt" "$cwdwidth")"
 
     # Put it together
     for i in "${MILESRC_PROMPT[@]}"; do
@@ -567,8 +582,8 @@ function __milesrc_vi_mode() {
     local fmt="$(__milesrc_format_parse "$1" "vi_ins" 2)"
 
     case "$MILESRC_PROMPT_MODE" in
-        $VI_CMD) fmt="$(__milesrc_format_parse "$1" "vi_cmd" 2)" ;;
-        $VI_REP) fmt="$(__milesrc_format_parse "$1" "vi_rep" 2)" ;;
+        "$VI_CMD") fmt="$(__milesrc_format_parse "$1" "vi_cmd" 2)" ;;
+        "$VI_REP") fmt="$(__milesrc_format_parse "$1" "vi_rep" 2)" ;;
     esac
 
     __milesrc_format "$fmt" "$MILESRC_PROMPT_MODE"
@@ -617,7 +632,7 @@ case "$MILESRC_PROMPT_SHELL" in
                     "vi_cmd" 8
                 )"
                 if [[ -n $fmt ]]; then
-                    mode="$(__milesrc_vi_mode $fmt)"
+                    mode="$(__milesrc_vi_mode "$fmt")"
                     mode="${mode#*|}"
                     PS1="${PS1/ $VI_CMD /$mode}"
                     PS1="${PS1/ $VI_INS /$mode}"

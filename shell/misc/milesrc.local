@@ -11,7 +11,7 @@ MILESRC_PROMPT=(
     "exit;white;red" #;emotes;white;green"
     "git;black;white"
     "venv;white;light_red"
-    "cwd;white;light_black" #;nofill"
+    "cwd;white;light_black" #;fill"
     "newline"
     "prompt;white;light_black"
 )

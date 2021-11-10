@@ -335,19 +335,19 @@ function __milesrc_git_status() {
 
                 case "$line" in
                     *"ahead"*"behind"*)
-                        git+="$git ↑${line##*ahead }"
+                        git+=" ↑${line##*ahead }"
                         git="${git%,*}"
-                        git="$git ↓${line##*behind }"
+                        git+=" ↓${line##*behind }"
                         git="${git%]}"
                         modified="true"
                         ;;
                     *"ahead"*)
-                        git+="$git ↑${line##*ahead }"
+                        git+=" ↑${line##*ahead }"
                         git="${git%]}"
                         modified="true"
                         ;;
                     *"behind"*)
-                        git="$git ↓${line##*behind }"
+                        git+=" ↓${line##*behind }"
                         git="${git%]}"
                         modified="true"
                         ;;
@@ -359,9 +359,9 @@ function __milesrc_git_status() {
     done < <(git status -b --porcelain --ignore-submodules=dirty)
     unset line
 
-    [[ $numdiffs -eq 0 ]] || git="$git +$numdiffs"
-    [[ $untracked -eq 0 ]] || git="$git ..."
-    [[ -n $modified ]] || git="$git ✓"
+    [[ $numdiffs -eq 0 ]] || git+=" +$numdiffs"
+    [[ $untracked -eq 0 ]] || git+=" ..."
+    [[ -n $modified ]] || git+=" ✓"
 
     __milesrc_format "$fmt" "$git"
 }

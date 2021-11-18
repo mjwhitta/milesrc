@@ -142,7 +142,10 @@ gimme_brew() {
                 ;;
             "search") vrun brew search "$@" ;;
             "update")
-                vrun brew update && vrun brew upgrade
+                # shellcheck disable=SC2046
+                vrun brew update && \
+                    vrun brew upgrade && \
+                    vrun brew upgrade --cask $(brew list --cask)
                 vrun brew autoremove
                 vrun brew cleanup
                 ;;
@@ -297,7 +300,7 @@ declare -a args
 unset help nosave verbose
 action="install"
 color="true"
-version="1.6.0"
+version="1.6.1"
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do

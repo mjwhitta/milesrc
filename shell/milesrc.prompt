@@ -330,7 +330,7 @@ function __milesrc_git_status() {
             "st"*) ;; # ignore
             "##"*)
                 git="${line%%\.\.\.*}"
-                git="${git##* }"
+                git="${git#* }"
                 [[ -n $git ]] || return
 
                 case "$line" in

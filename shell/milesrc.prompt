@@ -331,6 +331,7 @@ function __milesrc_git_status() {
             "##"*)
                 git="${line%%\.\.\.*}"
                 git="${git#* }"
+                git="${git//No commits yet on }"
                 [[ -n $git ]] || return
 
                 case "$line" in

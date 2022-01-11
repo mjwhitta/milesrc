@@ -776,7 +776,6 @@ endif
 
 if exists(':command')
     command! JQ :w !jq -C . | less
-    command! MakeTags call system('ctags -R .')
 endif
 " }}}
 
@@ -866,7 +865,7 @@ if exists(':function') && exists(':let')
 
         " Fugitive
         if exists('&tags')
-            set tags^=.git/tags
+            set tags^=.tags
         endif
 
         " Git gutter

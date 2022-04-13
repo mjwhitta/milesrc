@@ -66,7 +66,7 @@ link() {
             mv "$to" "$to.$backup"
         elif [[ -d "$to" ]]; then
             warn "Removing directory $to"
-            rm -rf "$to"
+            rm -fr "$to"
         elif [[ -f "$to" ]]; then
             warn "Removing file $to"
             rm -f "$to"
@@ -159,7 +159,7 @@ unlink() {
 
     if [[ -d "$here/vim/plugs" ]]; then
         info "Removing vim plugins... "
-        rm -rf "$here/vim/plugs"
+        rm -fr "$here/vim/plugs"
     fi
 }
 

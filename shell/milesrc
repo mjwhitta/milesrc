@@ -115,9 +115,8 @@ case "$MILESRC_SHELL" in
         ;;
     *"zsh")
         # {{{ Zsh setup
-        export ZSHV="$(
-            zsh --version | grep -m 1 -oPs "zsh \K\d+\.\d+"
-        )"
+        ZSHV="$(zsh --version | grep -Ei -m 1 -os "zsh \d+\.\d+")"
+        export ZSHV="${ZSHV##* }"
 
         # History settings
         export HISTFILE="$HOME/.histfile.zsh"

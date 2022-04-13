@@ -203,7 +203,9 @@ case "$MILESRC_SHELL" in
         # {{{ Zsh completions
         # Complete mspac
         if [[ -n $(command -v mspac) ]]; then
-            compdef _gnu_generic mspac
+            if [[ -n $(command -v compdef ]]; then
+                compdef _gnu_generic mspac
+            fi
             function _mspac_complete() {
                 reply=($(mspac --list-pellets))
             }
@@ -211,8 +213,10 @@ case "$MILESRC_SHELL" in
         fi
 
         # Complete notmux and sshrc scripts
-        compdef notmux=ssh
-        compdef sshrc=ssh
+        if [[ -n $(command -v compdef ]]; then
+            compdef notmux=ssh
+            compdef sshrc=ssh
+        fi
 
         # Complete vbox
         if [[ -n $(command -v vboxmanage) ]]; then

@@ -138,13 +138,17 @@ case "$MILESRC_SHELL" in
         # {{{ Zsh completions
         # Complete arTTY
         if [[ -n $(command -v arTTY) ]]; then
-            compdef _gnu_generic art artty arTTY
+            if [[ -n $(command -v compdef) ]]; then
+                compdef _gnu_generic art artty arTTY
+            fi
             function _arTTY_complete() { reply=($(arTTY --ls -p)); }
             compctl -K _arTTY_complete art artty arTTY
         fi
 
         # Complete ruby-zoom commands
-        compdef _gnu_generic z zc zf zg zl zr
+        if [[ -n $(command -v compdef) ]]; then
+            compdef _gnu_generic z zc zf zg zl zr
+        fi
         # }}}
         ;;
 esac

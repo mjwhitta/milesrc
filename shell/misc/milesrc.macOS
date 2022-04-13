@@ -11,6 +11,10 @@ case "$(uname -s)" in
         alias ls="\ls -F -G"
         alias p="ps -o pid,user,%cpu,command -r"
         unalias pf
+        alias pljson="plutil -convert json -o -"
+        alias plobjc="plutil -convert objc -o -"
+        alias plswift="plutil -convert swift -o -"
+        alias plxml="plutil -convert xml1 -o -"
         alias psg="pgrep -fl"
         alias psme="pgrep -flU \"\$USER\""
 

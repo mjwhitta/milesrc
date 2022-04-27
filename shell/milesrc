@@ -334,10 +334,15 @@ if [[ ! -f "$HOME/.config/pip/pip.conf" ]]; then
 fi
 
 # Go
-export GOPATH="$HOME/.go"
-[[ -z $(command -v go) ]] || mkdir -p "$GOPATH/bin"
 if [[ -d "$HOME/.cache/gvm" ]]; then
     export GOROOT="$HOME/.cache/gvm/use"
+    export PATH="$GOROOT/bin${PATH:+:$PATH}"
+fi
+if [[ -n $(command -v go) ]]; then
+    GOPATH="$(go version)"
+    GOPATH="${GOPATH##go version go}"
+    export GOPATH="$HOME/.go/v${GOPATH%% *}"
+    mkdir -p "$GOPATH/bin"
 fi
 
 # Perl
@@ -368,7 +373,7 @@ unset PTH
 for dir in \
     "$HOME/bin" "$HOME/.local/bin" \
     "$HOME/.config/$(basename "$MILESRC_SHELL")/scripts" \
-    "${GOROOT:-/doesnotexist}/bin" "$GOPATH" "$GOPATH/bin" \
+    "${GOROOT:-/doesnotexist}/bin" "$GOPATH/bin" \
     "$GEM_HOME/bin" "$HOME/.rvm/bin" \
     "$PERL_LOCAL_LIB_ROOT/bin" \
     /usr/bin/core_perl /usr/bin/vendor_perl \

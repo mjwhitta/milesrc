@@ -115,10 +115,15 @@ case "$MILESRC_SHELL" in
         ;;
     *"zsh")
         # {{{ Zsh setup
-        ZSHV="$(
-            zsh --version | grep -Ei -m 1 -os "zsh\s+[0-9]+\.[0-9]+"
-        )"
-        export ZSHV="${ZSHV##* }"
+        # Get version string
+        ZSHV="$(zsh --version)"
+        # Remove beginning and end of string to get just version
+        ZSHV="${ZSHV#* }"
+        ZSHV="${ZSHV%% *}"
+        # Remove first decimal
+        ZSHV="${ZSHV/\./}"
+        # Remove the last decimal and anything after
+        export ZSHV="${ZSHV%\.*}"
 
         # History settings
         export HISTFILE="$HOME/.histfile.zsh"
@@ -1047,7 +1052,7 @@ case "$MILESRC_SHELL" in
             [[ ! -d "$dir" ]] || fpath+=("$dir")
         done; unset dir
 
-        if [[ $ZSHV -gt 4.2 ]]; then
+        if [[ $ZSHV -gt 42 ]]; then
             if [[ -z $(command -v compdef) ]]; then
                 autoload -Uz compinit && compinit -u
             fi

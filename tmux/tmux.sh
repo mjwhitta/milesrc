@@ -90,6 +90,7 @@ tmux set -gw mouse "on"
 tmux set -g prefix "$(tget -g @prefix)"
 tmux set -g renumber-windows "on"
 tmux set -g status-interval "5"
+tmux set -ag terminal-overrides ",*256col*:Tc"
 
 # Colors
 tmux set -gw clock-mode-colour "$(bcolor)"

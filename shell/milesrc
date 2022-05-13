@@ -380,7 +380,7 @@ unset PTH
 for dir in \
     "$HOME/bin" "$HOME/.local/bin" \
     "$HOME/.config/$(basename "$MILESRC_SHELL")/scripts" \
-    "${GOROOT:-/doesnotexist}/bin" "$GOPATH/bin" \
+    "${GOROOT:-/doesnotexist}/bin" "${GOPATH:-/doesnotexist}/bin" \
     "$GEM_HOME/bin" "$HOME/.rvm/bin" \
     "$PERL_LOCAL_LIB_ROOT/bin" \
     /usr/bin/core_perl /usr/bin/vendor_perl \

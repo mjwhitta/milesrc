@@ -233,6 +233,12 @@ gimme_pacman() {
                 ;;
         esac
     fi
+
+    if [[ -n $(pacman -Qdqt 2>/dev/null) ]]; then
+        echo
+        warn "Orphans:"
+        vrun pacman -Qdqt
+    fi
 }
 
 # shellcheck disable=SC2086
@@ -300,7 +306,7 @@ declare -a args
 unset help nosave verbose
 action="install"
 color="true"
-version="1.6.1"
+version="1.6.2"
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do

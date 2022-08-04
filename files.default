@@ -20,5 +20,6 @@ vim/vimrc:$HOME/.vimrc
 
 #shell/misc/milesrc.local:$HOME/.milesrc/local/local
 #shell/misc/milesrc.pre:$HOME/.milesrc/local/pre
+#shell/misc/milesrc.prompt:$HOME/.milesrc/local/prompt
 #shell/misc/milesrc.security:$HOME/.milesrc/local/security
 #tmux/misc/tmux.hearts:$HOME/.tmux/tmux.override

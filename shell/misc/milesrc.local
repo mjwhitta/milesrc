@@ -2,21 +2,6 @@
 [[ $- == *i* ]] || return
 
 # {{{ Env Vars
-declare -a MILESRC_PROMPT
-MILESRC_PROMPT=(
-    "host;white;blue;remote;white;cyan;root;white;red"
-    "vi_cmd;white;light_magenta;vi_ins;white;green;vi_rep;white;red"
-    "date;white;light_green"
-    "newline"
-    "exit;white;red" #;emotes;white;green"
-    "git;black;white"
-    "venv;white;light_red"
-    "cwd;white;light_black" #;fill"
-    "newline"
-    "prompt;white;light_black"
-)
-export MILESRC_PROMPT
-
 # Let's make an educated guess
 for dir in code projs projects src; do
     [[ -d $HOME/$dir ]] && export PROJS="$HOME/$dir" && break
@@ -154,24 +139,21 @@ case "$MILESRC_SHELL" in
 esac
 
 # {{{ Wrap-up
+# Fancy prompt stuff
+if [[ -f "$HOME/.milesrc/local/prompt" ]]; then
+    . "$HOME/.milesrc/local/prompt"
+fi
+
 # Security stuff
-if [[ -f $HOME/.milesrc/local/security ]]; then
-    . $HOME/.milesrc/local/security
+if [[ -f "$HOME/.milesrc/local/security" ]]; then
+    . "$HOME/.milesrc/local/security"
 fi
 
-# Config for this host
-if [[ -f $HOME/.milesrc/local/$(hostname -s) ]]; then
-    . $HOME/.milesrc/local/$(hostname -s)
+# Config for this specific host
+if [[ -f "$HOME/.milesrc/local/$(hostname -s)" ]]; then
+    . "$HOME/.milesrc/local/$(hostname -s)"
 fi
 
-if [[ -n $(command -v arTTY) ]]; then
-    alias art="arTTY"
-    alias artty="arTTY"
-    arTTY
-else
-    alias art="clear"
-    alias artty="clear"
-    alias arTTY="clear"
-    clear
-fi
+[[ -n $(command -v arTTY) ]] || alias arTTY="clear"
+arTTY
 # }}}

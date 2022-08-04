@@ -1,0 +1,17 @@
+# If not running interactively, don't do anything
+[[ $- == *i* ]] || return
+
+declare -a MILESRC_PROMPT
+MILESRC_PROMPT=(
+    "host;white;blue;remote;white;cyan;root;white;red"
+    "vi_cmd;white;light_magenta;vi_ins;white;green;vi_rep;white;red"
+    "date;white;light_green"
+    "newline"
+    "exit;white;red" #;emotes;white;green"
+    "git;black;white"
+    "venv;white;light_red"
+    "cwd;white;light_black" #;fill"
+    "newline"
+    "prompt;white;light_black"
+)
+export MILESRC_PROMPT

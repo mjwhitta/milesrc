@@ -103,7 +103,9 @@ case "$(uname -s)" in
 esac
 
 # Android
-[[ -d $HOME/Android/Sdk ]] && export ANDROID_HOME="$HOME/Android/Sdk"
+if [[ -d "$HOME/Android/Sdk" ]]; then
+    export ANDROID_HOME="$HOME/Android/Sdk"
+fi
 # }}}
 
 # {{{ PATH
@@ -121,8 +123,8 @@ function list_displays() {
     local dir="/tmp/.X11-unix"
     local x
 
-    if [[ -d $dir ]] && [[ -n $(ls $dir) ]]; then
-        for x in $dir/X*; do
+    if [[ -d "$dir" ]] && [[ -n $(ls "$dir") ]]; then
+        for x in "$dir/X"*; do
             echo ":${x#$dir/X}"
         done
     else
@@ -141,19 +143,21 @@ function rat() {
 
 if [[ -n $(command -v vim) ]]; then
     function rogue() {
-        if [[ ! -d $HOME/.vim/bundle/rogue.vim ]]; then
+        if [[ ! -d "$HOME/.vim/bundle/rogue.vim" ]]; then
             echo "rogue.vim is not installed"
             return
         fi
 
         local save_file
-        if [[ -f $HOME/.rogue_vim.save ]]; then
+        if [[ -f "$HOME/.rogue_vim.save" ]]; then
             save_file="$HOME/rogue_vim.save"
-            cp -a $HOME/.rogue_vim.save $save_file
+            cp -a "$HOME/.rogue_vim.save" "$save_file"
         fi
         vim -c "Rogue $save_file" -c q
-        [[ ! -f $save_file ]] || mv $save_file $HOME/.rogue_vim.save
-        rm -f $HOME/rogue_vim.scores
+        if [[ -f "$save_file" ]]; then
+            mv "$save_file" "$HOME/.rogue_vim.save"
+        fi
+        rm -f "$HOME/rogue_vim.scores"
     }
 fi
 # }}}
@@ -173,7 +177,7 @@ case "$MILESRC_SHELL" in
 
         # Complete notmux and sshrc scripts
         function _hostname_complete() {
-            if [[ -f $HOME/.ssh/config ]]; then
+            if [[ -f "$HOME/.ssh/config" ]]; then
                 mapfile -t COMPREPLY < <(
                     perl -lne '/^Host ([A-Za-z0-9]+)/ && print $1' \
                     $HOME/.ssh/config | grep -Es "^$2" | sort -u

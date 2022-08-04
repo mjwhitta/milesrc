@@ -4,7 +4,7 @@
 # {{{ Env Vars
 # Let's make an educated guess
 for dir in code projs projects src; do
-    [[ -d $HOME/$dir ]] && export PROJS="$HOME/$dir" && break
+    [[ -d "$HOME/$dir" ]] && export PROJS="$HOME/$dir" && break
 done; unset dir
 # }}}
 

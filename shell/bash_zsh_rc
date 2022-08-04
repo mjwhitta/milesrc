@@ -3,8 +3,8 @@
 
 case "$0" in
     *"bash"*|*"zsh"*)
-        if [[ -d $HOME/.milesrc ]]; then
-            . $HOME/.milesrc/shell/milesrc
+        if [[ -d "$HOME/.milesrc" ]]; then
+            . "$HOME/.milesrc/shell/milesrc"
         fi
         ;;
     *)
@@ -22,7 +22,7 @@ case "$0" in
 esac
 
 # Load RVM into a shell session *as a function*
-if [[ -f $HOME/.rvm/scripts/rvm ]]; then
+if [[ -f "$HOME/.rvm/scripts/rvm" ]]; then
     unset GEM_HOME
     export PATH="${PATH:+$PATH:}$HOME/.rvm/bin"
     . "$HOME/.rvm/scripts/rvm"

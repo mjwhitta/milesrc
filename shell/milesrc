@@ -14,7 +14,8 @@ export MILESRC_SHELL="$(command -v zsh)"
 # Find minimum dirs that should be in PATH before doing anything else
 unset PTH
 for dir in \
-    "$HOME/.local/bin" \
+    "$HOME/bin" "$HOME/.local/bin" \
+    "$HOME/.config/$(basename "$MILESRC_SHELL")/scripts" \
     /usr/local/bin /usr/local/sbin \
     /usr/bin /usr/sbin \
     /bin /sbin

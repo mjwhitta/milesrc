@@ -2,16 +2,52 @@
 [[ $- == *i* ]] || return
 
 declare -a MILESRC_PROMPT
-MILESRC_PROMPT=(
-    "host;white;blue;remote;white;cyan;root;white;red"
-    "vi_cmd;white;light_magenta;vi_ins;white;green;vi_rep;white;red"
-    "date;white;light_green"
-    "newline"
-    "exit;white;red" #;emotes;white;green"
-    "git;black;white"
-    "venv;white;light_red"
-    "cwd;white;light_black" #;fill"
-    "newline"
-    "prompt;white;light_black"
-)
+theme="$(cat "$HOME/.milesrc/local/theme" 2>/dev/null)"
+
+case "$theme" in
+    "solarized_light")
+        MILESRC_PROMPT=(
+            "host;white;blue;remote;white;cyan;root;white;red"
+            "vi_cmd;white;light_magenta;vi_ins;white;green;vi_rep;white;red"
+            "date;white;light_green"
+            "newline"
+            "exit;white;red" #;emotes;white;green"
+            "git;white;black"
+            "venv;white;light_red"
+            "cwd;black;light_white" #;fill"
+            "newline"
+            "prompt;black;light_white"
+        )
+        ;;
+    "solarized_dark"|*)
+        MILESRC_PROMPT=(
+            "host;white;blue;remote;white;cyan;root;white;red"
+            "vi_cmd;white;light_magenta;vi_ins;white;green;vi_rep;white;red"
+            "date;white;light_green"
+            "newline"
+            "exit;white;red" #;emotes;white;green"
+            "git;black;white"
+            "venv;white;light_red"
+            "cwd;white;light_black" #;fill"
+            "newline"
+            "prompt;white;light_black"
+        )
+        ;;
+esac
+
 export MILESRC_PROMPT
+
+function ptheme() {
+    case "$1" in
+        "solarized_dark"|"solarized_light")
+            mkdir -p "$HOME/.milesrc/local"
+            echo "$1" >"$HOME/.milesrc/local/theme"
+            ;;
+        "list"|*)
+            cat <<EOF
+solarized_dark
+solarized_light
+EOF
+        ;;
+    esac
+}

@@ -184,12 +184,11 @@ case "$MILESRC_SHELL" in
         setopt nohup
 
         # Tab completion enhancements
+        setopt autolist
         setopt automenu
-        unsetopt menucomplete
         setopt completealiases
-
-        # Tab completion from anywhere in word
         setopt completeinword
+        unsetopt menucomplete
 
         # Change the definition of "word", e.g. with ^W
         autoload select-word-style

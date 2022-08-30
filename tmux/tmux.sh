@@ -215,10 +215,10 @@ tmux bind -r "r" rotate-window -D
 tmux bind -r "R" rotate-window -U
 
 # Better new pane/window bindings
-tmux bind "|" split-window -h -c "#{pane_current_path}"
-tmux bind "%" split-window -h -c "#{pane_current_path}"
-tmux bind "-" split-window -v -c "#{pane_current_path}"
-tmux bind '"' split-window -v -c "#{pane_current_path}"
+tmux bind "|" split-window -c "#{pane_current_path}" -h
+tmux bind "%" split-window -c "#{pane_current_path}" -h
+tmux bind "-" split-window -c "#{pane_current_path}" -v
+tmux bind "\"" split-window -c "#{pane_current_path}" -v
 tmux bind "c" new-window -c "#{pane_current_path}"
 
 # Set "d" to base64 the selection

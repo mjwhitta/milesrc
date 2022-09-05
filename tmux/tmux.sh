@@ -5,7 +5,7 @@ if [[ -z $TMUX ]]; then
     exit
 fi
 
-tvers="$(tmux -V | grep -ioPs "\d+\.\d+" | tr -d ".")"
+tvers="$(tmux -V | grep -Eios "[0-9]+\.[0-9]+" | tr -d ".")"
 if [[ $tvers -lt 24 ]]; then
     echo "Your version of tmux is too old: $(tmux -V)"
     echo "Please install something newer than or equal to 2.4"
@@ -41,13 +41,13 @@ fi
 function bcolor() { bground | awk -F "=" '{print $2}'; }
 
 # Background style
-function bground() { tget -g @ui_style | grep -oPs "bg=[^,]+"; }
+function bground() { tget -g @ui_style | grep -Eos "bg=[^,]+"; }
 
 # Foreground color
 function fcolor() { fground | awk -F "=" '{print $2}'; }
 
 # Foreground style
-function fground() { tget -g @ui_style | grep -oPs "fg=[^,]+"; }
+function fground() { tget -g @ui_style | grep -Eos "fg=[^,]+"; }
 
 # Create a tmux if statement
 function if_then_else() { echo "#{$1,$2,$3}"; }
@@ -119,14 +119,16 @@ if [[ -n $(command -v acpi) ]] || [[ -n $(command -v pmset) ]]; then
     tmux set -ag status-right "#(
         if [[ -n \$(command -v acpi) ]]; then
             no_batt=\"\$(
-                acpi 2>&1 | grep -Ps \"^No support.+power_supply$\"
+                acpi 2>&1 | grep -is \"^no support.+power_supply$\"
             )\"
             c=\"100\"
             if [[ -z \$no_batt ]]; then
-                c=\"\$(acpi -b | grep -oPs \"[0-9]+(?=%)\")\"
+                c=\"\$(acpi -b | grep -Eos \"[0-9]+%\")\"
+                c=\"\${c%%%}\"
             fi
         elif [[ -n \$(command -v pmset) ]]; then
-            c=\"\$(pmset -g batt | grep -oPs \"[0-9]+(?=%)\")\"
+            c=\"\$(pmset -g batt | grep -Eos \"[0-9]+%\")\"
+                c=\"\${c%%%}\"
         fi
 
         if [[ -n \$c ]]; then
@@ -145,7 +147,7 @@ if [[ -n $(command -v acpi) ]] || [[ -n $(command -v pmset) ]]; then
                 echo -n \"$(tlget -g @battery_bar_surround)\" | \
                     head -c 1
                 if [[ -n \$(command -v acpi) ]]; then
-                    chrg=\"\$(acpi -a 2>&1 | grep -s \"on-line\")\"
+                    chrg=\"\$(acpi -a 2>&1 | grep -is \"on-line\")\"
                     if [[ -n \$chrg ]] || [[ -n \$no_batt ]]; then
                         echo -n \"$(tlget -g @battery_charging)\"
                     fi
@@ -246,7 +248,7 @@ tmux bind -T copy-mode-vi "M-o" send -X copy-pipe-and-cancel "
     [[ \$# -ne 0 ]] || exit 0
     if [[ -f \"\$1\" ]]; then
         type=\"\$(xdg-mime query filetype \$1)\"
-    elif [[ -n \$(echo \"\$1\" | grep -Ps \"https?:\/\/\") ]]; then
+    elif [[ -n \$(echo \"\$1\" | grep -Es \"https?:\/\/\") ]]; then
         type=\"text/html\"
     fi
     [[ -n \$type ]] || exit 1

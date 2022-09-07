@@ -306,7 +306,7 @@ declare -a args
 unset help nosave verbose
 action="install"
 color="true"
-version="1.6.2"
+version="1.6.3"
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do
@@ -343,7 +343,7 @@ case "$(uname -s)" in
         # grep -P is best, but alas, some OS do not have that option
         # (alpine/busybox)
         os="$(
-            grep -Eos "^ID\=\"?[^\"]+" /etc/os-release | \
+            grep -Eos "^ID=\"?[^\"]+" /etc/os-release | \
             awk -F "=" '{print $2}' | tr -d "\""
         )"
         ;;

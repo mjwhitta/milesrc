@@ -146,7 +146,7 @@ case "$MILESRC_SHELL" in
         zstyle ":completion:*" matcher-list "m:{a-zA-Z}={A-Za-z}"
         # Better completion for killall
         zstyle ":completion:*:killall:*" command \
-            "ps -ocomm -u \"$USER\" | grep -sv \"COMMAND\""
+            "ps -o comm -u \"$(id -nu)\" | tail -n +2"
 
         zstyle :compinstall filename "$HOME/.zshrc"
 
@@ -181,6 +181,7 @@ case "$MILESRC_SHELL" in
         [[ -z $(command -v stty) ]] || stty -ixon -ixoff
 
         # Do not kill background processes when closing the shell
+        setopt nocheckjobs
         setopt nohup
 
         # Tab completion enhancements
@@ -188,6 +189,7 @@ case "$MILESRC_SHELL" in
         setopt automenu
         setopt completealiases
         setopt completeinword
+        unsetopt listambiguous
         unsetopt menucomplete
 
         # Change the definition of "word", e.g. with ^W
@@ -197,6 +199,7 @@ case "$MILESRC_SHELL" in
         # Super globs
         setopt extendedglob
         unsetopt caseglob
+        unsetopt casematch
 
         # Pound sign in interactive prompt
         setopt interactivecomments

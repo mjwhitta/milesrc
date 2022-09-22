@@ -59,7 +59,9 @@ EOF
         chmod 700 /tmp/dockerentry
     }
 
+    alias dc="docker compose"
     alias dclean="docker system prune -af --volumes"
+    alias di="docker images"
     alias dps="docker ps -a"
     alias dsh="docker exec -it"
 

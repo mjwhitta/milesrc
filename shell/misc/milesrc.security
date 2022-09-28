@@ -61,10 +61,10 @@ EOF
 
     alias dc="docker compose"
     alias dclean="docker system prune -af --volumes"
+    alias de="docker exec -it"
     alias di="docker images"
     alias dl="docker logs -f"
     alias dps="docker ps -a"
-    alias dsh="docker exec -it"
 
     function drun() {
         docker run \

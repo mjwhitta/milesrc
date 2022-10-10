@@ -65,6 +65,7 @@ EOF
     alias di="docker images"
     alias dl="docker logs -f"
     alias dps="docker ps -a"
+    alias dr="docker"
 
     function drun() {
         docker run \

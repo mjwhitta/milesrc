@@ -476,6 +476,7 @@ alias claer="clear"
 alias clar="clear"
 alias clea="clear"
 alias clae="clear"
+alias clera="clear"
 alias got="git"
 alias vm="mv"
 # }}}

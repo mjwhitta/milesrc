@@ -21,6 +21,11 @@ if exists(':filetype')
     filetype plugin on
 endif
 
+" Max memory for pattern matching (in KB)
+if exists('&maxmempattern')
+    set maxmempattern=2000000
+endif
+
 " No default message when opening vim with no args and abbrev messages
 if exists('&shortmess')
     set shortmess+=aI

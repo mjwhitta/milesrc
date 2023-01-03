@@ -10,7 +10,7 @@ case "$(uname -s)" in
         # Aliases
         alias ls="\ls -F -G"
         alias p="ps -o pid,user,%cpu,command -r"
-        unalias pf
+        unalias pf 2>/dev/null
         alias pljson="plutil -convert json -o -"
         alias plobjc="plutil -convert objc -o -"
         alias plswift="plutil -convert swift -o -"
@@ -21,7 +21,7 @@ case "$(uname -s)" in
         # Fix missing utils
         mkdir -p "$HOME/.local/bin"
 
-        if [[ -z $(which poweroff) ]]; then
+        if [[ -z $(command -v poweroff) ]]; then
             cat >"$HOME/.local/bin/poweroff" <<EOF
 #!/usr/bin/env bash
 
@@ -30,7 +30,7 @@ EOF
             chmod 700 "$HOME/.local/bin/poweroff"
         fi
 
-        if [[ -z $(which md5sum) ]]; then
+        if [[ -z $(command -v md5sum) ]]; then
             cat >"$HOME/.local/bin/md5sum" <<EOF
 #!/usr/bin/env bash
 
@@ -40,7 +40,7 @@ EOF
             chmod 700 "$HOME/.local/bin/md5sum"
         fi
 
-        if [[ -z $(which sha256sum) ]]; then
+        if [[ -z $(command -v sha256sum) ]]; then
             for i in 1 256 384 512; do
                 cat >"$HOME/.local/bin/sha${i}sum" <<EOF
 #!/usr/bin/env bash
@@ -52,10 +52,9 @@ EOF
         fi
 
         # Fix some dumb things
-        local gfind ggrep gsed
-        gfind="$(which gfind)$MILESRC_ACKNOWLEDGE_MACOS_IS_DUMB"
-        ggrep="$(which ggrep)$MILESRC_ACKNOWLEDGE_MACOS_IS_DUMB"
-        gsed="$(which gsed)$MILESRC_ACKNOWLEDGE_MACOS_IS_DUMB"
+        gfind="$(command -v gfind)$MILESRC_ACKNOWLEDGE_MACOS_IS_DUMB"
+        ggrep="$(command -v ggrep)$MILESRC_ACKNOWLEDGE_MACOS_IS_DUMB"
+        gsed="$(command -v gsed)$MILESRC_ACKNOWLEDGE_MACOS_IS_DUMB"
 
         if [[ -z $gfind ]] || [[ -z $ggrep ]] || [[ -z $gsed ]]; then
             echo "*** WARNING ***"
@@ -69,13 +68,15 @@ EOF
             echo "$HOME/.local/bin:"
             echo
             if [[ -z $gfind ]]; then
-                echo "  ln -s \$(which gfind) find"
-                echo "  ln -s \$(which glocate) locate"
-                echo "  ln -s \$(which gupdatedb) updatedb"
-                echo "  ln -s \$(which gxargs) xargs"
+                echo "  ln -s \$(command -v gfind) find"
+                echo "  ln -s \$(command -v glocate) locate"
+                echo "  ln -s \$(command -v gupdatedb) updatedb"
+                echo "  ln -s \$(command -v gxargs) xargs"
             fi
-            [[ -n $ggrep ]] || echo "  ln -s \$(which ggrep) grep"
-            [[ -n $gsed ]] || echo "  ln -s \$(which gsed) sed"
+            if [[ -z $ggrep ]]; then
+                echo "  ln -s \$(command -v ggrep) grep"
+            fi
+            [[ -n $gsed ]] || echo "  ln -s \$(command -v gsed) sed"
             echo
             echo "Add the following to $HOME/.milesrc.local to hide"
             echo "these warnings:"

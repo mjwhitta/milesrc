@@ -468,6 +468,7 @@ else
     alias t="top -d 10"
     alias tu="top -d 10 -u \"\$USER\""
 fi
+alias vd="vimdiff"
 [[ -z $(command -v w3m) ]] || alias w3m="\w3m -cookie"
 alias which="command -v"
 

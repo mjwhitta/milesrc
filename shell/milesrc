@@ -489,18 +489,36 @@ function devexcuse() {
 }
 
 function git_clone() {
+    local branch
+    local dir
     local git_url
     local group_or_user
     local repo
-    local tmp="${1%.git}"
+    local tmp
     local url
 
     if [[ -n $(command -v git) ]]; then
-        git clone "$1" "$2"
+        git clone "$@"
     else
         [[ -n $(command -v curl) ]] || return 1
-        [[ $# -gt 0 ]] || return 2
 
+        while [[ $# -gt 0 ]]; do
+            case "$1" in
+                "-b"|"--branch") shift; branch="$1" ;;
+                "git@"*|"http"*"://"*) tmp="$1" ;;
+                *)
+                    if [[ -n $tmp ]]; then
+                        dir="$1"
+                        break
+                    fi
+                    ;;
+            esac
+            shift
+        done
+
+        [[ -n $tmp ]] || return 2
+
+        tmp="${tmp%.git}"
         case "$tmp" in
             "git@"*)
                 tmp="${tmp#git@}"
@@ -518,29 +536,25 @@ function git_clone() {
                 ;;
         esac
 
+        branch="${branch:-main}"
+        dir="${dir:-$repo}"
         url="https://$git_url/$group_or_user/$repo"
+
         case "$git_url" in
             "github.com")
-                curl -LO "$url/archive/master.zip"
+                curl -LO "$url/archive/refs/heads/$branch.zip"
                 [[ $? -eq 0 ]] || return 3
-                unzip master.zip >/dev/null && rm -f master.zip
+                unzip "$branch.zip" >/dev/null && rm -f "$branch.zip"
                 [[ $? -eq 0 ]] || return 4
-                if [[ $# -eq 1 ]]; then
-                    mv "$repo-master" "$repo"
-                else
-                    mv "$repo-master" "$2"
-                fi
+                mv "$repo-$branch" "$dir"
                 ;;
             "gitlab.com")
-                curl -LO "$url/-/archive/master/$repo-master.tar"
+                curl -LO "$url/-/archive/$branch/$repo-$branch.tar"
                 [[ $? -eq 0 ]] || return 3
-                tar -xf "$repo-master.tar" && rm -f "$repo-master.tar"
+                tar -xf "$repo-$branch.tar" \
+                    && rm -f "$repo-$branch.tar"
                 [[ $? -eq 0 ]] || return 4
-                if [[ $# -eq 1 ]]; then
-                    mv "$repo-master"* "$repo"
-                else
-                    mv "$repo-master"* "$2"
-                fi
+                mv "$repo-$branch"* "$dir"
                 ;;
         esac
     fi

@@ -542,18 +542,26 @@ function git_clone() {
 
         case "$git_url" in
             "github.com")
+                [[ -n $(command -v unzip) ]] || return 1
+
                 curl -LO "$url/archive/refs/heads/$branch.zip"
                 [[ $? -eq 0 ]] || return 3
+
                 unzip "$branch.zip" >/dev/null && rm -f "$branch.zip"
                 [[ $? -eq 0 ]] || return 4
+
                 mv "$repo-$branch" "$dir"
                 ;;
             "gitlab.com")
+                [[ -n $(command -v tar) ]] || return 1
+
                 curl -LO "$url/-/archive/$branch/$repo-$branch.tar"
                 [[ $? -eq 0 ]] || return 3
+
                 tar -xf "$repo-$branch.tar" \
                     && rm -f "$repo-$branch.tar"
                 [[ $? -eq 0 ]] || return 4
+
                 mv "$repo-$branch"* "$dir"
                 ;;
         esac

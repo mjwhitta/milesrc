@@ -383,10 +383,9 @@ if [[ $# -eq 1 ]]; then
             curl -kLo /tmp/gimme -s "$repo/$gimme"
             [[ $? -eq 0 ]] || errx 3 "Failed to get new gimme"
 
-            chmod +x "/tmp/gimme"
-            mv -f /tmp/gimme "$0"
-
-            exit $?
+            cat /tmp/gimme >"$0"
+            rm -f /tmp/gimme
+            exit 0
             ;;
     esac
 fi

@@ -68,7 +68,7 @@ Below are some commands to install or uninstall my configs.
 Put configs in `$HOME/.milesrc`:
 
 ```
-$ git clone git@gitlab.com:mjwhitta/milesrc.git $HOME/.milesrc
+$ git clone git@github.com:mjwhitta/milesrc.git $HOME/.milesrc
 $ cd $HOME/.milesrc
 ```
 

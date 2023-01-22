@@ -283,7 +283,7 @@ Usage: ${0##*/} [OPTIONS] [pkg]...
 DESCRIPTION
     Automatically uses the correct package manager. Default behavior
     is to install. If the only pkg provided is "gimme", the script
-    will update itself with the newest version from GitLab.
+    will update itself with the newest version from GitHub.
 
 OPTIONS
     -h, --help        Display this help message
@@ -377,8 +377,8 @@ if [[ $# -eq 1 ]]; then
             deps=("curl")
             check_deps
 
-            repo="https://gitlab.com/mjwhitta/milesrc"
-            gimme="/-/raw/master/shell/scripts/gimme"
+            repo="https://raw.githubusercontent.com/mjwhitta/milesrc"
+            gimme="/main/shell/scripts/gimme"
 
             curl -kLo /tmp/gimme -s "$repo/$gimme"
             [[ $? -eq 0 ]] || errx 3 "Failed to get new gimme"

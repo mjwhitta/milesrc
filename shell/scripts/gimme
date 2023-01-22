@@ -306,7 +306,7 @@ declare -a args
 unset help nosave verbose
 action="install"
 color="true"
-version="1.7.0"
+version="v1.7.0"
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do

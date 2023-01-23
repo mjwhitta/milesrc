@@ -27,7 +27,7 @@ if [[ -n $(command -v git) ]]; then
     tformat="tformat:\"%Cred%h %Cgreen%cd %Cblue%an%Creset %s\""
 
     alias diff="git diff $minimal"
-    alias gc="git gc --aggressive"
+    alias gc="git gc --aggressive --prune"
     alias gd="git diff $minimal"
     alias gl="git log $full --pretty=$tformat"
     alias grh="git reset --hard"

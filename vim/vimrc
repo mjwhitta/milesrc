@@ -787,8 +787,6 @@ endif
 " {{{ Local vimrc
 if exists(':let')
     let g:gh_site = 'github.com'
-    let g:syntastic_off = 0
-    let g:syntastic_on_start = 1
 endif
 if filereadable(glob($HOME . '/.vimrc.local'))
     source $HOME/.vimrc.local
@@ -802,12 +800,10 @@ if exists(':function') && exists(':let')
         let g:plug_window = 'topleft new'
 
         " Install or update vim plugins
+        Plug 'dense-analysis/ale'
         Plug 'ctrlpvim/ctrlp.vim'
         Plug 'Yggdroot/indentLine'
         " Plug 'katono/rogue.vim', { 'on': 'Rogue' }
-        if g:syntastic_off == 0
-            Plug 'vim-syntastic/syntastic'
-        endif
         " Plug 'majutsushi/tagbar'
         " Plug 'shougo/unite.vim'
         Plug 'tpope/vim-abolish' ", { 'on': 'S' }
@@ -827,6 +823,11 @@ if exists(':function') && exists(':let')
 
         " Abolish
         nnoremap /// :%S///gc<left><left><left><left>
+
+        " ALE
+        let g:ale_open_list = 1
+        let g:ale_set_highlights = 1
+        let g:ale_set_signs = 1
 
         " Commentary
         nmap <leader>c <plug>CommentaryLine
@@ -884,33 +885,6 @@ if exists(':function') && exists(':let')
         " Python-mode
         if exists(':filetype')
             filetype plugin indent on
-        endif
-
-        " Syntastic
-        if g:syntastic_off == 0
-            if exists('&statusline')
-                if exists(':SyntasticStatuslineFlag')
-                    set statusline+=%#warningmsg#
-                    set statusline+=%{SyntasticStatuslineFlag()}
-                    set statusline+=%*
-                endif
-            endif
-            let g:syntastic_always_populate_loc_list = 1
-            let g:syntastic_auto_loc_list = 1
-            if g:syntastic_on_start == 1
-                let g:syntastic_check_on_open = 1
-            endif
-            let g:syntastic_check_on_wq = 0
-            let g:syntastic_sh_shellcheck_args =
-                \ "
-                \ -e SC1117
-                \ -e SC2028
-                \ -e SC2029
-                \ -e SC2143
-                \ -e SC2155
-                \ -e SC2164
-                \ -e SC2181
-                \ "
         endif
 
         " Tagbar

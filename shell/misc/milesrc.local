@@ -16,7 +16,7 @@ alias dt="tmux -2 new -d -s"
 alias et="exec tmux -2 new -A -s"
 alias eth="exec tmux -2 new -A -s \"\$(hostname -s)\""
 alias j="cd \$(cat $HOME/.proj 2>/dev/null)"
-alias nslookup="echo \"use 'dig +domain= +short [-x]' instead\" #"
+alias nslookup="echo \"use 'dig +short [-x]' instead\" #"
 [[ -z $(command -v pwsh) ]] || alias powershell="TERM=xterm pwsh"
 alias save="pwd >\$HOME/.proj"
 
@@ -35,6 +35,19 @@ if [[ -n $(command -v git) ]]; then
     alias gsm="git show $minimal"
 
     unset full minimal tformat
+fi
+
+# Neovim/Vim/Vi aliases
+if [[ -n $(command -v nvim) ]]; then
+    alias vd="nvim -d"
+    alias vi="nvim"
+    alias vim="nvim"
+elif [[ -n $(command -v vim) ]]; then
+    alias vd="vim -d"
+    alias vi="vim"
+elif [[ -n $(command -v vi) ]]; then
+    alias vd="vi -d"
+    alias vim="vi"
 fi
 # }}}
 

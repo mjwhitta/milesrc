@@ -335,15 +335,7 @@ vnoremap : ;
 
 " Remap jk and kj to ESC
 inoremap jk <esc>l
-inoremap jK <esc>l
-inoremap Jk <esc>l
-inoremap JK <esc>l
 inoremap kj <esc>l
-inoremap kJ <esc>l
-inoremap Kj <esc>l
-inoremap KJ <esc>l
-inoremap k;j <esc>l:
-inoremap k;w <esc>l:w
 
 " Help for word under the cursor
 nnoremap <leader><leader>h :help <C-r><C-w><cr>

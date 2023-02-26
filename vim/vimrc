@@ -94,17 +94,11 @@ if exists(':let')
     silent! let g:netrw_list_hide .= netrw_gitignore#Hide()
     let g:netrw_list_hide .= ',.*\.\(class\|jar\|jpg\|png\|pyc\|so\)'
     let g:netrw_list_hide .= ',.*\.\(git[/-]\|swp\),tags,.*\.DS_Store'
-
-    " NERDTree-like
-    " let g:netrw_liststyle = 3
-    " let g:netrw_browse_split = 4
-    " let g:netrw_altv = 1
-    " let g:netrw_winsize = 25
 endif
 
-" Allows show atleast 5 lines above/below the cursor
+" Allows show atleast 4 lines above/below the cursor
 if exists('&scrolloff')
-    set scrolloff=5
+    set scrolloff=4
 endif
 
 " Wildignore
@@ -119,6 +113,11 @@ if exists('&wildignore')
     set wildignore+=*/*.vim
 endif
 
+" Case-insensitive
+if exists('&wildignorecase')
+    set wildignorecase
+endif
+
 " Backspace
 if exists('&backspace')
     set backspace=indent,eol,start
@@ -126,23 +125,57 @@ endif
 
 " Grep options
 if exists('&grepprg')
-    if executable('ag')
-        set grepprg=ag\ -S\ --column
+    if executable('rg')
+        set grepprg=rg\
+            \ --line-number\
+            \ --no-heading\
+            \ --no-messages\
+            \ --smart-case\
+            \ --with-filename\
+            \ $*
+    elseif executable('ag')
+        set grepprg=ag\
+            \ --filename\
+            \ --nobreak\
+            \ --noheading\
+            \ --numbers\
+            \ --silent\
+            \ --smart-case\
+            \ $*
     elseif executable('ack')
-        set grepprg=ack\ -H\ --smart-case\ --column
+        set grepprg=ack\
+            \ --nobreak\
+            \ --nogroup\
+            \ --noheading\
+            \ -s\
+            \ --smart-case\
+            \ --with-filename\
+            \ $*
     elseif executable('ack-grep')
-        set grepprg=ack-grep\ -H\ --smart-case\ --column
+        set grepprg=ack\
+            \ --nobreak\
+            \ --nogroup\
+            \ --noheading\
+            \ -s\
+            \ --smart-case\
+            \ --with-filename\
+            \ $*
     else
-        set grepprg=grep\ -EHIinRs\
+        set grepprg=grep\
+            \ --binary-files=without-match\
             \ --exclude-dir=\.bzr\
-            \ --exclude-dir=\.git\
             \ --exclude-dir=\.git-crypt\
+            \ --exclude-dir=\.git\
+            \ --exclude-dir=\.hg\
             \ --exclude-dir=\.svn\
+            \ --extended-regexp\
+            \ --ignore-case\
+            \ --line-number\
+            \ --no-messages\
+            \ --recursive\
+            \ --with-filename\
             \ $*
     endif
-endif
-if exists('&grepformat') && &grepformat !~# '%c'
-    set grepformat^=%f:%l:%c:%m
 endif
 
 " Status line incase Airline isn't used
@@ -341,9 +374,11 @@ inoremap kj <esc>l
 nnoremap <leader><leader>h :help <C-r><C-w><cr>
 
 " Show number of matches immediately after search
-if exists(':function')
-    cmap <expr> <cr> getcmdtype() =~ '[/?]' ?
-        \ "\<cr>\<plug>CountMatches" : "\<cr>"
+if !has('nvim')
+    if exists(':function')
+        cmap <expr> <cr> getcmdtype() =~ '[/?]' ?
+            \ "\<cr>\<plug>CountMatches" : "\<cr>"
+    endif
 endif
 
 " Omni-completion
@@ -351,10 +386,11 @@ if exists('&completeopt')
     set completeopt=menu,menuone,preview
     silent! set completeopt+=noselect
     if exists('&complete')
-        set complete-=i
-        if &completeopt =~ 'noselect'
-            set complete+=k
-        endif
+        set complete-=i " Do not scan included files
+        set complete-=t " Do not scan tags
+        " if &completeopt =~ 'noselect'
+        "     set complete+=k " Scan dictionary... nevermind, too slow
+        " endif
     endif
 endif
 if exists('&dictionary') && filereadable('/usr/share/dict/words')
@@ -381,8 +417,6 @@ nnoremap <leader>l :lopen<cr>
 
 " Vim file explorer
 nnoremap <silent> f :Explore<cr>
-" or more NERDTree-like
-" nnoremap <silent> f :Vexplore<cr>
 
 " Search using normal regex mode
 nnoremap / /\v
@@ -396,7 +430,7 @@ nnoremap <C-l> :set spelllang=<cr>:noh<cr><C-l>
 inoremap <C-l> <esc>l:set spelllang=<cr>:noh<cr><C-l>i
 
 " Search, center and show number of matches
-if exists(':function')
+if exists(':function') && !has('nvim')
     nnoremap n nzz:call CountMatches()<cr>
     nnoremap N Nzz:call CountMatches()<cr>
     nnoremap gd gdzz:call CountMatches()<cr>
@@ -410,9 +444,10 @@ else
     nnoremap gc xu/<C-r>-<cr>Nzz
 endif
 
-" Grep
+" Grep for word under cursor
 nnoremap <silent> <leader>g :grep <C-r><C-w><cr>:copen<cr>
-nnoremap <silent> <leader><leader>g :grep <C-r>/<cr>:copen<cr>
+" Commented out b/c it includes the \v from the previous search =(
+"nnoremap <silent> <leader><leader>g :grep <C-r>/<cr>:copen<cr>
 
 " Toggle fold
 " Actually <C-/>
@@ -441,9 +476,6 @@ nnoremap <silent> <C-k> :bprevious<cr>
 
 " Save file
 nnoremap <silent> <C-s> :w<cr>
-
-" Select all
-nnoremap <silent> <C-a> ggVG
 
 " Format all
 nnoremap <silent> <leader>F ggVG=
@@ -474,19 +506,6 @@ nnoremap <leader>V :call ClipboardPaste("+", "c")<cr>
 
 " {{{ Autocmds
 if exists(':augroup')
-    augroup autocomplete
-        autocmd!
-        if exists('&completeopt') && &completeopt =~ 'noselect'
-            autocmd InsertCharPre * call AutoComplete()
-        endif
-    augroup END
-
-    augroup foldnestmax
-        if exists('&foldnestmax')
-            autocmd FileType json setlocal foldnestmax=20
-        endif
-    augroup END
-
     augroup foldmethod
         autocmd!
         if exists('&foldmethod')
@@ -507,11 +526,33 @@ if exists(':augroup')
         endif
     augroup END
 
+    augroup foldnestmax
+        if exists('&foldnestmax')
+            autocmd FileType json setlocal foldnestmax=20
+        endif
+    augroup END
+
     augroup ghmarkdown
         autocmd!
         if exists('&filetype')
-            autocmd BufNewFile,BufRead *.md,*.markdown setlocal
+            autocmd BufNewFile,BufRead *.markdown,*.md setlocal
                 \ filetype=ghmarkdown
+        endif
+    augroup END
+
+    augroup indentation
+        autocmd!
+        if exists('&shiftwidth')
+            autocmd FileType c,cpp,h,java,python,ruby,sh setlocal
+                \ shiftwidth=4
+        endif
+        if exists('&softtabstop')
+            autocmd FileType c,cpp,h,java,python,ruby,sh setlocal
+                \ softtabstop=4
+        endif
+        if exists('&tabstop')
+            autocmd FileType c,cpp,h,java,python,ruby,sh setlocal
+                \ tabstop=4
         endif
     augroup END
 
@@ -534,22 +575,6 @@ if exists(':augroup')
             autocmd BufWritePost *.txt,*.md,*.markdown setlocal
                 \ spell spelllang=en_us
             autocmd FileType mail setlocal spell spelllang=en_us
-        endif
-    augroup END
-
-    augroup indentation
-        autocmd!
-        if exists('&shiftwidth')
-            autocmd FileType c,cpp,h,java,python,ruby,sh setlocal
-                \ shiftwidth=4
-        endif
-        if exists('&softtabstop')
-            autocmd FileType c,cpp,h,java,python,ruby,sh setlocal
-                \ softtabstop=4
-        endif
-        if exists('&tabstop')
-            autocmd FileType c,cpp,h,java,python,ruby,sh setlocal
-                \ tabstop=4
         endif
     augroup END
 
@@ -577,19 +602,6 @@ iabbrev waht what
 
 " {{{ Functions
 if exists(':function')
-    function! AutoComplete()
-        if !pumvisible() && v:char =~ '\K'
-            \ && getline('.')[col('.') - 7] !~ '\K'
-            \ && getline('.')[col('.') - 6] =~ '\K'
-            \ && getline('.')[col('.') - 5] =~ '\K'
-            \ && getline('.')[col('.') - 4] =~ '\K'
-            \ && getline('.')[col('.') - 3] =~ '\K'
-            \ && getline('.')[col('.') - 2] =~ '\K' " last typed char
-            \ && getline('.')[col('.') - 1] !~ '\K'
-            call feedkeys("\<C-n>", 'n')
-        endif
-    endfunction
-
     function! ClipboardPaste(regname, pasteType)
         let l:reg_type = getregtype(a:regname)
 
@@ -640,7 +652,9 @@ if exists(':function')
         let @/ = l:s
         call cursor(l:l, l:c)
     endfunction
-    nnoremap <silent> <plug>CountMatches :call CountMatches()<cr>
+    if !has('nvim')
+        nnoremap <silent> <plug>CountMatches :call CountMatches()<cr>
+    endif
 
     function! FormatXML()
         silent! execute '%s/\v\</\</g'
@@ -653,65 +667,7 @@ if exists(':function')
         command! FormatXML call FormatXML()
     endif
 
-    function! GHMarkdownPreview()
-        let l:preview_file = '/tmp/ghmarkdown_preview.html'
-
-        " CSS sha256
-        let l:frameworks = '77c3b874f32e71b14cded5a120f42f5c7288fa52e0a37f2d5919fbd8bcfca63c'
-        let l:github = 'ea4be5a794cc0b4c4519e2d56d6fd702ba42852e24e4830a8091d6b1ca54c426'
-
-        " Header
-        let l:header = '' .
-            \ '<html lang="en"><head><meta charset="utf-8"/>' .
-            \ '<link rel="stylesheet" type="text/css" href="' .
-            \ 'https://assets-cdn.github.com/assets/frameworks-' . l:frameworks . '.css">' .
-            \ '<link rel="stylesheet" type="text/css" href="' .
-            \ 'https://assets-cdn.github.com/assets/github-' . l:github . '.css">' .
-            \ '</head><body><div class="page">' .
-            \ '<div id="preview-page" class="preview-page" data-autorefresh-url="">' .
-            \ '<div role="main" class="main-content">' .
-            \ '<div class="container new-discussion-timeline experiment-repo-nav">' .
-            \ '<div class="repository-content">' .
-            \ '<div id="readme" class="readme boxed-group clearfix announce instapaper_body md">' .
-            \ '<h3><span class="octicon octicon-book"></span>' . bufname('') . '</h3>' .
-            \ '<article class="markdown-body entry-content" itemprop="text">'
-
-        " Footer
-        let l:footer = '</article></div></div></div></div></div></body></html>'
-
-        if exists("g:gh_token")
-            " Use GitHub to render file as html
-            let l:cmd = '' .
-                \ 'curl --data-binary @' . bufname('') .
-                \ ' -H "Content-Type: text/plain"' .
-                \ ' -H "Authorization: token ' . g:gh_token . '"' .
-                \ ' -kLs' .
-                \ ' "https://' . g:gh_site . '/api/v3/markdown/raw"'
-            call system(l:cmd . ' >' . l:preview_file)
-            let l:html = join(readfile(l:preview_file), '')
-
-            " Create preview file
-            let l:preview = [l:header, l:html, l:footer]
-            call writefile(l:preview, l:preview_file)
-
-            " Open preview file
-            let l:uname = system('uname -s')
-            if l:uname =~ 'Darwin'
-                call system('open ' . l:preview_file)
-            else
-                call system('mimeopen ' . l:preview_file)
-            endif
-        else
-            echo 'You need to provide g:gh_token'
-        endif
-    endfunction
-    if exists(':command')
-        command! GHMarkdownPreview call GHMarkdownPreview()
-    endif
-    nnoremap <silent> <leader>gh :call GHMarkdownPreview()<cr>
-
     function! NeatFoldText()
-        " let l:mywidth = winwidth(0)
         let l:mywidth = 70
         let l:line = ' ' .
             \ substitute(
@@ -727,6 +683,9 @@ if exists(':function')
                 \ l:lines_count . ' lines'
             \ ) . ' |'
         let l:foldchar = matchstr(&fillchars, 'fold:\zs.')
+        if has('nvim')
+            let l:foldchar = matchstr("vert:|,fold:-", 'fold:\zs.')
+        endif
         let l:foldtextstart = strpart(
             \ '+' .
             \ repeat(
@@ -771,15 +730,12 @@ if exists(':function')
     endif
 endif
 
-if exists(':command')
-    command! JQ :w !jq -C . | less
+if exists(':command') && executable('jq') && executable('less')
+    command! JQ :w !jq -M -r -S . | less
 endif
 " }}}
 
 " {{{ Local vimrc
-if exists(':let')
-    let g:gh_site = 'github.com'
-endif
 if filereadable(glob($HOME . '/.vimrc.local'))
     source $HOME/.vimrc.local
 endif
@@ -795,23 +751,15 @@ if exists(':function') && exists(':let')
         Plug 'dense-analysis/ale'
         Plug 'ctrlpvim/ctrlp.vim'
         Plug 'Yggdroot/indentLine'
-        " Plug 'katono/rogue.vim', { 'on': 'Rogue' }
-        " Plug 'majutsushi/tagbar'
-        " Plug 'shougo/unite.vim'
-        Plug 'tpope/vim-abolish' ", { 'on': 'S' }
+        Plug 'tpope/vim-abolish', {'on': 'S'}
         Plug 'tpope/vim-commentary'
-        Plug 'junegunn/vim-easy-align' ", { 'on': '<plug>(EasyAlign)' }
-        " Plug 'Lokaltog/vim-easymotion'
-        Plug 'tpope/vim-endwise'
+        Plug 'junegunn/vim-easy-align' ", {'on': '<plug>(EasyAlign)'}
+        "Plug 'tpope/vim-endwise'
         Plug 'jtratner/vim-flavored-markdown'
         if executable('git')
             Plug 'tpope/vim-fugitive'
             Plug 'airblade/vim-gitgutter'
         endif
-        " Plug 'fatih/vim-go', { 'for': 'go' }
-        " Plug 'vim-ruby/vim-ruby', { 'for': 'ruby' }
-        Plug 'tmux-plugins/vim-tmux'
-        Plug 'mg979/vim-visual-multi'
 
         " Abolish
         nnoremap /// :%S///gc<left><left><left><left>
@@ -825,24 +773,24 @@ if exists(':function') && exists(':let')
         nmap <leader>c <plug>CommentaryLine
 
         " CtrlP
-        if executable('ag')
-            let g:ctrlp_user_command = 'ag -f -g ".*" --hidden ' .
+        if executable('rg')
+            let g:ctrlp_user_command = 'rg --color=never --files ' .
+                \ '--follow --hidden ' .
+                \ '--iglob "!.bzr" ' .
+                \ '--iglob "!.git" ' .
+                \ '--iglob "!.git-crypt" ' .
+                \ '--iglob "!.hg" ' .
+                \ '--iglob "!.svn" ' .
+                \ '--no-messages %s'
+        elseif executable('ag')
+            let g:ctrlp_user_command = 'ag --follow -g ".*" ' .
+                \ '--hidden ' .
                 \ '--ignore ".bzr" ' .
                 \ '--ignore ".git" ' .
                 \ '--ignore ".git-crypt" ' .
                 \ '--ignore ".hg" ' .
                 \ '--ignore ".svn" ' .
                 \ '--nocolor --silent %s'
-        endif
-        if executable('rg')
-            let g:ctrlp_user_command = 'rg --color never --files ' .
-                \ '--hidden ' .
-                \ '--iglob "!.bzr" ' .
-                \ '--iglob "!.git" ' .
-                \ '--iglob "!.git-crypt" ' .
-                \ '--iglob "!.hg" ' .
-                \ '--iglob "!.svn" ' .
-                \ '-L --no-messages %s'
         endif
         let g:ctrlp_map = '<leader>f'
         let g:ctrlp_cmd = 'CtrlPCurWD'
@@ -853,14 +801,6 @@ if exists(':function') && exists(':let')
         vmap <cr> <plug>(EasyAlign)
         nnoremap <leader>eat vip:EasyAlign<space>*\|<cr>
 
-        " Easymotion
-        " let g:EasyMotion_do_mapping = 0 " Disable default mappings
-        " let g:EasyMotion_smartcase = 1
-        " let g:EasyMotion_use_smartsign_us = 1
-        " nmap <leader>s <plug>(easymotion-s2)
-        " nmap <leader>j <plug>(easymotion-j)
-        " nmap <leader>k <plug>(easymotion-k)
-
         " Fugitive
         if exists('&tags')
             set tags^=.tags
@@ -868,25 +808,20 @@ if exists(':function') && exists(':let')
 
         " Git gutter
         if exists('&updatetime')
-            set updatetime=1000
+            set updatetime=100
         endif
+        nnoremap <leader>ggq :GitGutterQuickFix<cr>:copen<cr>
 
         " indentLine
-        let g:indentLine_char = '|'
+        let g:indentLine_char = '|' " For spaces
+        if exists('&list')
+            set list listchars=tab:\|\ " For tabs (trailing space)
+        endif
 
         " Python-mode
         if exists(':filetype')
             filetype plugin indent on
         endif
-
-        " Tagbar
-        "let g:tagbar_left = 1
-        "let g:tagbar_autoclose = 1
-        "nnoremap <leader><leader>t :TagbarToggle<cr><C-w>h
-
-        " vim-go
-        " let g:go_def_mode = 'gopls'
-        " let g:go_info_mode = 'gopls'
     endif
     silent! call plug#end()
 endif

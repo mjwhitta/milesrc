@@ -101,17 +101,17 @@ if [[ ! -d "$HOME/.rvm" ]] && [[ -z $(command -v z | grep -s "gem") ]]
 then
     function z() {
         if [[ -n $(command -v rg) ]]; then
-            rg "$@"
+            rg --no-messages --smart-case "$@"
         elif [[ -n $(command -v ag) ]]; then
-            ag "$@"
+            ag --silent --smart-case "$@"
         elif [[ -n $(command -v ack-grep) ]]; then
-            ack-grep "$@"
+            ack-grep -s --smart-case "$@"
         elif [[ -n $(command -v ack) ]]; then
-            ack $@
-        elif [[ -n $(grep --help 2>&1 | grep -Eis "\s*-P") ]]; then
-            grep -HinPrs "$@"
+            ack -s --smart-case "$@"
+        elif grep --help 2>&1 | grep -Eiqs "\s*-P"; then
+            grep -HIinPrs "$@"
         else
-            grep -EHinrs "$@"
+            grep -EHIinrs "$@"
         fi
     }
     function zf() {

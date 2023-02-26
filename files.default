@@ -16,6 +16,7 @@ tmux/tmux.conf:$HOME/.tmux.conf
 
 # VIM
 vim:$HOME/.vim
+vim/init.vim:$HOME/.config/nvim/init.vim
 vim/vimrc:$HOME/.vimrc
 
 #shell/misc/milesrc.local:$HOME/.milesrc/local/local

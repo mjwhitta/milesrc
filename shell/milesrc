@@ -285,20 +285,20 @@ fi
 # Command args
 
 ## ack
-export ACK_ARGS="--smart-case"
+export ACK_ARGS="-s --smart-case"
 export ACK_COLOR_FILENAME="green"
 export ACK_COLOR_LINENO="white"
 export ACK_COLOR_MATCH="black on_white"
 
 ## ag
-AG_ARGS="-S "
+AG_ARGS="--silent --smart-case "
 AG_ARGS+="--color-match=\"47;1;30\" "
 AG_ARGS+="--color-line-number=\"0;37\" "
 AG_ARGS+="--color-path=\"0;32\""
 export AG_ARGS
 
 ## grep
-if [[ -n $(grep --help 2>&1 | grep -is "color") ]]; then
+if grep --help 2>&1 | grep -iqs "color"; then
     export GREP_CLR="--color=auto"
 fi
 GREP_ARGS="$GREP_CLR -Iis "
@@ -311,7 +311,7 @@ GREP_COLORS="fn=1;32:ln=0;37:ms=47;1;30:mc=47;1;30:sl=:cx=:bn=:se="
 export GREP_COLORS
 
 ## rg
-RG_ARGS="-S "
+RG_ARGS="--no-messages --smart-case "
 RG_ARGS+="--colors \"line:fg:white\" "
 RG_ARGS+="--colors \"match:bg:white\" "
 RG_ARGS+="--colors \"match:fg:black\" "

@@ -296,9 +296,12 @@ if exists('&colorcolumn')
     set colorcolumn=71
 endif
 
-" Highlight current line
-if exists('&cul')
-    set cul
+" Highlight current column and line
+if exists('&cursorcolumn')
+    set cursorcolumn
+endif
+if exists('&cursorline')
+    set cursorline
 endif
 
 " Needed for Airline and colorscheme
@@ -572,7 +575,7 @@ if exists(':augroup')
             autocmd BufRead,BufNewFile *mutt-* set filetype=mail
         endif
         if exists('&spell')
-            autocmd BufWritePost *.txt,*.md,*.markdown setlocal
+            autocmd BufWritePost *.markdown,*.md,*.txt setlocal
                 \ spell spelllang=en_us
             autocmd FileType mail setlocal spell spelllang=en_us
         endif
@@ -814,9 +817,9 @@ if exists(':function') && exists(':let')
 
         " indentLine
         let g:indentLine_char = '|' " For spaces
-        if exists('&list')
-            set list listchars=tab:\|\ " For tabs (trailing space)
-        endif
+        " if exists('&list')
+        "     set list listchars=tab:\|\ " For tabs (trailing space)
+        " endif
 
         " Python-mode
         if exists(':filetype')

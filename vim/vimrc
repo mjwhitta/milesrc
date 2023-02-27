@@ -753,7 +753,7 @@ if exists(':function') && exists(':let')
         " Install or update vim plugins
         Plug 'dense-analysis/ale'
         Plug 'ctrlpvim/ctrlp.vim'
-        Plug 'Yggdroot/indentLine'
+        " Plug 'Yggdroot/indentLine'
         Plug 'tpope/vim-abolish', {'on': 'S'}
         Plug 'tpope/vim-commentary'
         Plug 'junegunn/vim-easy-align' ", {'on': '<plug>(EasyAlign)'}
@@ -771,6 +771,7 @@ if exists(':function') && exists(':let')
         let g:ale_open_list = 1
         let g:ale_set_highlights = 1
         let g:ale_set_signs = 1
+        nnoremap <leader>ale :ALEToggle<cr>
 
         " Commentary
         nmap <leader>c <plug>CommentaryLine
@@ -816,7 +817,7 @@ if exists(':function') && exists(':let')
         nnoremap <leader>ggq :GitGutterQuickFix<cr>:copen<cr>
 
         " indentLine
-        let g:indentLine_char = '|' " For spaces
+        " let g:indentLine_char = '|' " For spaces
         " if exists('&list')
         "     set list listchars=tab:\|\ " For tabs (trailing space)
         " endif

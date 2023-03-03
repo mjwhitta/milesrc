@@ -5,6 +5,20 @@ declare -a MILESRC_PROMPT
 theme="$(cat "$HOME/.milesrc/local/theme" 2>/dev/null)"
 
 case "$theme" in
+    "dracula")
+        MILESRC_PROMPT=(
+            "host;white;light_black;remote;black;blue;root;white;red"
+            "vi_cmd;black;light_cyan;vi_ins;black;light_green;vi_rep;black;light_red"
+            "date;black;light_blue"
+            "newline"
+            "exit;black;red" #;emotes;white;green"
+            "git;black;white"
+            "venv;black;light_yellow"
+            "cwd;white;black" #;fill"
+            "newline"
+            "prompt;white;black"
+        )
+        ;;
     "solarized_light")
         MILESRC_PROMPT=(
             "host;white;blue;remote;white;cyan;root;white;red"
@@ -39,12 +53,13 @@ export MILESRC_PROMPT
 
 function ptheme() {
     case "$1" in
-        "solarized_dark"|"solarized_light")
+        "dracula"|"solarized_dark"|"solarized_light")
             mkdir -p "$HOME/.milesrc/local"
             echo "$1" >"$HOME/.milesrc/local/theme"
             ;;
         "list"|*)
             cat <<EOF
+dracula
 solarized_dark
 solarized_light
 EOF

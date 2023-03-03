@@ -64,13 +64,6 @@ if exists('&mouse')
     set mouse=a
 endif
 
-" Colorscheme
-if exists(':colorscheme')
-    colorscheme solarized
-    " colorscheme milesrc
-    " colorscheme grayscale
-endif
-
 " Fold text
 if exists('&foldtext') && exists(':function')
     set foldtext=NeatFoldText()
@@ -297,9 +290,9 @@ if exists('&colorcolumn')
 endif
 
 " Highlight current column and line
-if exists('&cursorcolumn')
-    set cursorcolumn
-endif
+" if exists('&cursorcolumn')
+"     set cursorcolumn
+" endif
 if exists('&cursorline')
     set cursorline
 endif
@@ -764,6 +757,14 @@ if exists(':function') && exists(':let')
             Plug 'airblade/vim-gitgutter'
         endif
 
+        " Plugs for themes
+        Plug 'dracula/vim', {'as': 'dracula'}
+        Plug 'phanviet/vim-monokai-pro'
+        Plug 'widatama/vim-phoenix'
+        Plug 'lifepillar/vim-solarized8'
+        Plug 'boschni/vim-sublime256'
+        Plug 'hardselius/warlock'
+
         " Abolish
         nnoremap /// :%S///gc<left><left><left><left>
 
@@ -828,5 +829,31 @@ if exists(':function') && exists(':let')
         endif
     endif
     silent! call plug#end()
+endif
+
+" Colorscheme
+if exists(':colorscheme')
+    if exists('&termguicolors')
+        set notermguicolors
+    endif
+
+    colorscheme dracula
+    " colorscheme monokai_pro
+    " colorscheme phoenix
+    " colorscheme solarized8
+    " colorscheme sublime256
+    " colorscheme warlock
+
+    if exists('&termguicolors')
+        if g:colors_name =~ "dracula"
+            set termguicolors
+        elseif g:colors_name =~ "monokai_pro"
+            set termguicolors
+        elseif g:colors_name =~ "phoenix"
+            set termguicolors
+        elseif g:colors_name =~ "solarized8"
+            set termguicolors
+        endif
+    endif
 endif
 " }}}

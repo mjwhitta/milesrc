@@ -837,23 +837,26 @@ if exists(':colorscheme')
         set notermguicolors
     endif
 
-    colorscheme dracula
-    " colorscheme monokai_pro
-    " colorscheme phoenix
-    " colorscheme solarized8
-    " colorscheme sublime256
-    " colorscheme warlock
+    try
+        colorscheme dracula
+        " colorscheme monokai_pro
+        " colorscheme phoenix
+        " colorscheme solarized8
+        " colorscheme sublime256
+        " colorscheme warlock
 
-    if exists('&termguicolors')
-        if g:colors_name =~ "dracula"
-            set termguicolors
-        elseif g:colors_name =~ "monokai_pro"
-            set termguicolors
-        elseif g:colors_name =~ "phoenix"
-            set termguicolors
-        elseif g:colors_name =~ "solarized8"
-            set termguicolors
+        if exists('&termguicolors')
+            if g:colors_name =~ "dracula"
+                set termguicolors
+            elseif g:colors_name =~ "monokai_pro"
+                set termguicolors
+            elseif g:colors_name =~ "phoenix"
+                set termguicolors
+            elseif g:colors_name =~ "solarized8"
+                set termguicolors
+            endif
         endif
-    endif
+    catch
+    endtry
 endif
 " }}}

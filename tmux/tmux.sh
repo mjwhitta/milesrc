@@ -30,8 +30,12 @@ tmux set -g @shell "$SHELL"
 tmux set -g @term "tmux-256color"
 
 # Dracula
-tmux set -g @ui_style "bg=#6272a4,fg=#ff79c6" # magenta on brblack
-# tmux set -g @ui_style "bg=#bd93f9,fg=#282a36" # black on blue
+# tmux set -g @ui_style "bg=#6272a4,fg=#bd93f9" # Blue
+# tmux set -g @ui_style "bg=#6272a4,fg=#8be9fd" # Cyan
+# tmux set -g @ui_style "bg=#6272a4,fg=#50fa7b" # Green
+tmux set -g @ui_style "bg=#6272a4,fg=#ff79c6" # Magenta
+# tmux set -g @ui_style "bg=#6272a4,fg=#f55000" # Red
+
 # Solarized Dark
 # tmux set -g @ui_style "bg=#073642,fg=#268bd2" # Blue
 # tmux set -g @ui_style "bg=#073642,fg=#2aa198" # Cyan

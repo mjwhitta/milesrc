@@ -28,7 +28,17 @@ tmux set -g @prefix "C-a"
 tmux set -g @resize "5"
 tmux set -g @shell "$SHELL"
 tmux set -g @term "tmux-256color"
-tmux set -g @ui_style "bg=blue,fg=white"
+
+# Dracula
+tmux set -g @ui_style "bg=#6272a4,fg=#ff79c6" # magenta on brblack
+# tmux set -g @ui_style "bg=#bd93f9,fg=#282a36" # black on blue
+# Solarized Dark
+# tmux set -g @ui_style "bg=#073642,fg=#268bd2" # Blue
+# tmux set -g @ui_style "bg=#073642,fg=#2aa198" # Cyan
+# tmux set -g @ui_style "bg=#073642,fg=#859900" # Green
+# tmux set -g @ui_style "bg=#073642,fg=#d33682" # Magenta
+# tmux set -g @ui_style "bg=#073642,fg=#dc322f" # Red
+# tmux set -g @ui_style "bg=#073642,fg=#6c71c4" # Violet
 
 # Let user override values before continuing
 if [[ -f "$HOME/.tmux/tmux.override" ]]; then

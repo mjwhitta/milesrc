@@ -750,7 +750,7 @@ if exists(':function') && exists(':let')
         Plug 'tpope/vim-abolish', {'on': 'S'}
         Plug 'tpope/vim-commentary'
         Plug 'junegunn/vim-easy-align' ", {'on': '<plug>(EasyAlign)'}
-        "Plug 'tpope/vim-endwise'
+        " Plug 'tpope/vim-endwise'
         Plug 'jtratner/vim-flavored-markdown'
         if executable('git')
             Plug 'tpope/vim-fugitive'

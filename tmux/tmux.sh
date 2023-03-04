@@ -33,7 +33,12 @@ tmux set -g @term "tmux-256color"
 # tmux set -g @ui_style "bg=#6272a4,fg=#bd93f9" # Blue
 # tmux set -g @ui_style "bg=#6272a4,fg=#8be9fd" # Cyan
 # tmux set -g @ui_style "bg=#6272a4,fg=#50fa7b" # Green
-tmux set -g @ui_style "bg=#6272a4,fg=#ff79c6" # Magenta
+# tmux set -g @ui_style "bg=#6272a4,fg=#d6acff" # Light Blue
+# tmux set -g @ui_style "bg=#6272a4,fg=#a4ffff" # Light Cyan
+# tmux set -g @ui_style "bg=#6272a4,fg=#69ff94" # Light Green
+tmux set -g @ui_style "bg=#6272a4,fg=#ff92df" # Light Magenta
+# tmux set -g @ui_style "bg=#6272a4,fg=#ff6e6e" # Light Red
+# tmux set -g @ui_style "bg=#6272a4,fg=#ff79c6" # Magenta
 # tmux set -g @ui_style "bg=#6272a4,fg=#f55000" # Red
 
 # Solarized Dark

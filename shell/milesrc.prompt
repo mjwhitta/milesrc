@@ -464,6 +464,13 @@ function __milesrc_prompt_ps1() {
                 p[prompt]="$(__milesrc_prompt_sym "$i")"
                 len="${p[prompt]%%|*}"
                 ;;
+            "simple")
+                case "$MILESRC_PROMPT_SHELL" in
+                    *"bash") echo "[\u@\h: \w]\n\$ " ;;
+                    *"zsh") echo "[%n@%m: %/]\n\$ " ;;
+                esac
+                return 0
+                ;;
             "venv"*)
                 p[venv]="$(__milesrc_python_venv "$i")"
                 len="${p[venv]%%|*}"

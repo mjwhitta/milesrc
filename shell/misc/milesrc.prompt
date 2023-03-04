@@ -3,6 +3,7 @@
 
 unalias milesrc_ptheme 2>/dev/null
 case "$0" in
+    "bash") alias milesrc_ptheme="source $HOME/.milesrc/local/prompt" ;;
     "/"*) alias milesrc_ptheme="source $0" ;;
     *) alias milesrc_ptheme="source \$(pwd)/$0" ;;
 esac
@@ -13,6 +14,7 @@ case "$1" in
         cat <<EOF
 dracula
 none
+simple
 solarized_dark
 solarized_light
 EOF
@@ -28,38 +30,24 @@ declare -a MILESRC_PROMPT
 case "$(cat "$HOME/.milesrc/local/theme" 2>/dev/null)" in
     "dracula")
         export MILESRC_PROMPT=(
-            "host;white;light_black;remote;black;blue;root;white;red"
+            "host;light_magenta;light_black;remote;light_cyan;light_black;root;light_red;light_black"
+            "date;black;light_magenta"
             "vi_cmd;black;light_cyan;vi_ins;black;light_green;vi_rep;black;light_red"
-            "date;black;light_blue"
             "newline"
-            "exit;black;red" #;emotes;white;green"
+            "exit;black;light_red" #;emotes;white;green"
             "git;black;white"
             "venv;black;light_yellow"
-            "cwd;white;black" #;fill"
+            "cwd;light_magenta;black" #;fill"
             "newline"
-            "prompt;white;black"
+            "prompt;light_magenta;black"
         )
         ;;
-    "none") unset MILESRC_PROMPT ;;
-    "solarized_light")
+    "simple") export MILESRC_PROMPT=("simple") ;;
+    "solarized_dark")
         export MILESRC_PROMPT=(
             "host;white;blue;remote;white;cyan;root;white;red"
-            "vi_cmd;white;light_magenta;vi_ins;white;green;vi_rep;white;red"
             "date;white;light_green"
-            "newline"
-            "exit;white;red" #;emotes;white;green"
-            "git;white;black"
-            "venv;white;light_red"
-            "cwd;black;light_white" #;fill"
-            "newline"
-            "prompt;black;light_white"
-        )
-        ;;
-    "solarized_dark"|*)
-        export MILESRC_PROMPT=(
-            "host;white;blue;remote;white;cyan;root;white;red"
             "vi_cmd;white;light_magenta;vi_ins;white;green;vi_rep;white;red"
-            "date;white;light_green"
             "newline"
             "exit;white;red" #;emotes;white;green"
             "git;black;white"
@@ -69,4 +57,19 @@ case "$(cat "$HOME/.milesrc/local/theme" 2>/dev/null)" in
             "prompt;white;light_black"
         )
         ;;
+    "solarized_light")
+        export MILESRC_PROMPT=(
+            "host;white;blue;remote;white;cyan;root;white;red"
+            "date;white;light_green"
+            "vi_cmd;white;light_magenta;vi_ins;white;green;vi_rep;white;red"
+            "newline"
+            "exit;white;red" #;emotes;white;green"
+            "git;white;black"
+            "venv;white;light_red"
+            "cwd;black;light_white" #;fill"
+            "newline"
+            "prompt;black;light_white"
+        )
+        ;;
+    "none"|*) unset MILESRC_PROMPT ;;
 esac

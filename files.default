@@ -1,3 +1,5 @@
+# These are examples. Prepend "c:" to copy rather than symlink.
+
 # Bash
 shell/bash_zsh_profile:$HOME/.bash_profile
 shell/bash_zsh_rc:$HOME/.bashrc

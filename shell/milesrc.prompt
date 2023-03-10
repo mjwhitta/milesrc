@@ -467,7 +467,7 @@ function __milesrc_prompt_ps1() {
             "simple")
                 case "$MILESRC_PROMPT_SHELL" in
                     *"bash") echo "[\u@\h: \w]\n\$ " ;;
-                    *"zsh") echo "[%n@%m: %/]\n\$ " ;;
+                    *"zsh") echo "[%n@%m: %~]\n\$ " ;;
                 esac
                 return 0
                 ;;

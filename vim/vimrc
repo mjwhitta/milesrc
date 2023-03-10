@@ -323,12 +323,6 @@ if exists('&ruler')
     set ruler
 endif
 
-" Trailing whitespace
-if exists(':highlight') && exists(':syntax')
-    highlight ExtraWhitespace ctermbg=red guibg=#FF0000
-    syntax clear ExtraWhitespace | match ExtraWhitespace /\s\+$/
-endif
-
 " Don't make backups
 if exists('&backup')
     set nobackup
@@ -854,9 +848,17 @@ if exists(':colorscheme')
                 set termguicolors
             elseif g:colors_name =~ "solarized8"
                 set termguicolors
+            elseif g:colors_name =~ "warlock"
+                set termguicolors
             endif
         endif
     catch
     endtry
+endif
+
+" Trailing whitespace (has to come after colorscheme)
+if exists(':highlight') && exists(':syntax')
+    highlight ExtraWhitespace ctermbg=red guibg=#ff327f
+    syntax clear ExtraWhitespace | match ExtraWhitespace /\s\+$/
 endif
 " }}}

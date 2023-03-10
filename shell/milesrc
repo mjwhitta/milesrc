@@ -797,7 +797,7 @@ function simplehttp() {
         "busybox") busybox httpd -f -p "$port" ;;
         "nginx")
             mkdir -p /tmp/simplehttp
-            cat >/tmp/simplehttp/nginx.conf<<EOF
+            cat >/tmp/simplehttp/nginx.conf <<EOF
 daemon off;
 error_log stderr;
 
@@ -825,11 +825,12 @@ worker_processes 1;
 EOF
 
             nginx -c /tmp/simplehttp/nginx.conf -p /tmp/simplehttp
-            rm -rf /tmp/simplehttp
+            rm -f -r /tmp/simplehttp
             ;;
         "perl")
             plackup -MPlack::App::Directory \
-                -e 'Plack::App::Directory->new(root=>".");' -p "$port"
+                -e 'Plack::App::Directory->new(root=>".");' \
+                -p "$port"
             ;;
         "php") php -S "0.0.0.0:$port" ;;
         "python2") python2 -m SimpleHTTPServer "$port" ;;

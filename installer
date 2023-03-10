@@ -186,7 +186,7 @@ unlink() {
 
     if [[ -d "$here/vim/plugs" ]]; then
         info "Removing vim plugins... "
-        rm -fr "$here/vim/plugs"
+        rm -f -r "$here/vim/plugs"
     fi
 }
 

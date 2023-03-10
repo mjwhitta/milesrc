@@ -3,14 +3,16 @@
 
 unalias milesrc_ptheme 2>/dev/null
 case "$0" in
-    "bash") alias milesrc_ptheme="source $HOME/.milesrc/local/prompt" ;;
+    *"bash"|*"zsh")
+        alias milesrc_ptheme="source $HOME/.milesrc/local/prompt"
+        ;;
     "/"*) alias milesrc_ptheme="source $0" ;;
     *) alias milesrc_ptheme="source \$(pwd)/$0" ;;
 esac
 
 case "$1" in
     "") ;;
-    "list")
+    "ls")
         cat <<EOF
 dracula
 none

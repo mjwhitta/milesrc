@@ -395,7 +395,7 @@ do
     [[ ! -d "$dir" ]] || PTH="${PTH:+$PTH:}$dir"
 done; unset dir
 
-# Find missing from PATH
+# Find in PATH but missing from PTH
 while read -r dir; do
     [[ ! -d "$dir" ]] || PTH="${PTH:+$PTH:}$dir"
 done < <(echo "$PATH" | sed "s/:/\n/g" | grep -Esv "^${PTH//:/$|^}$")

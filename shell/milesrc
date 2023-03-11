@@ -786,7 +786,7 @@ function simplehttp() {
     case "${1:--h}" in
         "-h"|"--help") ;;
         *)
-            if [[ -z $(command -v $1) ]]; then
+            if [[ -z $(command -v "$1") ]]; then
                 echo "$1 is not installed"
                 return
             fi

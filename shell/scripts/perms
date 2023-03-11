@@ -53,7 +53,7 @@ long_opt() {
         *) shift="1"; shift; [[ $# -gt 0 ]] || return 127; arg="$1" ;;
     esac
     echo "$arg"
-    return $shift
+    return "$shift"
 }
 subinfo() { echo -e "${color:+\e[36m}[=] $*${color:+\e[0m}"; }
 warn() { echo -e "${color:+\e[33m}[-] $*${color:+\e[0m}"; }
@@ -61,11 +61,9 @@ warn() { echo -e "${color:+\e[33m}[-] $*${color:+\e[0m}"; }
 
 fix_file() {
     if file -b "$1" | grep -qs executable; then
-        [[ -n $group ]] || chmod u+x "$1"
-        [[ -z $group ]] || chmod ug+x "$1"
+        chmod go-x,u${group:+g}${other:+o}+x "$1"
     else
-        [[ -n $group ]] || chmod u-x "$1"
-        [[ -z $group ]] || chmod ug-x "$1"
+        chmod ugo-x "$1"
     fi
 }
 
@@ -75,7 +73,7 @@ fix_files() {
     elif [[ -d "$1" ]]; then
         while read -r line; do
             fix_file "$line"
-        done < <(find "$dir" -type f)
+        done < <(find "$dir" -type f -print)
     fi
 }
 
@@ -91,13 +89,14 @@ OPTIONS
     -f, --fix         Fix the executable permissions
     -g, --group       Open up group permissions
         --no-color    Disable colorized output
+    -o, --other       Open up other permissions
 
 EOF
     exit "$1"
 }
 
 declare -a args
-unset fix group help
+unset fix group help other
 color="true"
 
 # Parse command line options
@@ -108,12 +107,13 @@ while [[ $# -gt 0 ]]; do
         "-g"|"--group") group="true" ;;
         "-h"|"--help") help="true" ;;
         "--no-color") unset color ;;
+        "-o"|"--other") other="true" ;;
         *) args+=("$1") ;;
     esac
     case "$?" in
         0) ;;
         1) shift ;;
-        *) usage $? ;;
+        *) usage "$?" ;;
     esac
     shift
 done
@@ -129,7 +129,8 @@ deps+=("file")
 deps+=("grep")
 check_deps
 
-# TODO Check for valid params
+# Check for valid params
+#[[ $# -eq 0 ]] || usage 1
 
 [[ $# -eq 0 ]] || dirs=("$@")
 [[ $# -gt 0 ]] || dirs=("$(pwd)")
@@ -137,12 +138,11 @@ check_deps
 for dir in "${dirs[@]}"; do
     [[ ! -e "$dir" ]] && echo "$dir does not exist!" && continue
 
-    [[ -n $group ]] || chmod -R u+rwX,go-rwx "$dir"
-    [[ -z $group ]] || chmod -R ug+rwX,o-rwx "$dir"
+    chmod -R go-rwx,u${group:+g}${other:+o}+rwX "$dir"
     [[ -z $fix ]] || fix_files "$dir"
 done
 
 # Always fix some home directory things
-[[ ! -d "$HOME/.ssh" ]] || chmod -R u+rwX,go-rwx "$HOME/.ssh"
 [[ ! -d "$HOME/.gnupg" ]] || chmod -R u+rwX,go-rwx "$HOME/.gnupg"
+[[ ! -d "$HOME/.ssh" ]] || chmod -R u+rwX,go-rwx "$HOME/.ssh"
 chmod go-w "$HOME"

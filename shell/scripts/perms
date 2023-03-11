@@ -60,7 +60,7 @@ warn() { echo -e "${color:+\e[33m}[-] $*${color:+\e[0m}"; }
 ### Helpers end
 
 fix_file() {
-    if [[ -n $(file -b "$1" | grep -os executable) ]]; then
+    if file -b "$1" | grep -qs executable; then
         [[ -n $group ]] || chmod u+x "$1"
         [[ -z $group ]] || chmod ug+x "$1"
     else

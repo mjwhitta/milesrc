@@ -1,4 +1,5 @@
-# shellcheck disable=SC2148
+# shellcheck disable=SC2155 shell=bash
+
 # If not running interactively, don't do anything
 [[ $- == *i* ]] || return
 
@@ -107,7 +108,7 @@ function __milesrc_cwd() {
     # Normalized cwd
     cwd="$PWD"
     case "$cwd" in
-        "$HOME"*) cwd="~${cwd##$HOME}" ;;
+        "$HOME"*) cwd="~${cwd##"$HOME"}" ;;
     esac
     cwd="${cwd//\// / }"
     cwd="${cwd## }"
@@ -284,7 +285,7 @@ function __milesrc_format_parse() {
     case "$1" in
         *"$2;"*)
             fmt="$2"
-            tmp="${1##*$2;}"
+            tmp="${1##*"$2";}"
             tmp="${tmp%% *}"
 
             for ((i = 0; i < $3; ++i)); do
@@ -466,8 +467,8 @@ function __milesrc_prompt_ps1() {
                 ;;
             "simple")
                 case "$MILESRC_PROMPT_SHELL" in
-                    *"bash") echo "[\u@\h: \w]\n\$ " ;;
-                    *"zsh") echo "[%n@%m: %~]\n\$ " ;;
+                    *"bash") printf "[\\\u@\h: \w]\n\$ " ;;
+                    *"zsh") printf "[%%n@%%m: %%~]\n\$ " ;;
                 esac
                 return 0
                 ;;

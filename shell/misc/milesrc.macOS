@@ -1,8 +1,14 @@
+# shellcheck shell=bash
+
+# If not running interactively, don't do anything
+[[ $- == *i* ]] || return
+
 # macOS
 case "$(uname -s)" in
     "Darwin")
         # Env
         if [[ -f /usr/libexec/java_home ]]; then
+            # shellcheck disable=SC2155
             export JAVA_HOME="$(/usr/libexec/java_home 2>/dev/null)"
         fi
         export TERM="xterm"
@@ -78,7 +84,7 @@ EOF
             fi
             [[ -n $gsed ]] || echo "  ln -s \$(command -v gsed) sed"
             echo
-            echo "Add the following to $HOME/.milesrc.local to hide"
+            echo "Add the following to ~/.milesrc/local/pre to hide"
             echo "these warnings:"
             echo
             echo "  export MILESRC_ACKNOWLEDGE_MACOS_IS_DUMB=\"true\""

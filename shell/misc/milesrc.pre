@@ -1,3 +1,8 @@
+# shellcheck shell=bash
+
+# If not running interactively, don't do anything
+[[ $- == *i* ]] || return
+
 # Run ssh-agent
 export MILESRC_SSH_AGENT="true"
 

@@ -1,3 +1,8 @@
+# shellcheck disable=SC2155 shell=bash
+
+# If not running interactively, don't do anything
+[[ $- == *i* ]] || return
+
 # Security functions + an alias
 if [[ -n $(command -v docker) ]]; then
     function create_tmp_docker_entry() {
@@ -12,27 +17,19 @@ gname="\${DKR_GNAME:-user}"
 uid="\${DKR_UID:-1000}"
 uname="\${DKR_UNAME:-user}"
 
-# Does user with UID already exist?
-old_uid="\$(id -nu "\$uid" 2>/dev/null)"
-
 # If root or UID of 0 provided, just run command
 if [[ \$(id -u) -ne 0 ]] || [[ \$uid -eq 0 ]]; then
     exec "\$@"
 fi
 
-# Create group if it doesn't exist
-groupadd -f "\$gname"
-groupmod -g "\$gid" "\$gname" 2>/dev/null
+# Create group, if it doesn't exist
+groupadd -f -g "\$gid" -o "\$gname" &>/dev/null
+groupmod -g "\$gid" -o "\$gname" &>/dev/null
 
-# Create user if they don't exist
-if [[ -z \$old_uid ]]; then
-    useradd -d /home/user -g "\$gid" -mou "\$uid" "\$uname" \\
-        2>/dev/null
-else
-    usermod -d /home/user -g "\$gid" -l "\$uname" -m "\$old_uid" \\
-        2>/dev/null
-fi
-chown -R "\$uname":"\$gname" /home/user
+# Create user, if they don't exist
+useradd -d /home/user -g "\$gid" -mou "\$uid" "\$uname" &>/dev/null
+usermod -d /home/user -g "\$gid" -mou "\$uid" "\$uname" &>/dev/null
+chown -R "\$uid":"\$gid" /home/user
 
 # Sudo (a few different ways)
 groupadd -f sudo
@@ -48,9 +45,10 @@ cmd="\$*"
 
 # Run command as specified user
 export HOME="/home/user"
-export USER="user"
+export USER="\$uname"
 
 if [[ -n \$(command -v sudo) ]]; then
+    # shellcheck disable=SC2086
     sudo -E -u "\$uname" \$cmd
 else
     su -c "\$cmd" -m "\$uname"
@@ -60,18 +58,19 @@ EOF
     }
 
     alias dc="docker compose"
-    alias dclean="docker system prune -af --volumes"
-    alias de="docker exec -it"
+    alias dclean="docker system prune -a -f --volumes"
+    alias de="docker exec -i -t"
     alias di="docker images"
     alias dl="docker logs -f"
     alias dps="docker ps -a"
-    alias dr="docker"
+    alias dr="docker run -i --rm -t"
+    alias drpwd="docker run -i --rm -t -v \"\$(pwd)\":/pwd:Z -w /pwd"
 
     function drun() {
         docker run \
             -e DKR_GID="$(id -g)" -e DKR_GNAME="$(id -gn)" \
-            -e DKR_UID="$(id -u)" -e DKR_UNAME="$(id -nu)" -i --rm \
-            -t "$@"
+            -e DKR_UID="$(id -u)" -e DKR_UNAME="$(id -nu)" \
+            -i --rm -t "$@"
     }
 
     function drunpwd() {
@@ -146,7 +145,7 @@ function ngrok() {
     local service="${2:-http}"
 
     case "$*" in
-        *"-h"*|*"--help"*)
+        *"-h"*)
             echo "Usage: ngrok [port] [service]"
             echo
             echo "DESCRIPTION"
@@ -177,7 +176,7 @@ function ngrok() {
                 socat tcp-listen:$port,fork,reuseaddr \
                     openssl:localhost:"$oldport",verify=0 &
             else
-                "No socat found. Can't use TLS service w/o socat."
+                echo "socat not found"
                 return
             fi
             ;;
@@ -190,4 +189,4 @@ function ngrok() {
     [[ -z $(command -v socat) ]] || pkill -P $$ socat
 }
 
-function shh() { ssh -t "$1" HISTFILE= bash --norc; }
+function shh() { ssh -t "$@" -- HISTFILE= bash --norc; }

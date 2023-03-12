@@ -1,4 +1,4 @@
-# shellcheck disable=SC1090,SC2155
+# shellcheck disable=SC1090,SC1091,SC2155 shell=bash
 
 # If not running interactively, don't do anything
 [[ $- == *i* ]] || return
@@ -415,6 +415,9 @@ unset PTH
 # {{{ Prompt
 if [[ -f "$HOME/.milesrc/shell/milesrc.prompt" ]]; then
     . "$HOME/.milesrc/shell/milesrc.prompt"
+fi
+if [[ -f "$HOME/.milesrc/shell/milesrc.ptheme" ]]; then
+    . "$HOME/.milesrc/shell/milesrc.ptheme"
 fi
 # }}}
 
@@ -1102,7 +1105,7 @@ case "$MILESRC_SHELL" in
 
         # Syntax highlighting (must come after all zle -N calls and
         # compinit)
-        typeset -A ZSH_HIGHLIGHT_STYLES
+        declare -A ZSH_HIGHLIGHT_STYLES
         ZSH_HIGHLIGHT_STYLES[alias]="fg=blue"
         ZSH_HIGHLIGHT_STYLES[builtin]="fg=blue"
         ZSH_HIGHLIGHT_STYLES[command]="fg=blue"
@@ -1117,6 +1120,7 @@ case "$MILESRC_SHELL" in
         ZSH_HIGHLIGHT_STYLES[reserved-word]="fg=yellow"
         ZSH_HIGHLIGHT_STYLES[single-quoted-argument]="fg=cyan"
         ZSH_HIGHLIGHT_STYLES[unknown-token]="fg=red"
+        export ZSH_HIGHLIGHT_STYLES
         for dir in \
             "$HOME/.config/zsh/plugins/zsh-syntax-highlighting" \
             /usr/share/zsh/plugins/zsh-syntax-highlighting \
@@ -1129,32 +1133,45 @@ case "$MILESRC_SHELL" in
         # Complete gimme function
         if [[ -n $(command -v apt-cache) ]]; then
             function _apt_install_complete() {
-                reply=($(apt-cache --no-generate pkgnames "$1"))
+                read -a -r reply <(
+                    apt-cache --no-generate pkgnames "$1"
+                )
             }
             compctl -K _apt_install_complete gimme
         elif [[ -n $(command -v brew) ]]; then
             function _brew_install_complete() {
-                reply=($(brew search "$1"))
+                read -a -r reply <(brew search "$1")
             }
             compctl -K _brew_install_complete gimme
         elif [[ -n $(command -v crew) ]]; then
             function _crew_install_complete() {
-                reply=($(crew search "$1" | awk '{print $1}'))
+                read -a -r reply <(
+                    crew search "$1" | awk '{print $1}'
+                )
             }
             compctl -K _crew_install_complete gimme
         elif [[ -n $(command -v pacman) ]]; then
-            if [[ -n $(command -v ruaur) ]]; then
+            if [[ -n $(command -v yay) ]]; then
+                compdef _gnu_generic yay
+                function _yay_install_complete() {
+                    read -a -r reply <(
+                        yay --color=never -Ss "$1" | \
+                        grep -oPs "^[^/]+/\K^\S*"
+                    )
+                }
+                compctl -K _ruaur_install_complete gimme
+            elif [[ -n $(command -v ruaur) ]]; then
                 compdef _gnu_generic ruaur
                 function _ruaur_install_complete() {
-                    reply=($(ruaur -Ss "$1" --names-only))
+                    read -a -r reply <(ruaur --names-only -Ss "$1")
                 }
                 compctl -K _ruaur_install_complete gimme
             else
                 function _pacman_install_complete() {
-                    reply=($(
+                    read -a -r reply <(
                         pacman --color=never -Ss "$1" | \
                         grep -oPs "^[^/]+/\K^\S*"
-                    ))
+                    )
                 }
                 compctl -K _pacman_install_complete gimme
             fi

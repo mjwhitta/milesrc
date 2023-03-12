@@ -1,8 +1,6 @@
+# shellcheck disable=SC1091 shell=bash
+
 # If not running interactively, don't do anything
 [[ $- == *i* ]] || return
 
 [[ -z $BASH ]] || [[ ! -f "$HOME/.bashrc" ]] || . "$HOME/.bashrc"
-
-if [[ -n $(command -v xrdb) ]] && [[ -f "$HOME/.Xresources" ]]; then
-    xrdb -merge "$HOME/.Xresources" 2>/dev/null
-fi

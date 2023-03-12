@@ -136,13 +136,13 @@ for process in "${processes[@]}"; do
     if [[ -n $ask_all ]]; then
         while :; do
             # Prompt whether to kill or not
-            read -n 1 -p "Kill $pid? [y/n/a/q/l]: " -rs answer
+            read -n 1 -p "Kill $pid? [y/N/a/q/l]: " -r -s answer
             echo
 
             case "$answer" in
                 "a") stop_pid "$pid"; unset ask_all; break ;;
                 "l") stop_pid "$pid"; exit 0 ;;
-                "n") break ;;
+                ""|"n") break ;;
                 "q") exit 0 ;;
                 "y") stop_pid "$pid"; break ;;
                 *) echo "Invalid response, try again!" ;;

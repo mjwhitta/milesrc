@@ -1,3 +1,5 @@
+# shellcheck disable=SC1090,SC1091 shell=bash
+
 # If not running interactively, don't do anything
 [[ $- == *i* ]] || return
 
@@ -15,7 +17,7 @@ done; unset dir
 alias dt="tmux -2 new -d -s"
 alias et="exec tmux -2 new -A -s"
 alias eth="exec tmux -2 new -A -s \"\$(hostname -s)\""
-alias j="cd \$(cat $HOME/.proj 2>/dev/null)"
+alias j="cd \$(cat \$HOME/.proj 2>/dev/null)"
 alias nslookup="echo \"use 'dig +short [-x]' instead\" #"
 [[ -z $(command -v pwsh) ]] || alias powershell="TERM=xterm pwsh"
 alias save="pwd >\$HOME/.proj"
@@ -26,12 +28,16 @@ if [[ -n $(command -v git) ]]; then
     minimal="-b --color-words=. --ignore-blank-lines --minimal"
     tformat="tformat:\"%Cred%h %Cgreen%cd %Cblue%an%Creset %s\""
 
+    # shellcheck disable=SC2139
     alias diff="git diff $minimal"
     alias gc="git gc --aggressive --prune"
+    # shellcheck disable=SC2139
     alias gd="git diff $minimal"
+    # shellcheck disable=SC2139
     alias gl="git log $full --pretty=$tformat"
     alias grh="git reset --hard"
     alias gs="git status -bs"
+    # shellcheck disable=SC2139
     alias gsm="git show $minimal"
 
     unset full minimal tformat
@@ -97,8 +103,7 @@ function wunder() {
 }
 
 # I like ruby-zoom, but in case it's not installed, create functions
-if [[ ! -d "$HOME/.rvm" ]] && [[ -z $(command -v z | grep -s "gem") ]]
-then
+if [[ ! -d "$HOME/.rvm" ]] && ! command -v z | grep -qs "gem"; then
     function z() {
         if [[ -n $(command -v rg) ]]; then
             rg --no-messages --smart-case "$@"
@@ -114,6 +119,7 @@ then
             grep -EHIinrs "$@"
         fi
     }
+
     function zf() {
         find . -regextype posix-extended -iregex ".*$*.*" -print
     }
@@ -139,8 +145,10 @@ case "$MILESRC_SHELL" in
             if [[ -n $(command -v compdef) ]]; then
                 compdef _gnu_generic art artty arTTY
             fi
-            function _arTTY_complete() { reply=($(arTTY --ls -p)); }
-            compctl -K _arTTY_complete art artty arTTY
+            function _arTTY_complete() {
+                read -a -r replay <(arTTY --ls -p)
+            }
+            compctl -K _arTTY_complete arTTY
         fi
 
         # Complete ruby-zoom commands

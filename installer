@@ -214,11 +214,9 @@ EOF
 
 vim_plugins() {
     mkdir -p "$here/vim/plugs"
-    vim -c :PlugUpgrade -c :q
-    [[ $? -eq 0 ]] || exit $?
+    vim -c :PlugUpgrade -c :q || exit "$?"
     rm -f "$here/vim/autoload/plug.vim.old"
-    vim -c :PlugUpdate -c ":sleep 1" -c :q -c :q
-    [[ $? -eq 0 ]] || exit $?
+    vim -c :PlugUpdate -c ":sleep 1" -c :q -c :q || exit "$?"
 }
 
 declare -a args

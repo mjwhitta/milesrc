@@ -1,3 +1,5 @@
+# shellcheck disable=SC1090,SC2155
+
 # If not running interactively, don't do anything
 [[ $- == *i* ]] || return
 
@@ -99,8 +101,7 @@ case "$MILESRC_SHELL" in
             bind '"^U":kill-line'
             bind '"^W":backward-kill-word'
 
-            if [[ -n $(bind -P | grep -s "history-substring-searc") ]]
-            then
+            if bind -P | grep -qs "history-substring-search"; then
                 bind -m vi-move \
                     '"k":history-substring-search-backward'
                 bind -m vi-move '"j":history-substring-search-forward'
@@ -291,36 +292,39 @@ export ACK_COLOR_LINENO="white"
 export ACK_COLOR_MATCH="black on_white"
 
 ## ag
-AG_ARGS="--silent --smart-case "
-AG_ARGS+="--color-match=\"47;1;30\" "
-AG_ARGS+="--color-line-number=\"0;37\" "
-AG_ARGS+="--color-path=\"0;32\""
-export AG_ARGS
+declare -a AG_ARGS
+AG_ARGS+=("--silent")
+AG_ARGS+=("--smart-case")
+AG_ARGS+=("--color-match=\"47;1;30\"")
+AG_ARGS+=("--color-line-number=\"0;37\"")
+AG_ARGS+=("--color-path=\"0;32\"")
 
 ## grep
+declare -a GREP_ARGS
 if grep --help 2>&1 | grep -iqs "color"; then
-    export GREP_CLR="--color=auto"
+    GREP_ARGS+=("--color=auto")
 fi
-GREP_ARGS="$GREP_CLR -Iis "
-GREP_ARGS+="--exclude-dir=.bzr "
-GREP_ARGS+="--exclude-dir=.git "
-GREP_ARGS+="--exclude-dir=.git-crypt "
-GREP_ARGS+="--exclude-dir=.svn"
-export GREP_ARGS
+GREP_ARGS+=("-Iis")
+GREP_ARGS+=("--exclude-dir=.bzr")
+GREP_ARGS+=("--exclude-dir=.git")
+GREP_ARGS+=("--exclude-dir=.git-crypt")
+GREP_ARGS+=("--exclude-dir=.svn")
 GREP_COLORS="fn=1;32:ln=0;37:ms=47;1;30:mc=47;1;30:sl=:cx=:bn=:se="
 export GREP_COLORS
 
 ## rg
-RG_ARGS="--no-messages --smart-case "
-RG_ARGS+="--colors \"line:fg:white\" "
-RG_ARGS+="--colors \"match:bg:white\" "
-RG_ARGS+="--colors \"match:fg:black\" "
-RG_ARGS+="--colors \"path:fg:green\""
-export RG_ARGS
+declare -a RG_ARGS
+RG_ARGS+=("--no-messages")
+RG_ARGS+=("--smart-case")
+RG_ARGS+=("--colors line:fg:white")
+RG_ARGS+=("--colors match:bg:white")
+RG_ARGS+=("--colors match:fg:black")
+RG_ARGS+=("--colors path:fg:green")
 
 ## sshpass
-SSHPASS_ARGS="-o \"PreferredAuthentications=password\" "
-SSHPASS_ARGS+="-o \"PubkeyAuthentication=no\""
+declare -a SSHPASS_ARGS
+SSHPASS_ARGS+=("-o PreferredAuthentications=password")
+SSHPASS_ARGS+=("-o PubkeyAuthentication=no")
 
 # Ruby
 export GEM_HOME="$HOME/.gem/ruby"
@@ -414,19 +418,22 @@ fi
 
 # {{{ Aliases
 if [[ -n $(command -v ack-grep) ]]; then
-    alias ack="ack-grep $ACK_ARGS"
+    alias ack="ack-grep \$ACK_ARGS"
 elif [[ -n $(command -v ack) ]]; then
-    alias ack="\ack $ACK_ARGS"
+    alias ack="\ack \$ACK_ARGS"
 fi
-[[ -z $(command -v ag) ]] || alias ag="\ag $AG_ARGS"
+# shellcheck disable=SC2139
+[[ -z $(command -v ag) ]] || alias ag="\ag ${AG_ARGS[*]}"
 alias cd="mycd"
 alias cp="\cp -i"
-[[ -z $(command -v egrep) ]] || alias egrep="\egrep $GREP_ARGS"
+# shellcheck disable=SC2139
+[[ -z $(command -v egrep) ]] || alias egrep="\egrep ${GREP_ARGS[*]}"
 [[ -z $(command -v emacs) ]] || alias emacs="\emacs -nw"
 alias envg="env | grep -E"
 [[ -z $(command -v sudo) ]] || alias f="sudo"
 [[ -z $(command -v gdb) ]] || alias gdb="\gdb -q"
-[[ -z $(command -v grep) ]] || alias grep="\grep $GREP_ARGS"
+# shellcheck disable=SC2139
+[[ -z $(command -v grep) ]] || alias grep="\grep ${GREP_ARGS[*]}"
 [[ -z $(command -v less) ]] || alias l="less"
 [[ -n $(command -v less) ]] || alias l="more"
 alias la="ls -A"
@@ -450,16 +457,16 @@ alias psg="pgrep -af"
 alias psme="pgrep -afU \"\$USER\""
 alias q="exit"
 alias r="reset"
-[[ -z $(command -v rg) ]] || alias rg="\rg $RG_ARGS"
-alias scppass="scp $SSHPASS_ARGS"
+# shellcheck disable=SC2139
+[[ -z $(command -v rg) ]] || alias rg="\rg ${RG_ARGS[*]}"
+# shellcheck disable=SC2139
+alias scppass="scp ${SSHPASS_ARGS[*]}"
 case "$MILESRC_SHELL" in
     *"bash") alias srcmilesrc=". \"\$HOME/.bashrc\"" ;;
     *"zsh") alias srcmilesrc=". \"\$HOME/.zshrc\"" ;;
 esac
-alias sshpass="ssh $SSHPASS_ARGS"
-if [[ -f /opt/sublime_text/sublime_text ]]; then
-    alias sublime="/opt/sublime_text/sublime_text"
-fi
+# shellcheck disable=SC2139
+alias sshpass="ssh ${SSHPASS_ARGS[*]}"
 [[ -z $(command -v sudo) ]] || alias sume="sudo -Es"
 if [[ -n $(command -v htop) ]]; then
     alias t="htop -d 10"
@@ -573,10 +580,10 @@ function ipa() {
     local inet
 
     if [[ -n $(command -v ip) ]]; then
-        if ip 2>&1 | grep -Eq "c.olor"; then
-            ip -c -o $@ a | grep -sv "mtu" | awk '{print $2,$4}'
+        if ip 2>&1 | grep -Eq "c\[olor\]"; then
+            ip -c -o "$@" a | grep -sv "mtu" | awk '{print $2,$4}'
         else
-            ip -o $@ a | grep -sv "mtu" | awk '{print $2,$4}'
+            ip -o "$@" a | grep -sv "mtu" | awk '{print $2,$4}'
         fi
     else
         while read -r line; do
@@ -599,10 +606,10 @@ function ipa() {
 
 function ipr() {
     if [[ -n $(command -v ip) ]]; then
-        if ip 2>&1 | grep -Eq "c.olor"; then
-            ip -c -o $@ r
+        if ip 2>&1 | grep -Eq "c\[olor\]"; then
+            ip -c -o "$@" r
         else
-            ip -o $@ r
+            ip -o "$@" r
         fi
     else
         (

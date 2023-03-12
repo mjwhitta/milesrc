@@ -749,9 +749,9 @@ if exists(':function') && exists(':let')
         Plug 'dense-analysis/ale'
         Plug 'ctrlpvim/ctrlp.vim'
         " Plug 'Yggdroot/indentLine'
-        Plug 'tpope/vim-abolish', {'on': 'S'}
+        Plug 'tpope/vim-abolish'
         Plug 'tpope/vim-commentary'
-        Plug 'junegunn/vim-easy-align' ", {'on': '<plug>(EasyAlign)'}
+        Plug 'junegunn/vim-easy-align'
         " Plug 'tpope/vim-endwise'
         Plug 'jtratner/vim-flavored-markdown'
         if executable('git')

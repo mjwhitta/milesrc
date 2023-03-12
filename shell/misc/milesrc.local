@@ -160,11 +160,6 @@ case "$MILESRC_SHELL" in
 esac
 
 # {{{ Wrap-up
-# Fancy prompt stuff
-if [[ -f "$HOME/.milesrc/local/prompt" ]]; then
-    . "$HOME/.milesrc/local/prompt"
-fi
-
 # Security stuff
 if [[ -f "$HOME/.milesrc/local/security" ]]; then
     . "$HOME/.milesrc/local/security"

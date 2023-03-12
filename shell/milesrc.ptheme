@@ -19,6 +19,7 @@ case "$1" in
 dracula
 none
 simple
+solarized
 solarized_dark
 solarized_light
 EOF
@@ -47,7 +48,7 @@ case "$(cat "$HOME/.milesrc/local/theme" 2>/dev/null)" in
         )
         ;;
     "simple") export MILESRC_PROMPT=("simple") ;;
-    "solarized_dark")
+    "solarized"|"solarized_dark")
         export MILESRC_PROMPT=(
             "host;white;blue;remote;white;cyan;root;white;red"
             "date;white;light_green"

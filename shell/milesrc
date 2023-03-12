@@ -766,25 +766,6 @@ function remove_spaces_in_names() {
         -execdir "$rnm" -v "s/ /_/g" "{}" +
 }
 
-case "$MILESRC_SHELL" in
-    *"bash")
-        function reset_completions() {
-            [[ -d "$HOME/.config/bash/complete" ]] || return
-            while read -r comp; do
-                . "$HOME/.config/bash/complete/$comp"
-            done < <(find "$HOME/.config/bash/complete" -type f)
-            unset comp
-        }
-        ;;
-    *"zsh")
-        function reset_completions() {
-            local comps=("$HOME/.config/zsh/complete/_"*)
-            unfunction $comps:t 2>/dev/null
-            autoload -U $comps:t
-        }
-        ;;
-esac
-
 function simplehttp() {
     local port="${2:-8080}"
 
@@ -1027,13 +1008,6 @@ function x() {
 case "$MILESRC_SHELL" in
     *"bash")
         # {{{ Bash completions
-        if [[ -d "$HOME/.config/bash/complete" ]]; then
-            while read -r comp; do
-                . "$HOME/.config/bash/complete/$comp"
-            done < <(find "$HOME/.config/bash/complete" -type f)
-            unset comp
-        fi
-
         # Complete gimme function
         if [[ -n $(command -v apt-cache) ]]; then
             function _apt_install_complete() {
@@ -1055,7 +1029,15 @@ case "$MILESRC_SHELL" in
             }
             complete -F _crew_install_complete gimme
         elif [[ -n $(command -v pacman) ]]; then
-            if [[ -n $(command -v ruaur) ]]; then
+            if [[ -n $(command -v yay) ]]; then
+                function _yay_install_complete() {
+                    mapfile -t COMPREPLY < <(
+                        yay --color=never -Ss "$2" | \
+                        grep -oPs "^[^/]+/\K$2\S*" | sort -u
+                    )
+                }
+                complete -F _yay_install_complete gimme
+            elif [[ -n $(command -v ruaur) ]]; then
                 function _ruaur_install_complete() {
                     mapfile -t COMPREPLY < <(
                         ruaur -Ss "$2" --names-only | \
@@ -1077,10 +1059,6 @@ case "$MILESRC_SHELL" in
         ;;
     *"zsh")
         # {{{ Zsh completions
-        if [[ -d "$HOME/.config/zsh/complete" ]]; then
-            fpath+=("$HOME/.config/zsh/complete")
-        fi
-
         for dir in \
             "$HOME/.config/zsh/plugins/zsh-completions/src" \
             /usr/share/zsh/plugins/zsh-completions/src \
@@ -1151,7 +1129,7 @@ case "$MILESRC_SHELL" in
                         grep -oPs "^[^/]+/\K^\S*"
                     )
                 }
-                compctl -K _ruaur_install_complete gimme
+                compctl -K _yay_install_complete gimme
             elif [[ -n $(command -v ruaur) ]]; then
                 compdef _gnu_generic ruaur
                 function _ruaur_install_complete() {

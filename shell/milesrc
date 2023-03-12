@@ -286,7 +286,9 @@ fi
 # Command args
 
 ## ack
-export ACK_ARGS="-s --smart-case"
+declare -a ACK_ARGS
+ACK_ARGS+=("-s")
+ACK_ARGS+=("--smart-case")
 export ACK_COLOR_FILENAME="green"
 export ACK_COLOR_LINENO="white"
 export ACK_COLOR_MATCH="black on_white"
@@ -418,9 +420,11 @@ fi
 
 # {{{ Aliases
 if [[ -n $(command -v ack-grep) ]]; then
-    alias ack="ack-grep \$ACK_ARGS"
+    # shellcheck disable=SC2139
+    alias ack="\ack-grep ${ACK_ARGS[*]}"
 elif [[ -n $(command -v ack) ]]; then
-    alias ack="\ack \$ACK_ARGS"
+    # shellcheck disable=SC2139
+    alias ack="\ack ${ACK_ARGS[*]}"
 fi
 # shellcheck disable=SC2139
 [[ -z $(command -v ag) ]] || alias ag="\ag ${AG_ARGS[*]}"
@@ -551,23 +555,22 @@ function git_clone() {
             "github.com")
                 [[ -n $(command -v unzip) ]] || return 1
 
-                curl -LO "$url/archive/refs/heads/$branch.zip"
-                [[ $? -eq 0 ]] || return 3
+                curl -LO "$url/archive/refs/heads/$branch.zip" || \
+                    return 3
 
-                unzip "$branch.zip" >/dev/null && rm -f "$branch.zip"
-                [[ $? -eq 0 ]] || return 4
+                unzip "$branch.zip" >/dev/null || return 4
+                rm -f "$branch.zip"
 
                 mv "$repo-$branch" "$dir"
                 ;;
             "gitlab.com")
                 [[ -n $(command -v tar) ]] || return 1
 
-                curl -LO "$url/-/archive/$branch/$repo-$branch.tar"
-                [[ $? -eq 0 ]] || return 3
+                curl -LO "$url/-/archive/$branch/$repo-$branch.tar" \
+                    || return 3
 
-                tar -xf "$repo-$branch.tar" \
-                    && rm -f "$repo-$branch.tar"
-                [[ $? -eq 0 ]] || return 4
+                tar -xf "$repo-$branch.tar" || return 4
+                rm -f "$repo-$branch.tar"
 
                 mv "$repo-$branch"* "$dir"
                 ;;
@@ -712,7 +715,7 @@ function mycd() {
 
     #if [[ $# -eq 0 ]] || [[ -d "$*" ]] || [[ $* == "-" ]]; then
     \cd "$@" >/dev/null || return
-    [[ -z $MILESRC_LS_AFTER_CD ]] || ls ${ls_args[*]}
+    [[ -z $MILESRC_LS_AFTER_CD ]] || ls "${ls_args[@]}"
     [[ -z $TMUX ]] || tmux setenv -g PWD "$PWD"
     #else
     #    echo "cd: no such file or directory: $*"
@@ -759,7 +762,7 @@ function remove_spaces_in_names() {
     fi
 
     # May need to cpan install File::Rename
-    if [[ -z $rnm ]] || [[ -z $($rnm -h | grep -s "perl") ]]; then
+    if [[ -z $rnm ]] || ! $rnm -h | grep -qs "perl"; then
         echo "Please run \"sudo cpan File::Rename\""
         return
     fi
@@ -877,11 +880,16 @@ function tdump() {
         return
     fi
 
-    cap="$(echo "$@" | grep -Eos "\S+\.pcap")"
+    cap="$*"
+    cap="${cap%%.pcap*}"
+    cap="${cap##* }"
+    [[ -z $cap ]] || cap+=".pcap"
 
-    sudo tcpdump -n -vvv $@
+    sudo tcpdump -n -vvv "$@"
 
-    [[ -z $(id | grep -s "uid=0") ]] || return 0
+    if id | grep -qs "uid=0"; then
+        return 0
+    fi
 
     group="$(id -gn)"
     name="$(id -nu)"
@@ -940,42 +948,42 @@ function x() {
             if [[ -z $(command -v tar) ]]; then
                 echo "tar is not installed"
             else
-                tar -xf $@
+                tar -x -f "$@"
             fi
             ;;
         *".7z")
             if [[ -z $(command -v 7z) ]]; then
                 echo "p7zip is not installed"
             else
-                7z x $@
+                7z x "$@"
             fi
             ;;
         *".bz2")
             if [[ -z $(command -v bzip2) ]]; then
                 echo "bzip2 is not installed"
             else
-                bzip2 -dk $@
+                bzip2 -dk "$@"
             fi
             ;;
         *".gz")
             if [[ -z $(command -v gzip) ]]; then
                 echo "gzip is not installed"
             else
-                gzip -dk $@
+                gzip -dk "$@"
             fi
             ;;
         *".jar")
             if [[ -z $(command -v jar) ]]; then
                 echo "java is not installed"
             else
-                jar -xf $@
+                jar -x -f "$@"
             fi
             ;;
         *".rar")
             if [[ -z $(command -v unrar) ]]; then
                 echo "unrar is not installed"
             else
-                unrar x $@
+                unrar x "$@"
             fi
             ;;
         *".rpm")
@@ -984,35 +992,35 @@ function x() {
             elif [[ -z $(command -v cpio) ]]; then
                 echo "rpm2cpio is not installed"
             else
-                rpm2cpio $@ | cpio -idmv
+                rpm2cpio "$@" | cpio -idmv
             fi
             ;;
         *".xz")
             if [[ -z $(command -v xz) ]]; then
                 echo "xz is not installed"
             else
-                xz -dk $@
+                xz -dk "$@"
             fi
             ;;
         *".zip")
             if [[ -z $(command -v unzip) ]]; then
                 echo "unzip is not installed"
             else
-                unzip $@
+                unzip "$@"
             fi
             ;;
         *".zst")
             if [[ -z $(command -v zstd) ]]; then
                 echo "zstd is not installed"
             elif [[ -z $(command -v tar) ]]; then
-                tar -I "zstd -T0" -xf $@
+                tar -I "zstd -T0" -x -f "$@"
             else
                 echo "tar is not installed"
             fi
             ;;
         *)
             if [[ -n $(command -v aunpack) ]]; then
-                aunpack $@
+                aunpack "$@"
             else
                 echo "Unknown archive format!"
             fi

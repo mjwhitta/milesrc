@@ -135,7 +135,7 @@ if exists('&grepprg')
             \ --silent\
             \ --smart-case\
             \ $*
-    elseif executable('ack')
+    elseif executable('ack-grep')
         set grepprg=ack\
             \ --nobreak\
             \ --nogroup\
@@ -144,7 +144,7 @@ if exists('&grepprg')
             \ --smart-case\
             \ --with-filename\
             \ $*
-    elseif executable('ack-grep')
+    elseif executable('ack')
         set grepprg=ack\
             \ --nobreak\
             \ --nogroup\

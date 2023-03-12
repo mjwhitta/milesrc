@@ -423,24 +423,19 @@ fi
 
 # {{{ Aliases
 if [[ -n $(command -v ack-grep) ]]; then
-    # shellcheck disable=SC2139
-    alias ack="\ack-grep ${ACK_ARGS[*]}"
+    alias ack="\ack-grep \${ACK_ARGS[*]}"
 elif [[ -n $(command -v ack) ]]; then
-    # shellcheck disable=SC2139
-    alias ack="\ack ${ACK_ARGS[*]}"
+    alias ack="\ack \${ACK_ARGS[*]}"
 fi
-# shellcheck disable=SC2139
-[[ -z $(command -v ag) ]] || alias ag="\ag ${AG_ARGS[*]}"
+[[ -z $(command -v ag) ]] || alias ag="\ag \${AG_ARGS[*]}"
 alias cd="mycd"
 alias cp="\cp -i"
-# shellcheck disable=SC2139
-[[ -z $(command -v egrep) ]] || alias egrep="\egrep ${GREP_ARGS[*]}"
+[[ -z $(command -v egrep) ]] || alias egrep="\egrep \${GREP_ARGS[*]}"
 [[ -z $(command -v emacs) ]] || alias emacs="\emacs -nw"
 alias envg="env | grep -E"
 [[ -z $(command -v sudo) ]] || alias f="sudo"
 [[ -z $(command -v gdb) ]] || alias gdb="\gdb -q"
-# shellcheck disable=SC2139
-[[ -z $(command -v grep) ]] || alias grep="\grep ${GREP_ARGS[*]}"
+[[ -z $(command -v grep) ]] || alias grep="\grep \${GREP_ARGS[*]}"
 [[ -z $(command -v less) ]] || alias l="less"
 [[ -n $(command -v less) ]] || alias l="more"
 alias la="ls -A"
@@ -464,16 +459,13 @@ alias psg="pgrep -af"
 alias psme="pgrep -afU \"\$USER\""
 alias q="exit"
 alias r="reset"
-# shellcheck disable=SC2139
-[[ -z $(command -v rg) ]] || alias rg="\rg ${RG_ARGS[*]}"
-# shellcheck disable=SC2139
-alias scppass="scp ${SSHPASS_ARGS[*]}"
+[[ -z $(command -v rg) ]] || alias rg="\rg \${RG_ARGS[*]}"
+alias scppass="scp \${SSHPASS_ARGS[*]}"
 case "$MILESRC_SHELL" in
     *"bash") alias srcmilesrc=". \"\$HOME/.bashrc\"" ;;
     *"zsh") alias srcmilesrc=". \"\$HOME/.zshrc\"" ;;
 esac
-# shellcheck disable=SC2139
-alias sshpass="ssh ${SSHPASS_ARGS[*]}"
+alias sshpass="ssh \${SSHPASS_ARGS[*]}"
 [[ -z $(command -v sudo) ]] || alias sume="sudo -Es"
 if [[ -n $(command -v htop) ]]; then
     alias t="htop -d 10"

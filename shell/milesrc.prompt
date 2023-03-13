@@ -421,6 +421,7 @@ function __milesrc_prompt_ps1() {
     local -A p
     local cwddone
     local cwdwidth="$COLUMNS"
+    local date
     local exit_status="$1"
     local fmt
     local i
@@ -469,6 +470,14 @@ function __milesrc_prompt_ps1() {
                 case "$MILESRC_PROMPT_SHELL" in
                     *"bash") printf "[\\\u@\h: \w]\n\$ " ;;
                     *"zsh") printf "[%%n@%%m: %%~]\n\$ " ;;
+                esac
+                return 0
+                ;;
+            "simple+")
+                date="$(date +%FT%H:%M:%S%z)"
+                case "$MILESRC_PROMPT_SHELL" in
+                    *"bash") printf "\n \\\u@\h $date\n \w\n \$ " ;;
+                    *"zsh") printf "\n %%n@%%m $date\n %%~\n \$ " ;;
                 esac
                 return 0
                 ;;

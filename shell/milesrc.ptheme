@@ -26,14 +26,14 @@ solarized_light
 EOF
         ;;
     *)
-        mkdir -p "$HOME/.milesrc/local"
-        echo "$1" >"$HOME/.milesrc/local/theme"
+        mkdir -p "$HOME/.config"
+        echo "$1" >"$HOME/.config/ptheme"
         ;;
 esac
 
 declare -a MILESRC_PROMPT
 
-case "$(cat "$HOME/.milesrc/local/theme" 2>/dev/null)" in
+case "$(cat "$HOME/.config/ptheme" 2>/dev/null)" in
     "dracula")
         export MILESRC_PROMPT=(
             "host;light_magenta;light_black;remote;light_cyan;light_black;root;light_red;light_black"

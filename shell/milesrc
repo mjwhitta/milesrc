@@ -33,6 +33,8 @@ unset PTH
 # {{{ User configs
 # Local stuff
 [[ ! -f "$HOME/.milesrc/local/pre" ]] || . "$HOME/.milesrc/local/pre"
+
+# TMUX
 if [[ -n $(command -v tmux) ]] &&
    [[ -z $TMUX ]] &&
    [[ -n $MILESRC_TMUX ]]
@@ -42,8 +44,12 @@ then
         *) exec tmux -2 new -A -s "$(hostname -s)" ;;
     esac
 fi
-if [[ -f "$HOME/.milesrc/shell/milesrc.ssh_agent" ]]; then
-    . "$HOME/.milesrc/shell/milesrc.ssh_agent"
+
+# This simply starts an ssh-agent if MILESRC_SSH_AGENT is set.
+if [[ -n $MILESRC_SSH_AGENT ]]; then
+    if [[ -f "$HOME/.milesrc/shell/milesrc.ssh_agent" ]]; then
+        . "$HOME/.milesrc/shell/milesrc.ssh_agent"
+    fi
 fi
 # }}}
 

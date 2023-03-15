@@ -3,9 +3,6 @@
 # If not running interactively, don't do anything
 [[ $- == *i* ]] || return
 
-# This simply starts an ssh-agent if MILESRC_SSH_AGENT is set.
-
-[[ -n $MILESRC_SSH_AGENT ]] || return
 [[ -n $(command -v ssh-agent) ]] || return
 
 # Start agent if needed

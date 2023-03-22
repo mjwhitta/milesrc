@@ -35,14 +35,13 @@ unset PTH
 [[ ! -f "$HOME/.milesrc/local/pre" ]] || . "$HOME/.milesrc/local/pre"
 
 # TMUX
-if [[ -n $(command -v tmux) ]] &&
-   [[ -z $TMUX ]] &&
-   [[ -n $MILESRC_TMUX ]]
-then
-    case "$SSH_CONNECTION" in
-        "127."*|"localhost"*) ;;
-        *) exec tmux -2 new -A -s "$(hostname -s)" ;;
-    esac
+if [[ -n $MILESRC_TMUX ]]; then
+    if [[ -n $(command -v tmux) ]] && [[ -z $TMUX ]]; then
+        case "$SSH_CONNECTION" in
+            "127."*|"localhost"*) ;;
+            *) exec tmux -2 new -A -s "$(hostname -s)" ;;
+        esac
+    fi
 fi
 
 # This simply starts an ssh-agent if MILESRC_SSH_AGENT is set.

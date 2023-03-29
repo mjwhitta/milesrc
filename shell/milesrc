@@ -149,7 +149,7 @@ case "$MILESRC_SHELL" in
         zstyle ":completion:*:corrections" format "%B%d (err: %e)%b"
         zstyle ":completion:*" group-name ""
         # Tab completion should be case-insensitive
-        zstyle ":completion:*" matcher-list "m:{a-zA-Z}={A-Za-z}"
+        zstyle ":completion:*" matcher-list "" "m:{a-zA-Z}={A-Za-z}"
         # Better completion for killall
         zstyle ":completion:*:killall:*" command \
             "ps -o comm -u \"$(id -nu)\" | tail -n +2"

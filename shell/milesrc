@@ -1065,6 +1065,16 @@ case "$MILESRC_SHELL" in
     *"zsh")
         # {{{ Zsh completions
         for dir in \
+            "$HOME/.config/zsh/plugins/zsh-autosuggestions" \
+            /usr/share/zsh/plugins/zsh-autosuggestions
+        do
+            if [[ -d "$dir" ]]; then
+                . "$dir/zsh-autosuggestions.zsh"
+                break
+            fi
+        done; unset dir
+
+        for dir in \
             "$HOME/.config/zsh/plugins/zsh-completions/src" \
             /usr/share/zsh/plugins/zsh-completions/src \
             /usr/share/zsh/site-functions

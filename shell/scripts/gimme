@@ -306,7 +306,7 @@ declare -a args
 unset help nosave verbose
 action="install"
 color="true"
-version="v1.7.0"
+version="v1.7.1"
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do
@@ -402,7 +402,7 @@ case "$os" in
     "arch"|"archarm") gimme_pacman "$@" ;;
     "chrom"*"os") gimme_crew "$@" ;;
     "debian"|"pop"|"raspbian"|"ubuntu") gimme_apt "$@" ;;
-    "centos"|"fedora") gimme_dnf "$@" ;;
+    "centos"|"fedora"|"rocky") gimme_dnf "$@" ;;
     "macOS") gimme_brew "$@" ;;
     "opensuse"*"leap") gimme_zypper "leap" "$@" ;;
     "opensuse"*"tumbleweed") gimme_zypper "tw" "$@" ;;

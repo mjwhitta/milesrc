@@ -1,7 +1,12 @@
 set-alias -option allscope alias set-alias
+function commandv {
+    param($cmd)
+    (get-command -erroraction silentlycontinue $cmd).name
+}
 set-alias -option allscope grep select-string
 function gimme {
     $action = "install"
+    $choco = commandv choco
     $nosave = $false
     $pkgs = [System.Collections.ArrayList]@()
 
@@ -17,17 +22,32 @@ function gimme {
         }
     }
 
-    switch ($action) {
-        "install" {choco install -y $pkgs}
-        "remove" {
-            if ($nosave) {
-                choco uninstall -x -y $pkgs
-            } else {
-                choco uninstall -y $pkgs
+    if ($choco) {
+        switch ($action) {
+            "install" {choco install -y $pkgs}
+            "remove" {
+                if ($nosave) {
+                    choco uninstall -x -y $pkgs
+                } else {
+                    choco uninstall -y $pkgs
+                }
             }
+            "search" {choco search $pkgs}
+            "update" {choco upgrade -y all}
         }
-        "search" {choco search $pkgs}
-        "update" {choco upgrade -y all}
+    } else {
+        switch ($action) {
+            "install" {winget install --id $pkgs}
+            "remove" {
+                if ($nosave) {
+                    winget uninstall --purge $pkgs
+                } else {
+                    winget uninstall $pkgs
+                }
+            }
+            "search" {winget search $pkgs}
+            "update" {winget upgrade -r}
+        }
     }
 }
 function grh {git reset --hard $args}

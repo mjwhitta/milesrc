@@ -1,7 +1,7 @@
 set-alias -option allscope alias set-alias
 function commandv {
     param($cmd)
-    (get-command -erroraction silentlycontinue $cmd).name
+    (get-command -erroraction silentlycontinue $cmd).source
 }
 set-alias -option allscope grep select-string
 function gimme {

@@ -306,7 +306,7 @@ declare -a args
 unset help nosave verbose
 action="install"
 color="true"
-version="v1.7.1"
+version="v1.8.0"
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do
@@ -399,7 +399,7 @@ esac
 # Call appropriate package manager
 case "$os" in
     "alpine") gimme_apk "$@" ;;
-    "arch"|"archarm") gimme_pacman "$@" ;;
+    "arch"|"archarm"|"manjaro") gimme_pacman "$@" ;;
     "chrom"*"os") gimme_crew "$@" ;;
     "debian"|"pop"|"raspbian"|"ubuntu") gimme_apt "$@" ;;
     "centos"|"fedora"|"rocky") gimme_dnf "$@" ;;

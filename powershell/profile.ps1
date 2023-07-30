@@ -1,6 +1,6 @@
 set-alias -option allscope alias set-alias
 function commandv {
-    param($cmd)
+    param([string]$cmd)
     (get-command -erroraction silentlycontinue $cmd).source
 }
 set-alias -option allscope grep select-string
@@ -56,6 +56,12 @@ function j {get-content -path "$HOME/.proj" | set-location}
 set-alias -option allscope l more
 set-alias -option allscope less more
 function ll {get-childitem -force $args | sort-object}
+function ln {
+    param([string]$src, [string]$dst)
+    $lnk = (New-Object -comObject WScript.Shell).CreateShortcut($dst)
+    $lnk.TargetPath = $src
+    $lnk.Save()
+}
 function lsfunc {get-childitem -force -name $args | sort-object}
 set-alias -option allscope ls lsfunc
 function md5sum {get-filehash -algorithm md5 $args | select hash,path}

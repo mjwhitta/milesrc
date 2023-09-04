@@ -434,6 +434,7 @@ elif [[ -n $(command -v ack) ]]; then
 fi
 [[ -z $(command -v ag) ]] || alias ag="\ag ${AG_ARGS[*]}"
 alias cd="mycd"
+alias clearssh="rm -f -r ~/.ssh/master; mkdir -p ~/.ssh/master"
 alias cp="\cp -i"
 [[ -z $(command -v egrep) ]] || alias egrep="\egrep ${GREP_ARGS[*]}"
 [[ -z $(command -v emacs) ]] || alias emacs="\emacs -nw"

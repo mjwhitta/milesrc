@@ -141,12 +141,13 @@ EOF
 fi
 
 function ngrok() {
+    local domain="$3"
     local port="${1:-8080}"
     local service="${2:-http}"
 
     case "$*" in
         *"-h"*)
-            echo "Usage: ngrok [port] [service]"
+            echo "Usage: ngrok [port] [service] [domain]"
             echo
             echo "DESCRIPTION"
             echo -n "    Punch a hole thru the firewall using SSH "
@@ -182,8 +183,10 @@ function ngrok() {
             ;;
     esac
 
-    ssh -o "ControlMaster no" -o "IdentitiesOnly yes" \
-        -R 0:localhost:"$port" tunnel.us.ngrok.com "$service"
+    ssh -l v2 -o "ControlMaster no" -o "IdentitiesOnly yes" \
+        -R "${3:+$3.ngrok-free.app:}0:localhost:$port" \
+        connect.ngrok-agent.com "$service"
+        # tunnel.us.ngrok.com "$service"
 
     # Kill socat if started
     [[ -z $(command -v socat) ]] || pkill -P $$ socat

@@ -164,6 +164,12 @@ function ngrok() {
             ;;
     esac
 
+    case "$domain" in
+        "") ;;
+        *"."*) ;;
+        *) domain="$domain.ngrok-free.app" ;;
+    esac
+
     case "$service" in
         "https") service="http" ;;
         "tls")
@@ -184,7 +190,7 @@ function ngrok() {
     esac
 
     ssh -l v2 -o "ControlMaster no" -o "IdentitiesOnly yes" \
-        -R "${3:+$3.ngrok-free.app:}0:localhost:$port" \
+        -R "${domain:+$domain:}0:localhost:$port" \
         connect.ngrok-agent.com "$service"
         # tunnel.us.ngrok.com "$service"
 

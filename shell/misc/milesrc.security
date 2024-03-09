@@ -58,6 +58,7 @@ EOF
     }
 
     alias dc="docker compose"
+    alias dcl="docker compose logs -f"
     alias dclean="docker system prune -a -f --volumes"
     alias de="docker exec -i -t"
     alias di="docker images"

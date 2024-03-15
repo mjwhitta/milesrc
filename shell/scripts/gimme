@@ -271,6 +271,7 @@ gimme_zypper() {
             "update")
                 vrun $sudo zypper update -y
                 vrun $sudo zypper dist-upgrade -y
+                vrun $sudo zypper clean
                 ;;
         esac
     fi
@@ -306,7 +307,7 @@ declare -a args
 unset help nosave verbose
 action="install"
 color="true"
-version="v1.8.0"
+version="v1.8.1"
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do

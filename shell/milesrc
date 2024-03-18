@@ -498,6 +498,26 @@ alias vm="mv"
 # }}}
 
 # {{{ Functions
+function aur_install() {
+    local cache="$HOME/.cache/aur"
+    local pkg="$1"
+    local url="https://aur.archlinux.org"
+
+    shift
+
+    [[ -n $(command -v git) ]] || return 1
+    [[ -n $(command -v makepkg) ]] || return 2
+
+    mkdir -p "$cache"
+    rm -f -r "$cache/$1"
+
+    git clone "$url/$pkg.git" "$cache/$pkg" || return 3
+    (
+        cd "$cache/$pkg"
+        makepkg -C -i --needed -r -s "$@"
+    )
+}
+
 function devexcuse() {
     curl -s "http://developerexcuses.com" | \
         grep --color=never -oPs "<a href.+>\K.+(?=</a>)"
@@ -1046,14 +1066,6 @@ case "$MILESRC_SHELL" in
                     )
                 }
                 complete -F _yay_install_complete gimme
-            elif [[ -n $(command -v ruaur) ]]; then
-                function _ruaur_install_complete() {
-                    mapfile -t COMPREPLY < <(
-                        ruaur -Ss "$2" --names-only | \
-                        grep -Es "^$2" | sort -u
-                    )
-                }
-                complete -F _ruaur_install_complete gimme
             else
                 function _pacman_install_complete() {
                     mapfile -t COMPREPLY < <(
@@ -1141,14 +1153,6 @@ case "$MILESRC_SHELL" in
                     reply=($(yay -c -P))
                 }
                 compctl -K _yay_install_complete gimme
-            elif [[ -n $(command -v ruaur) ]]; then
-                if [[ -n $(command -v compdef) ]]; then
-                    compdef _gnu_generic ruaur
-                fi
-                function _ruaur_install_complete() {
-                    reply=($(ruaur --names-only -Ss "$1"))
-                }
-                compctl -K _ruaur_install_complete gimme
             else
                 function _pacman_install_complete() {
                     # shellcheck disable=SC2034

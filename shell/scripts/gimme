@@ -206,19 +206,6 @@ gimme_pacman() {
                 vrun yay -Sc --noconfirm
                 ;;
         esac
-    elif [[ -n $(command -v ruaur) ]]; then
-        case "$action" in
-            "install") vrun ruaur -S "$@" ;;
-            "remove")
-                [[ -n $nosave ]] || vrun ruaur -R "$@"
-                [[ -z $nosave ]] || vrun ruaur -Rn "$@"
-                ;;
-            "search") vrun ruaur -Ss "$@" ;;
-            "update")
-                vrun ruaur -Su --noconfirm
-                vrun ruaur -Sc --noconfirm
-                ;;
-        esac
     elif [[ -n $(command -v pacman) ]]; then
         case "$action" in
             "install") vrun $sudo pacman -S "$@" ;;
@@ -307,7 +294,7 @@ declare -a args
 unset help nosave verbose
 action="install"
 color="true"
-version="v1.8.1"
+version="v1.8.2"
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do

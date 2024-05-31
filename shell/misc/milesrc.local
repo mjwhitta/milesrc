@@ -71,7 +71,31 @@ function goplay() {
             go fmt /tmp/goplay.go >/dev/null
             ;;
         "fmt") go fmt /tmp/goplay.go >/dev/null ;;
-        "-h"|"--help"|"help")
+        "reset")
+            cat >/tmp/goplay.go <<EOF
+package main
+
+import (
+    "flag"
+    "fmt"
+    // "net/http"
+    // "os"
+    // "strings"
+    // "time"
+)
+
+func init() {
+    flag.Parse()
+}
+
+func main() {
+    fmt.Printf("")
+}
+EOF
+            go fmt /tmp/goplay.go >/dev/null
+            ;;
+        "run") go run /tmp/goplay.go "${@:2}" ;;
+        *)
             cat <<EOF
 Usage: ${0} [ACTION] [args]
 
@@ -79,11 +103,11 @@ ACTIONS
     build    Compiles /tmp/goplay.go, takes an optional name
     edit     Opens /tmp/goplay.go in vim
     help     Display this help message
+    reset    Resets /tmp/goplay.go to default
     run      Runs /tmp/goplay.go, passes remaining cli args
 
 EOF
             ;;
-        "run") go run /tmp/goplay.go "${@:2}" ;;
     esac
 }
 

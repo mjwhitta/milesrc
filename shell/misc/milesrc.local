@@ -67,6 +67,7 @@ function goplay() {
                 /tmp/goplay.go
             ;;
         "edit")
+            [[ -f /tmp/goplay.go ]] || goplay reset
             vim /tmp/goplay.go
             go fmt /tmp/goplay.go >/dev/null
             ;;

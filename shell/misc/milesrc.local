@@ -14,6 +14,7 @@ done; unset dir
 # }}}
 
 # {{{ Aliases
+[[ -z $(command -v ascii) ]] || alias asciitable="ascii | tail -n +8"
 alias dt="tmux -2 new -d -s"
 alias et="exec tmux -2 new -A -s"
 alias eth="exec tmux -2 new -A -s \"\$(hostname -s)\""
@@ -77,9 +78,15 @@ function goplay() {
 package main
 
 import (
+    // "bufio"
+    // "bytes"
+    // "encoding/json"
     "flag"
     "fmt"
+    // "io"
     // "net/http"
+    // "net/http/httputil"
+    // "net/url"
     // "os"
     // "strings"
     // "time"

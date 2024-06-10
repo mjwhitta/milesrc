@@ -752,7 +752,7 @@ if exists(':function') && exists(':let')
         " Install or update vim plugins
         Plug 'dense-analysis/ale'
         Plug 'ctrlpvim/ctrlp.vim'
-        Plug 'Yggdroot/indentLine'
+        " Plug 'Yggdroot/indentLine'
         Plug 'tpope/vim-abolish'
         Plug 'tpope/vim-commentary'
         Plug 'junegunn/vim-easy-align'
@@ -824,11 +824,11 @@ if exists(':function') && exists(':let')
         nnoremap <leader>ggq :GitGutterQuickFix<cr>:copen<cr>
 
         " indentLine
-        let g:indentLine_char = '|' " For spaces
-        if exists('&list')
-            " Keep the trailing space
-            set list listchars=multispace:\|\ \ \ ,tab:\|\ " keep
-        endif
+        " let g:indentLine_char = '|' " For spaces
+        " if exists('&list')
+        "     " Keep the trailing space
+        "     set list listchars=multispace:\|\ \ \ ,tab:\|\ " keep
+        " endif
 
         " Python-mode
         if exists(':filetype')

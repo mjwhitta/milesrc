@@ -98,7 +98,7 @@ func init() {
 }
 
 func main() {
-    fmt.Printf("")
+    fmt.Printf("\n")
 }
 EOF
             go fmt /tmp/goplay.go >/dev/null

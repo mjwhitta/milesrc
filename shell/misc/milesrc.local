@@ -122,6 +122,18 @@ EOF
     esac
 }
 
+func modhook() {
+    [[ -n $(command -v go) ]] || return 0
+    if [[ $# -ne 2 ]]; then
+        echo "usage: modhook <mod> <dir>"
+        return 1
+    fi
+
+    [[ -d vendor ]] || go mod vendor
+    rm -f -r "vendor/$1"
+    ln -s "$(pwd)/$2" "vendor/$1"
+}
+
 function moon() { clear; curl -s wttr.in/Moon | head -n -2; }
 
 function weather() {

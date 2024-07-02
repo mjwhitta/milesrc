@@ -14,10 +14,12 @@ export MILESRC_SHELL="$(command -v zsh)"
 
 # {{{ Bootstrap PATH
 # Find minimum dirs that should be in PATH before doing anything else
+# - ~/bin
+# - ~/.local/bin
+# - Standard paths
 unset PTH
 for dir in \
     "$HOME/bin" "$HOME/.local/bin" \
-    "$HOME/.config/$(basename "$MILESRC_SHELL")/scripts" \
     /usr/local/bin /usr/local/sbin \
     /usr/bin /usr/sbin \
     /bin /sbin
@@ -393,6 +395,14 @@ fi
 
 # {{{ PATH
 # Find dirs that should be in PATH
+# - ~/bin
+# - ~/.local/bin
+# - Go
+# - Ruby
+# - Perl
+# - Android
+# - osxcross
+# - Standard paths
 unset PTH
 for dir in \
     "$HOME/bin" "$HOME/.local/bin" \
@@ -401,7 +411,11 @@ for dir in \
     "$GEM_HOME/bin" "$HOME/.rvm/bin" \
     "$PERL_LOCAL_LIB_ROOT/bin" \
     /usr/bin/core_perl /usr/bin/vendor_perl \
+    "$HOME/src/android-studio/bin" \
+    "$HOME/.android/sdk/emulator" \
+    "$HOME/.android/sdk/platform-tools" \
     "$HOME/Android/Sdk/emulator" "$HOME/Android/Sdk/platform-tools" \
+    /usr/local/osx-ndk-x86/bin \
     /usr/local/bin /usr/local/sbin \
     /usr/bin /usr/sbin \
     /bin /sbin

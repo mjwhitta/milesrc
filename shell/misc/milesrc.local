@@ -122,7 +122,7 @@ EOF
     esac
 }
 
-func modhook() {
+function modhook() {
     [[ -n $(command -v go) ]] || return 0
     if [[ $# -ne 2 ]]; then
         echo "usage: modhook <mod> <dir>"

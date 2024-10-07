@@ -5,6 +5,8 @@ if [[ -z $TMUX ]]; then
     exit
 fi
 
+SHELL="$(tmux show -g -q -v default-shell)"
+
 tvers="$(tmux -V | grep -Eios "[0-9]+\.[0-9]+" | tr -d ".")"
 if [[ $tvers -lt 24 ]]; then
     echo "Your version of tmux is too old: $(tmux -V)"

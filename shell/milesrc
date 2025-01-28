@@ -58,7 +58,7 @@ case "$MILESRC_SHELL" in
     *"bash")
         # {{{ Bash setup
         # export BASHV="$(
-        #     bash --version | grep -m 1 -oPs "version \K\d+\.\d+"
+        #     bash --version | grep -m 1 -o -P -s "version \K\d+\.\d+"
         # )"
 
         # History settings
@@ -82,7 +82,7 @@ case "$MILESRC_SHELL" in
         # enable this, if it's already enabled in /etc/bash.bashrc and
         # /etc/profile sources /etc/bash.bashrc).
         # Don't use [] around shopt command
-        if [[ -f /etc/bash_completion ]] && ! shopt -oq posix; then
+        if [[ -f /etc/bash_completion ]] && ! shopt -o -q posix; then
             . /etc/bash_completion
         fi
 
@@ -108,7 +108,7 @@ case "$MILESRC_SHELL" in
             bind '"^U":kill-line'
             bind '"^W":backward-kill-word'
 
-            if bind -P | grep -qs "history-substring-search"; then
+            if bind -P | grep -q -s "history-substring-search"; then
                 bind -m vi-move \
                     '"k":history-substring-search-backward'
                 bind -m vi-move '"j":history-substring-search-forward'
@@ -154,7 +154,7 @@ case "$MILESRC_SHELL" in
         zstyle ":completion:*" matcher-list "" "m:{a-zA-Z}={A-Za-z}"
         # Better completion for killall
         zstyle ":completion:*:killall:*" command \
-            "ps -o comm -u \"$(id -nu)\" | tail -n +2"
+            "ps -o comm -u \"$(id -n -u)\" | tail -n +2"
 
         zstyle :compinstall filename "$HOME/.zshrc"
 
@@ -264,7 +264,7 @@ if [[ ! -d "$JAVA_HOME" ]]; then
     export JAVA_HOME="$(
         find /usr/lib/jvm -maxdepth 1 \
         -iregex ".*java-[0-9]+-openjdk.*" -print 2>/dev/null | \
-        sort -k 2.1 -nr -t "-" | head -n 1
+        sort -k 2.1 -n -r -t "-" | head -n 1
     )"
 fi
 
@@ -282,7 +282,7 @@ fi
 
 # Less
 export PAGER="less"
-export LESS="-ciMRs"
+export LESS="-c -i -M -R -s"
 if [[ -f "$HOME/.config/less/lessfilter" ]]; then
     export LESSOPEN="|\"$HOME/.config/less/lessfilter\" %s"
 fi
@@ -313,10 +313,10 @@ AG_ARGS+=("--color-path=\"0;32\"")
 
 ## grep
 declare -a GREP_ARGS
-if grep --help 2>&1 | grep -iqs "color"; then
+if grep --help 2>&1 | grep -i -q -s "color"; then
     GREP_ARGS+=("--color=auto")
 fi
-GREP_ARGS+=("-Iis")
+GREP_ARGS+=("-I -i -s")
 GREP_ARGS+=("--exclude-dir=.bzr")
 GREP_ARGS+=("--exclude-dir=.git")
 GREP_ARGS+=("--exclude-dir=.git-crypt")
@@ -410,7 +410,7 @@ for dir in \
     "${GOROOT:-/doesnotexist}/bin" "${GOPATH:-/doesnotexist}/bin" \
     "$GEM_HOME/bin" "$HOME/.rvm/bin" \
     "$PERL_LOCAL_LIB_ROOT/bin" \
-    /usr/bin/core_perl /usr/bin/vendor_perl \
+    /usr/bin/core_perl /usr/bin/site_perl /usr/bin/vendor_perl \
     "$HOME/src/android-studio/bin" \
     "$HOME/.android/sdk/emulator" \
     "$HOME/.android/sdk/platform-tools" \
@@ -426,8 +426,9 @@ done; unset dir
 # Find in PATH but missing from PTH
 while read -r dir; do
     [[ ! -d "$dir" ]] || PTH="${PTH:+$PTH:}$dir"
-done < <(echo "$PATH" | sed "s/:/\n/g" | grep -Esv "^${PTH//:/$|^}$")
-unset dir
+done < <(
+    echo "$PATH" | sed "s/:/\n/g" | grep -E -s -v "^${PTH//:/$|^}$"
+); unset dir
 
 # Set PATH
 [[ -z $PTH ]] || export PATH="$PTH"
@@ -454,7 +455,7 @@ alias cd="mycd"
 alias clearssh="rm -f -r ~/.ssh/master; mkdir -p ~/.ssh/master"
 alias cp="\cp -i"
 [[ -z $(command -v egrep) ]] || alias egrep="\egrep ${GREP_ARGS[*]}"
-[[ -z $(command -v emacs) ]] || alias emacs="\emacs -nw"
+[[ -z $(command -v emacs) ]] || alias emacs="\emacs -n -w"
 alias envg="env | grep -E"
 [[ -z $(command -v sudo) ]] || alias f="sudo"
 [[ -z $(command -v gdb) ]] || alias gdb="\gdb -q"
@@ -463,14 +464,14 @@ alias envg="env | grep -E"
 [[ -n $(command -v less) ]] || alias l="more"
 alias la="ls -A"
 alias lag="la | grep -E"
-alias ll="ls -hl"
+alias ll="ls -h -l"
 alias lla="ll -A"
 alias llag="lla | grep -E"
 alias llg="ll | grep -E"
 [[ -z $(command -v locate) ]] || alias locate="\locate -e --regex"
 alias ls="\ls --color=auto -F"
 alias lsg="ls | grep -E"
-alias mine="sudo chown -R \$(id -nu):\$(id -gn)"
+alias mine="sudo chown -R \$(id -n -u):\$(id -g -n)"
 alias mv="\mv -i"
 [[ -z $(command -v mimeopen) ]] || alias open="mimeopen"
 alias nocolor="sed -r \"s/\[[0-9;]*[AKm]//g\""
@@ -478,8 +479,8 @@ alias p="ps -o pid,user,%cpu,cmd --sort=-%cpu"
 alias pf="p -e --forest"
 [[ -z $(command -v python2) ]] || alias pip2="python2 -m pip"
 [[ -z $(command -v python3) ]] || alias pip3="python3 -m pip"
-alias psg="pgrep -af"
-alias psme="pgrep -afU \"\$USER\""
+alias psg="pgrep -a -f"
+alias psme="pgrep -a -f -U \"\$USER\""
 alias q="exit"
 alias r="reset"
 [[ -z $(command -v rg) ]] || alias rg="\rg ${RG_ARGS[*]}"
@@ -489,7 +490,7 @@ case "$MILESRC_SHELL" in
     *"zsh") alias srcmilesrc=". \"\$HOME/.zshrc\"" ;;
 esac
 alias sshpass="ssh ${SSHPASS_ARGS[*]}"
-[[ -z $(command -v sudo) ]] || alias sume="sudo -Es"
+[[ -z $(command -v sudo) ]] || alias sume="sudo -E -s"
 if [[ -n $(command -v htop) ]]; then
     alias t="htop -d 10"
     alias tu="htop -d 10 -u \"\$USER\""
@@ -534,7 +535,7 @@ function aur_install() {
 
 function devexcuse() {
     curl -s "http://developerexcuses.com" | \
-        grep --color=never -oPs "<a href.+>\K.+(?=</a>)"
+        grep --color=never -o -P -s "<a href.+>\K.+(?=</a>)"
 }
 
 function git_clone() {
@@ -593,7 +594,7 @@ function git_clone() {
             "github.com")
                 [[ -n $(command -v unzip) ]] || return 1
 
-                curl -LO "$url/archive/refs/heads/$branch.zip" || \
+                curl -L -O "$url/archive/refs/heads/$branch.zip" || \
                     return 3
 
                 unzip "$branch.zip" >/dev/null || return 4
@@ -604,10 +605,11 @@ function git_clone() {
             "gitlab.com")
                 [[ -n $(command -v tar) ]] || return 1
 
-                curl -LO "$url/-/archive/$branch/$repo-$branch.tar" \
+                curl -L \
+                    -O "$url/-/archive/$branch/$repo-$branch.tar" \
                     || return 3
 
-                tar -xf "$repo-$branch.tar" || return 4
+                tar -f "$repo-$branch.tar" -x || return 4
                 rm -f "$repo-$branch.tar"
 
                 mv "$repo-$branch"* "$dir"
@@ -621,10 +623,10 @@ function ipa() {
     local inet
 
     if [[ -n $(command -v ip) ]]; then
-        if ip 2>&1 | grep -Eq "c\[olor\]"; then
-            ip -c -o "$@" a | grep -sv "mtu" | awk '{print $2,$4}'
+        if ip 2>&1 | grep -E -q "c\[olor\]"; then
+            ip -c -o "$@" a | grep -s -v "mtu" | awk '{print $2,$4}'
         else
-            ip -o "$@" a | grep -sv "mtu" | awk '{print $2,$4}'
+            ip -o "$@" a | grep -s -v "mtu" | awk '{print $2,$4}'
         fi
     else
         while read -r line; do
@@ -647,7 +649,7 @@ function ipa() {
 
 function ipr() {
     if [[ -n $(command -v ip) ]]; then
-        if ip 2>&1 | grep -Eq "c\[olor\]"; then
+        if ip 2>&1 | grep -E -q "c\[olor\]"; then
             ip -c -o "$@" r
         else
             ip -o "$@" r
@@ -656,7 +658,7 @@ function ipr() {
         (
             echo "Route Gateway Interface"
             echo "----- ------- ---------"
-            netstat -nr | awk '!/Routing|Internet|Destination/ {
+            netstat -n -r | awk '!/Routing|Internet|Destination/ {
                 if (NF == 4) {
                     print $1,$2,$4
                 } else if (NF == 7) {
@@ -774,7 +776,8 @@ function mycd() {
 }
 
 function os() {
-    grep --color=never -ioPs "^NAME\=\"?\K[^\"]+" /etc/os-release
+    grep --color=never -i -o -P -s "^NAME\=\"?\K[^\"]+" \
+        /etc/os-release
 }
 
 function remove_spaces_in_names() {
@@ -792,16 +795,21 @@ function remove_spaces_in_names() {
     [[ $# -eq 0 ]] || look_in=("$@")
 
     # Determine rename command
-    rnm="$(command -v rename)"
-    if [[ -e /usr/bin/vendor_perl/rename ]]; then
-        rnm="/usr/bin/vendor_perl/rename"
+    if [[ -e "$HOME/.cpan/perl5/bin/rename" ]]; then
+        rnm="$HOME/.cpan/perl5/bin/rename"
+    elif [[ -e /usr/bin/core_perl/rename ]]; then
+        rnm="/usr/bin/core_perl/rename"
     elif [[ -e /usr/bin/site_perl/rename ]]; then
         rnm="/usr/bin/site_perl/rename"
+    elif [[ -e /usr/bin/vendor_perl/rename ]]; then
+        rnm="/usr/bin/vendor_perl/rename"
+    else
+        rnm="$(command -v rename)"
     fi
 
     # May need to cpan install File::Rename
-    if [[ -z $rnm ]] || ! $rnm -h | grep -qs "perl"; then
-        echo "Please run \"sudo cpan File::Rename\""
+    if [[ -z $rnm ]] || ! $rnm -h | grep -q -s "perl"; then
+        echo "Please run \"cpan File::Rename\""
         return
     fi
 
@@ -904,14 +912,14 @@ function tdump() {
     cap="${cap##* }"
     [[ -z $cap ]] || cap+=".pcap"
 
-    sudo tcpdump -n -vvv "$@"
+    sudo tcpdump -n -v -v -v "$@"
 
-    if id | grep -qs "uid=0"; then
+    if id | grep -q -s "uid=0"; then
         return 0
     fi
 
-    group="$(id -gn)"
-    name="$(id -nu)"
+    group="$(id -g -n)"
+    name="$(id -n -u)"
 
     if [[ -n $cap ]] && [[ -f "$cap" ]]; then
         sudo chown "$name":"$group" "$cap"
@@ -981,14 +989,14 @@ function x() {
             if [[ -z $(command -v bzip2) ]]; then
                 echo "bzip2 is not installed"
             else
-                bzip2 -dk "$@"
+                bzip2 -d -k "$@"
             fi
             ;;
         *".gz")
             if [[ -z $(command -v gzip) ]]; then
                 echo "gzip is not installed"
             else
-                gzip -dk "$@"
+                gzip -d -k "$@"
             fi
             ;;
         *".jar")
@@ -1011,14 +1019,14 @@ function x() {
             elif [[ -z $(command -v cpio) ]]; then
                 echo "rpm2cpio is not installed"
             else
-                rpm2cpio "$@" | cpio -idmv
+                rpm2cpio "$@" | cpio -i -d -m -v
             fi
             ;;
         *".xz")
             if [[ -z $(command -v xz) ]]; then
                 echo "xz is not installed"
             else
-                xz -dk "$@"
+                xz -d -k "$@"
             fi
             ;;
         *".zip")
@@ -1075,16 +1083,16 @@ case "$MILESRC_SHELL" in
             if [[ -n $(command -v yay) ]]; then
                 function _yay_install_complete() {
                     mapfile -t COMPREPLY < <(
-                        yay --color=never -Ss "$2" | \
-                        grep -oPs "^[^/]+/\K$2\S*" | sort -u
+                        yay --color=never -S -s "$2" | \
+                        grep -o -P -s "^[^/]+/\K$2\S*" | sort -u
                     )
                 }
                 complete -F _yay_install_complete gimme
             else
                 function _pacman_install_complete() {
                     mapfile -t COMPREPLY < <(
-                        pacman --color=never -Ss "$2" | \
-                        grep -oPs "^[^/]+/\K$2\S*" | sort -u
+                        pacman --color=never -S -s "$2" | \
+                        grep -o -P -s "^[^/]+/\K$2\S*" | sort -u
                     )
                 }
                 complete -F _pacman_install_complete gimme
@@ -1114,7 +1122,7 @@ case "$MILESRC_SHELL" in
 
         if [[ $ZSHV -gt 42 ]]; then
             if [[ -z $(command -v compdef) ]]; then
-                autoload -Uz compinit && compinit -u
+                autoload -U -z compinit && compinit -u
             fi
         fi
 
@@ -1171,8 +1179,8 @@ case "$MILESRC_SHELL" in
                 function _pacman_install_complete() {
                     # shellcheck disable=SC2034
                     reply=($(
-                        pacman --color=never -Ss "$1" | \
-                        grep -oPs "^[^/]+/\K\S*"
+                        pacman --color=never -S -s "$1" | \
+                        grep -o -P -s "^[^/]+/\K\S*"
                     ))
                 }
                 compctl -K _pacman_install_complete gimme

@@ -452,7 +452,6 @@ elif [[ -n $(command -v ack) ]]; then
 fi
 [[ -z $(command -v ag) ]] || alias ag="\ag ${AG_ARGS[*]}"
 alias cd="mycd"
-alias clearssh="rm -f -r ~/.ssh/mux; mkdir -p ~/.ssh/mux"
 alias cp="\cp -i"
 [[ -z $(command -v egrep) ]] || alias egrep="\egrep ${GREP_ARGS[*]}"
 [[ -z $(command -v emacs) ]] || alias emacs="\emacs -n -w"
@@ -531,6 +530,12 @@ function aur_install() {
         cd "$cache/$pkg"
         makepkg -C -i --needed -r -s "$@"
     )
+}
+
+function clearssh() {
+    if [[ -n $(pgrep -f "^ssh:.+\[mux\]$") ]]; then
+        kill -HUP $(pgrep -f "^ssh:.+\[mux\]$")
+    fi
 }
 
 function devexcuse() {

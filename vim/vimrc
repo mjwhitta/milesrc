@@ -4,9 +4,9 @@ if exists('&background')
 endif
 
 " Minimal GUI for gvim
-if exists('&guioptions')
-    set guioptions=a
-endif
+" if exists('&guioptions')
+"     set guioptions=a
+" endif
 
 " Use system clipboard
 if exists('&clipboard')

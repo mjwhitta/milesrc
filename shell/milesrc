@@ -335,8 +335,12 @@ RG_ARGS+=("--colors path:fg:green")
 
 ## sshpass
 declare -a SSHPASS_ARGS
+SSHPASS_ARGS+=("-o ForwardAgent=no")
+SSHPASS_ARGS+=("-o LogLevel=Error")
 SSHPASS_ARGS+=("-o PreferredAuthentications=password")
 SSHPASS_ARGS+=("-o PubkeyAuthentication=no")
+SSHPASS_ARGS+=("-o StrictHostKeyChecking=no")
+SSHPASS_ARGS+=("-o UserKnownHostsFile=/dev/null")
 
 # Ruby
 export GEM_HOME="$HOME/.gem/ruby"

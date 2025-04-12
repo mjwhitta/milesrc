@@ -477,10 +477,10 @@ function __milesrc_prompt_ps1() {
                 date="$(date +%FT%H:%M:%S%z)"
                 case "$MILESRC_PROMPT_SHELL" in
                     *"bash")
-                        printf "\n \\\u@\h %s\n \w\n \$ " "$date"
+                        printf "\\\u@\h %s\n\w\n\$ " "$date"
                         ;;
                     *"zsh")
-                        printf "\n %%n@%%m %s\n %%~\n \$ " "$date"
+                        printf "%%n@%%m %s\n%%~\n\$ " "$date"
                         ;;
                 esac
                 return 0

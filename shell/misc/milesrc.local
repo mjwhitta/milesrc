@@ -59,6 +59,21 @@ fi
 # }}}
 
 # {{{ Functions
+func godoc() {
+    local cwd="$(pwd)"
+
+    while [[ ! -f "$cwd/go.mod" ]]; do
+        [[ -n $cwd ]] || break
+        cwd="${cwd%/*}"
+    done
+
+    if [[ -f "$cwd/go.mod" ]]; then
+        go doc --all "$@" | less -N
+    else
+        echo "no go.mod found"
+    fi
+}
+
 function goplay() {
     [[ -n $(command -v go) ]] || return
 

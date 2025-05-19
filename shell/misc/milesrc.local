@@ -59,7 +59,7 @@ fi
 # }}}
 
 # {{{ Functions
-func godoc() {
+function godoc() {
     local cwd="$(pwd)"
 
     case "$*" in

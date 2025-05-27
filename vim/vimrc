@@ -776,6 +776,15 @@ if exists(':function') && exists(':let')
         nnoremap /// :%S///gc<left><left><left><left>
 
         " ALE
+        let g:ale_go_gopls_init_options = {
+            \ 'ui.diagnostic.analyses': {
+            \     'ST1000': v:false,
+            \     'ST1023': v:false,
+            \ },
+        \}
+        let g:ale_go_staticcheck_options = '--checks=all' .
+            \ ',-ST1000' .
+            \ ',-ST1023'
         let g:ale_open_list = 1
         let g:ale_set_highlights = 1
         let g:ale_set_signs = 1

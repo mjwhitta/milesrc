@@ -358,6 +358,7 @@ fi
 if [[ ! -f "$HOME/.config/pip/pip.conf" ]]; then
     mkdir -p "$HOME/.config/pip"
     echo "[install]" >"$HOME/.config/pip/pip.conf"
+    echo "break-system-packages = yes" >>"$HOME/.config/pip/pip.conf"
     echo "user = yes" >>"$HOME/.config/pip/pip.conf"
 fi
 

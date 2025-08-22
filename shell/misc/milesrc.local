@@ -63,7 +63,7 @@ function godoc() {
     local cwd="$(pwd)"
 
     case "$*" in
-        *"."*) ;;
+        *"."*"/") ;;
         *) go doc --all "$@" | less -N; return 0 ;;
     esac
 

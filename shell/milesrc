@@ -953,11 +953,11 @@ function update_grub() {
 }
 
 function venv() {
-    if [[ ! -d ./venv ]]; then
-        python3 -m venv ./venv
+    if [[ ! -d ./pyvenv ]]; then
+        python3 -m venv ./pyvenv
     fi
 
-    . ./venv/bin/activate
+    . ./pyvenv/bin/activate
 }
 
 function x() {

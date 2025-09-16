@@ -952,6 +952,14 @@ function update_grub() {
     done
 }
 
+function venv() {
+    if [[ ! -d ./venv ]]; then
+        python3 -m venv ./venv
+    fi
+
+    . ./venv/bin/activate
+}
+
 function x() {
     case "$1" in
         "-h"|"--help")

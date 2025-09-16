@@ -798,7 +798,10 @@ then
                 python2 -m pip "$@"
             fi
         else
-            "$VIRTUAL_ENV/bin/pip" "$@" --no-user
+            case "$*" in
+                *"install "*) "$VIRTUAL_ENV/bin/pip" "$@" --no-user ;;
+                *) "$VIRTUAL_ENV/bin/pip" "$@" ;;
+            esac
         fi
     }
 fi
@@ -808,7 +811,10 @@ if [[ -n $(command -v python2) ]]; then
         if [[ -z $VIRTUAL_ENV ]]; then
             python2 -m pip "$@"
         else
-            "$VIRTUAL_ENV/bin/pip" "$@" --no-user
+            case "$*" in
+                *"install "*) "$VIRTUAL_ENV/bin/pip" "$@" --no-user ;;
+                *) "$VIRTUAL_ENV/bin/pip" "$@" ;;
+            esac
         fi
     }
 fi
@@ -818,7 +824,10 @@ if [[ -n $(command -v python3) ]]; then
         if [[ -z $VIRTUAL_ENV ]]; then
             python3 -m pip "$@"
         else
-            "$VIRTUAL_ENV/bin/pip" "$@" --no-user
+            case "$*" in
+                *"install "*) "$VIRTUAL_ENV/bin/pip" "$@" --no-user ;;
+                *) "$VIRTUAL_ENV/bin/pip" "$@" ;;
+            esac
         fi
     }
 fi

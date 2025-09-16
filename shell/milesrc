@@ -481,8 +481,6 @@ alias mv="\mv -i"
 alias nocolor="sed -r \"s/\[[0-9;]*[AKm]//g\""
 alias p="ps -o pid,user,%cpu,cmd --sort=-%cpu"
 alias pf="p -e --forest"
-[[ -z $(command -v python2) ]] || alias pip2="python2 -m pip"
-[[ -z $(command -v python3) ]] || alias pip3="python3 -m pip"
 alias psg="pgrep -a -f"
 alias psme="pgrep -a -f -U \"\$USER\""
 alias q="exit"
@@ -789,6 +787,41 @@ function os() {
     grep --color=never -i -o -P -s "^NAME\=\"?\K[^\"]+" \
         /etc/os-release
 }
+
+if [[ -n $(command -v python2) ]] || [[ -n $(command -v python3) ]]
+then
+    function pip() {
+        if [[ -z $VIRTUAL_ENV ]]; then
+            if [[ -n $(command -v python3) ]]; then
+                python3 -m pip "$@"
+            elif [[ -n $(command -v python2) ]]; then
+                python2 -m pip "$@"
+            fi
+        else
+            "$VIRTUAL_ENV/bin/pip" "$@" --no-user
+        fi
+    }
+fi
+
+if [[ -n $(command -v python2) ]]; then
+    function pip2() {
+        if [[ -z $VIRTUAL_ENV ]]; then
+            python2 -m pip "$@"
+        else
+            "$VIRTUAL_ENV/bin/pip" "$@" --no-user
+        fi
+    }
+fi
+
+if [[ -n $(command -v python3) ]]; then
+    function pip3() {
+        if [[ -z $VIRTUAL_ENV ]]; then
+            python3 -m pip "$@"
+        else
+            "$VIRTUAL_ENV/bin/pip" "$@" --no-user
+        fi
+    }
+fi
 
 function remove_spaces_in_names() {
     local dir

@@ -14,6 +14,7 @@ done; unset dir
 # }}}
 
 # {{{ Aliases
+alias a="arTTY"
 [[ -z $(command -v ascii) ]] || alias asciitable="ascii | tail -n +8"
 alias dt="tmux -2 new -d -s"
 alias et="exec tmux -2 new -A -s"

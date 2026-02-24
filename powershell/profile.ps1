@@ -83,7 +83,9 @@ set-alias -option allscope vim nvim
 set-alias -option allscope w quser
 
 function prompt {
-    $ts = (get-date).touniversaltime().tostring("yyyy-MM-dd HH:mm:ss")
     $cwd = get-location
-    "[$ts UTC] $cwd> "
+    $ts = (get-date).tostring("yyyy-MM-dd HH:mm:ss")
+    #$ts = (get-date).touniversaltime().tostring("yyyy-MM-dd HH:mm:ss")
+    #"[$ts UTC] $cwd> "
+    "[$ts] $cwd> "
 }

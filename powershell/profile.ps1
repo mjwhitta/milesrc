@@ -84,8 +84,9 @@ set-alias -option allscope w quser
 
 function prompt {
     $cwd = get-location
+    $hostname = hostname
     $ts = (get-date).tostring("yyyy-MM-dd hh:mm:ss")
     # $ts = (get-date).touniversaltime().tostring("yyyy-MM-dd HH:mm:ss")
     # $ts += " UTC"
-    "[$env:username@$env:computername | $ts]`n$cwd`n$ "
+    "[$env:username@$hostname | $ts]`n$cwd`n$ "
 }

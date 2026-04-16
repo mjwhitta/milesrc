@@ -3,7 +3,7 @@
 # If not running interactively, don't do anything
 [[ $- == *i* ]] || return
 
-case "$0" in
+case "${SHELL:-$0}" in
     *"bash"*|*"zsh"*)
         if [[ -d "$HOME/.milesrc" ]]; then
             . "$HOME/.milesrc/shell/milesrc"

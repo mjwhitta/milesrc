@@ -527,14 +527,6 @@ if exists(':augroup')
         endif
     augroup END
 
-    augroup ghmarkdown
-        autocmd!
-        if exists('&filetype')
-            autocmd BufNewFile,BufRead *.markdown,*.md setlocal
-                \ filetype=ghmarkdown
-        endif
-    augroup END
-
     augroup indentation
         autocmd!
         if exists('&shiftwidth')
@@ -548,6 +540,14 @@ if exists(':augroup')
         if exists('&tabstop')
             autocmd FileType c,cpp,h,java,python,ruby,sh setlocal
                 \ tabstop=4
+        endif
+    augroup END
+
+    augroup markdown
+        autocmd!
+        if exists('&filetype')
+            autocmd BufNewFile,BufRead *.markdown,*.md setlocal
+                \ filetype=markdown
         endif
     augroup END
 

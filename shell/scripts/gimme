@@ -193,7 +193,7 @@ gimme_dnf() {
 
 # shellcheck disable=SC2086
 gimme_pacman() {
-    if [[ -n $(command -v yay) ]]; then
+    if [[ -n $yay ]]; then
         case "$action" in
             "install") vrun yay -S "$@" ;;
             "remove")
@@ -291,7 +291,7 @@ EOF
 vrun() { [[ -z $verbose ]] || info "$@"; "$@"; }
 
 declare -a args
-unset help nosave verbose
+unset help nosave verbose yay
 action="install"
 color="true"
 version="v1.8.2"
@@ -300,6 +300,7 @@ version="v1.8.2"
 while [[ $# -gt 0 ]]; do
     case "$1" in
         "--") shift; args+=("$@"); break ;;
+        "--aur") yay="true" ;;
         "-h"|"--help") help="true" ;;
         "-i"|"--install") action="install" ;;
         "--no-color") unset color ;;

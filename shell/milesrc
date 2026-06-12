@@ -1134,23 +1134,13 @@ case "$MILESRC_SHELL" in
             }
             complete -F _crew_install_complete gimme
         elif [[ -n $(command -v pacman) ]]; then
-            if [[ -n $(command -v yay) ]]; then
-                function _yay_install_complete() {
-                    mapfile -t COMPREPLY < <(
-                        yay --color=never -S -s "$2" | \
-                        grep -o -P -s "^[^/]+/\K$2\S*" | sort -u
-                    )
-                }
-                complete -F _yay_install_complete gimme
-            else
-                function _pacman_install_complete() {
-                    mapfile -t COMPREPLY < <(
-                        pacman --color=never -S -s "$2" | \
-                        grep -o -P -s "^[^/]+/\K$2\S*" | sort -u
-                    )
-                }
-                complete -F _pacman_install_complete gimme
-            fi
+            function _pacman_install_complete() {
+                mapfile -t COMPREPLY < <(
+                    pacman --color=never -S -s "$2" | \
+                    grep -o -P -s "^[^/]+/\K$2\S*" | sort -u
+                )
+            }
+            complete -F _pacman_install_complete gimme
         fi
         # }}}
         ;;

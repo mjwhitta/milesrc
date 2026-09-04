@@ -81,7 +81,7 @@ gimme_apk() {
 gimme_apt() {
     if [[ -n $(command -v apt) ]]; then
         case "$action" in
-            "install") vrun $sudo apt install -q "$@" ;;
+            "install") vrun $sudo apt -q install "$@" ;;
             "remove")
                 if [[ -z $nosave ]]; then
                     vrun $sudo apt remove "$@"
@@ -100,13 +100,13 @@ gimme_apt() {
                     autoremove \
                     autoclean
                 do
-                    vrun $sudo apt $cmd -qy
+                    vrun $sudo apt -q -y $cmd
                 done
                 ;;
         esac
     elif [[ -n $(command -v apt-get) ]]; then
         case "$action" in
-            "install") vrun $sudo apt-get install -q "$@" ;;
+            "install") vrun $sudo apt-get -q install "$@" ;;
             "remove")
                 if [[ -z $nosave ]]; then
                     vrun $sudo apt-get remove "$@"
@@ -125,7 +125,7 @@ gimme_apt() {
                     autoremove \
                     autoclean
                 do
-                    vrun $sudo apt-get $cmd -qy
+                    vrun $sudo apt-get -q -y $cmd
                 done
                 ;;
         esac
@@ -294,7 +294,7 @@ declare -a args
 unset help nosave verbose yay
 action="install"
 color="true"
-version="v1.8.2"
+version="v1.8.3"
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do

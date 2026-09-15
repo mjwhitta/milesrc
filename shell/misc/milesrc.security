@@ -5,56 +5,14 @@
 
 # Security functions + an alias
 if [[ -n $(command -v docker) ]]; then
-    function create_tmp_docker_entry() {
-        cat >/tmp/dockerentry <<EOF
-#!/usr/bin/env bash
-
-# Default group (user:1000)
-gid="\${DKR_GID:-1000}"
-gname="\${DKR_GNAME:-user}"
-
-# Default user (user:1000)
-uid="\${DKR_UID:-1000}"
-uname="\${DKR_UNAME:-user}"
-
-# If root or UID of 0 provided, just run command
-if [[ \$(id -u) -ne 0 ]] || [[ \$uid -eq 0 ]]; then
-    exec "\$@"
-fi
-
-# Create group, if it doesn't exist
-groupadd -f -g "\$gid" -o "\$gname" &>/dev/null
-groupmod -g "\$gid" -o "\$gname" &>/dev/null
-
-# Create user, if they don't exist
-useradd -d /home/user -g "\$gid" -mou "\$uid" "\$uname" &>/dev/null
-usermod -d /home/user -g "\$gid" -mou "\$uid" "\$uname" &>/dev/null
-chown -R "\$uid":"\$gid" /home/user
-
-# Sudo (a few different ways)
-groupadd -f sudo
-groupadd -f wheel
-usermod -a -G sudo,wheel "\$uname"
-mkdir -p /etc/sudoers.d
-echo "\$uname ALL=(ALL) NOPASSWD: ALL" >"/etc/sudoers.d/\$uname"
-
-# Store cmd
-cmd="\$*"
-[[ -n \$cmd ]] || cmd="\$(command -v bash)"
-[[ -n \$cmd ]] || cmd="sh"
-
-# Run command as specified user
-export HOME="/home/user"
-export USER="\$uname"
-
-if [[ -n \$(command -v sudo) ]]; then
-    # shellcheck disable=SC2086
-    sudo -E -u "\$uname" \$cmd
-else
-    su -c "\$cmd" -m "\$uname"
-fi
-EOF
-        chmod 700 /tmp/dockerentry
+    function audit_docker_connections() {
+        while read -r container; do
+            echo "### $container ###"
+            docker exec "$container" netstat -n -W | \
+                awk '/ESTAB/ {print $5}' | \
+                grep -E -s -v "^(::ffff:)?(127\.0|172\.)"
+        done < <(docker ps | awk '/^[a-f0-9]/ {print $NF}' | sort)
+        unset container
     }
 
     alias dc="docker compose"
@@ -69,8 +27,8 @@ EOF
 
     function drun() {
         docker run \
-            -e DKR_GID="$(id -g)" -e DKR_GNAME="$(id -gn)" \
-            -e DKR_UID="$(id -u)" -e DKR_UNAME="$(id -nu)" \
+            -e DKR_GID="$(id -g)" \
+            -e DKR_UID="$(id -u)" \
             -i --rm -t "$@"
     }
 
@@ -80,12 +38,11 @@ EOF
 
     function metasploit_image() {
         local entrydir="/usr/src/metasploit-framework"
-        local image="metasploitframework/metasploit-framework:latest"
         local name="msfconsole_$(head -c 8 /dev/random | xxd -p)"
 
         mkdir -p "$HOME/.msf4"
         drunpwd -e MSF_GID="$(id -g)" -e MSF_UID="$(id -u)" \
-            --entrypoint "$entrydir/docker/entrypoint.sh" \
+            --entrypoint="$entrydir/docker/entrypoint.sh" \
             --name "$name" -v "$HOME/.msf4":/home/msf/.msf4:Z "$@"
     }
 
@@ -94,7 +51,7 @@ EOF
             local entrydir="/usr/src/metasploit-framework"
             local image="metasploitframework/metasploit-framework"
             metasploit_image -p 4444:4444 -p 8000-8500:8000-8500 \
-            ${image}:latest "$entrydir/msfconsole" -q "$@"
+                "$image:latest" "$entrydir/msfconsole" -q "$@"
         }
     fi
 
@@ -102,7 +59,7 @@ EOF
         function msfvenom() {
             local entrydir="/usr/src/metasploit-framework"
             local image="metasploitframework/metasploit-framework"
-            metasploit_image ${image}:latest "$entrydir/msfvenom" "$@"
+            metasploit_image "$image:latest" "$entrydir/msfvenom" "$@"
         }
     fi
 
@@ -124,21 +81,45 @@ EOF
     fi
 
     if [[ -z $(command -v r2) ]]; then
-        function r2() {
-            r2_image r2 "$@"
-        }
+        function r2() {r2_image r2 "$@";}
     fi
 
     function r2_image() {
-        create_tmp_docker_entry
-        drunpwd --cap-add=SYS_PTRACE --entrypoint /dockerentry \
+        local image="radare/radare2:latest"
+        cat >/tmp/dockerentry <<EOF
+#!/usr/bin/env bash
+
+# Default group (user:1000)
+gid="\${DKR_GID:-1000}"
+
+# Default user (user:1000)
+uid="\${DKR_UID:-1000}"
+
+userdel ubuntu
+rm -f -r /home/ubuntu
+
+# Update group
+groupmod -g "\$gid" -o r2 &>/dev/null
+
+# Update user
+usermod -g "\$gid" -o -s /bin/bash -u "\$uid" r2 &>/dev/null
+chown -R "\$uid":"\$gid" /home/r2
+
+cat >/home/r2/.bashrc <<EOS
+$(docker inspect "$image" | jq -M -r -S ".[0].Config.Env[]")
+cd /pwd
+EOS
+
+# Run command as specified user
+su -c "\$*" -l -P r2
+EOF
+        chmod 700 /tmp/dockerentry
+        drunpwd --cap-add=SYS_PTRACE --entrypoint=/entry \
             --name "r2_$(head -c 8 /dev/random | xxd -p)" -u root \
-            -v /tmp/dockerentry:/dockerentry:ro radare/radare2 "$@"
+            -v /tmp/dockerentry:/entry:ro "$image" "$@"
     }
 
-    function r2sh() {
-        r2_image bash
-    }
+    function r2sh() {r2_image bash;}
 fi
 
 function ngrok() {

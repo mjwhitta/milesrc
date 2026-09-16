@@ -8,9 +8,14 @@ if [[ -n $(command -v docker) ]]; then
     function audit_docker_connections() {
         while read -r container; do
             echo "### $container ###"
-            docker exec "$container" netstat -n -W | \
-                awk '/ESTAB/ {print $5}' | \
-                grep -E -s -v "^(::ffff:)?(127\.0|172\.)"
+            while read -r ip; do
+                ip="${ip#::ffff:}"
+                echo "${ip%:*}"
+            done < <(
+                docker exec "$container" netstat -n -W | \
+                awk '/ESTAB/ {print $5}'
+            ) | sort -k 1,1n -k 2,2n -k 3,3n -k 4,4n -t "." -u
+            unset ip
         done < <(docker ps | awk '/^[a-f0-9]/ {print $NF}' | sort)
         unset container
     }
